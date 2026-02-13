@@ -69,13 +69,21 @@
 
                 <VBox spacing="10" HBox.hgrow="ALWAYS">
 
-                    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="content-card" style="-fx-padding: 10;">
-                        <Text text="🔍" style="-fx-font-size: 16px;"/>
-                        <TextField fx:id="tfRecherche"
-                                   promptText="Rechercher par espèce..."
-                                   onKeyReleased="#handleRecherche"
-                                   HBox.hgrow="ALWAYS"
-                                   style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="content-card" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
+                            <Text text="🔍" style="-fx-font-size: 16px;"/>
+                            <TextField fx:id="tfRecherche"
+                                       promptText="Rechercher par espèce..."
+                                       onKeyReleased="#handleRecherche"
+                                       HBox.hgrow="ALWAYS"
+                                       style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+                        </HBox>
+
+                        <Button text="📄 PDF"
+                                onAction="#imprimerPdf"
+                                prefHeight="45"
+                                prefWidth="100"
+                                style="-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;"/>
                     </HBox>
 
                     <TableView fx:id="tvAnimaux" VBox.vgrow="ALWAYS" styleClass="modern-table">
