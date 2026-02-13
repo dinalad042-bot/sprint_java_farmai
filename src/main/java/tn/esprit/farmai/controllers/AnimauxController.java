@@ -14,11 +14,14 @@ import tn.esprit.farmai.models.Ferme;
 import tn.esprit.farmai.services.ServiceAnimaux;
 import tn.esprit.farmai.services.ServiceFerme;
 import tn.esprit.farmai.utils.NavigationUtil;
+import tn.esprit.farmai.services.PdfGenerator;
 
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 public class AnimauxController implements Initializable {
 
@@ -51,7 +54,9 @@ public class AnimauxController implements Initializable {
             if (newVal != null) {
                 tfEspece.setText(newVal.getEspece());
                 tfEtat.setText(newVal.getEtat_sante());
-                dpDate.setValue(newVal.getDate_naissance().toLocalDate());
+                if (newVal.getDate_naissance() != null) {
+                    dpDate.setValue(newVal.getDate_naissance().toLocalDate());
+                }
                 cbFerme.getItems().stream()
                         .filter(f -> f.getId_ferme() == newVal.getId_ferme())
                         .findFirst().ifPresent(f -> cbFerme.setValue(f));
@@ -142,5 +147,34 @@ public class AnimauxController implements Initializable {
     private void handleReturnToSelection(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         NavigationUtil.navigateTo(stage, "/tn/esprit/farmai/views/selection-gestion.fxml", "Gestion");
+    }
+
+    /**
+     * Cette méthode correspond au onAction="#imprimerPdf" de votre FXML
+     */
+    @FXML
+    private void imprimerPdf() {
+        String[] headers = {"Espèce", "Santé", "Date Naissance", "ID Ferme"};
+
+        Function<Animaux, String>[] extractors = new Function[] {
+                (Function<Animaux, String>) a -> a.getEspece(),
+                (Function<Animaux, String>) a -> a.getEtat_sante(),
+                (Function<Animaux, String>) a -> (a.getDate_naissance() != null) ? a.getDate_naissance().toString() : "N/A",
+                (Function<Animaux, String>) a -> String.valueOf(a.getId_ferme())
+        };
+
+        try {
+            PdfGenerator.generatePdf("Rapport_Animaux.pdf", "Rapport du Bétail - FarmAI",
+                    tvAnimaux.getItems(), headers, extractors);
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Exportation PDF");
+            alert.setHeaderText(null);
+            alert.setContentText("Le PDF 'Rapport_Animaux.pdf' a été généré avec succès !");
+            alert.show();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération : " + e.getMessage());
+            alert.show();
+        }
     }
 }
