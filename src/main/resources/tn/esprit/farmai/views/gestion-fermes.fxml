@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.FermeController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="250">
+            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Text text="🌱" style="-fx-font-size: 20px;"/>
+                <Text text="FarmAI" style="-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </HBox>
+            <Region prefHeight="40"/>
+            <Button text="⬅ Retour Menu" styleClass="nav-button" onAction="#handleReturnToSelection" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+            <VBox spacing="5">
+                <Label text="Gestion des Fermes" styleClass="welcome-title"/>
+                <Label text="Ajoutez, modifiez ou supprimez vos exploitations agricoles." styleClass="welcome-subtitle"/>
+            </VBox>
+
+            <HBox spacing="30" VBox.vgrow="ALWAYS">
+
+                <VBox spacing="15" prefWidth="320" styleClass="content-card">
+                    <Label text="Informations de la ferme" styleClass="card-title" style="-fx-font-size: 16px;"/>
+
+                    <VBox spacing="5">
+                        <Label text="Nom de la ferme" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfNom" promptText="Ex: Ferme du Nord" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Localisation (Lieu)" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfLieu" promptText="Ex: Bizerte, Tunisie" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Surface (m²)" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfSurface" promptText="Ex: 5000" styleClass="search-field"/>
+                    </VBox>
+
+                    <Region prefHeight="10"/>
+
+                    <VBox spacing="10">
+                        <Button text="Enregistrer" onAction="#ajouter" maxWidth="Infinity" styleClass="primary-btn" style="-fx-background-color: #2E7D32;"/>
+                        <HBox spacing="10">
+                            <Button text="Modifier" onAction="#modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="secondary-btn"/>
+                            <Button text="Supprimer" onAction="#supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="danger-btn"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+
+                    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="content-card" style="-fx-padding: 10;">
+                        <Text text="🔍" style="-fx-font-size: 16px;"/>
+                        <TextField fx:id="tfRecherche"
+                                   promptText="Rechercher une ferme par son nom..."
+                                   onKeyReleased="#handleRecherche"
+                                   HBox.hgrow="ALWAYS"
+                                   style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+                    </HBox>
+
+                    <TableView fx:id="tvFermes" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                        <columns>
+                            <TableColumn fx:id="colNom" text="Nom" prefWidth="180"/>
+                            <TableColumn fx:id="colLieu" text="Lieu / Emplacement" prefWidth="220"/>
+                            <TableColumn fx:id="colSurface" text="Surface (m²)" prefWidth="120"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                </VBox>
+
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

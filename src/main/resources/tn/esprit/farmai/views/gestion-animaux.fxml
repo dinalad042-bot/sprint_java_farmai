@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.AnimauxController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="250">
+            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Text text="🐄" style="-fx-font-size: 20px;"/>
+                <Text text="FarmAI" style="-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </HBox>
+            <Region prefHeight="40"/>
+            <Button text="⬅ Retour Menu" styleClass="nav-button" onAction="#handleReturnToSelection" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+            <VBox spacing="5">
+                <Label text="Gestion du Bétail" styleClass="welcome-title"/>
+                <Label text="Suivez l'inventaire, la santé et la localisation de vos animaux." styleClass="welcome-subtitle"/>
+            </VBox>
+
+            <HBox spacing="30" VBox.vgrow="ALWAYS">
+
+                <VBox spacing="15" prefWidth="320" styleClass="content-card">
+                    <Label text="Fiche Animal" styleClass="card-title" style="-fx-font-size: 16px;"/>
+
+                    <VBox spacing="5">
+                        <Label text="Espèce de l'animal" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfEspece" promptText="Ex: Bovin, Ovin, Caprin" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="État de Santé" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfEtat" promptText="Ex: Excellente, En soin" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Date de Naissance" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <DatePicker fx:id="dpDate" maxWidth="Infinity" styleClass="search-field" promptText="Sélectionner une date"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Ferme de résidence" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <ComboBox fx:id="cbFerme" maxWidth="Infinity" styleClass="filter-combo" promptText="Choisir une ferme"/>
+                    </VBox>
+
+                    <Region prefHeight="10"/>
+
+                    <VBox spacing="10">
+                        <Button text="Enregistrer" onAction="#ajouter" maxWidth="Infinity" styleClass="primary-btn" style="-fx-background-color: #2E7D32;"/>
+                        <HBox spacing="10">
+                            <Button text="Modifier" onAction="#modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="secondary-btn"/>
+                            <Button text="Supprimer" onAction="#supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="danger-btn"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+
+                    <HBox spacing="10" alignment="CENTER_LEFT" styleClass="content-card" style="-fx-padding: 10;">
+                        <Text text="🔍" style="-fx-font-size: 16px;"/>
+                        <TextField fx:id="tfRecherche"
+                                   promptText="Rechercher par espèce..."
+                                   onKeyReleased="#handleRecherche"
+                                   HBox.hgrow="ALWAYS"
+                                   style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+                    </HBox>
+
+                    <TableView fx:id="tvAnimaux" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                        <columns>
+                            <TableColumn fx:id="colEspece" text="Espèce" prefWidth="150"/>
+                            <TableColumn fx:id="colEtat" text="Santé" prefWidth="150"/>
+                            <TableColumn fx:id="colDate" text="Date Naissance" prefWidth="150"/>
+                            <TableColumn fx:id="colIdFerme" text="ID Ferme" prefWidth="100"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                </VBox>
+
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>
