@@ -108,7 +108,7 @@ public class AnimauxController implements Initializable {
             selected.setId_ferme(cbFerme.getValue().getId_ferme());
 
             sa.updateOne(selected);
-            rafraichir();
+            tvAnimaux.refresh();
             viderChamps();
         } catch (SQLException e) {
             afficherAlerte("Erreur SQL", "Modification échouée : " + e.getMessage());
