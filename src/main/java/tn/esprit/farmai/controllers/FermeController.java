@@ -72,16 +72,15 @@ public class FermeController implements Initializable {
                     selected.setNom_ferme(tfNom.getText());
                     selected.setLieu(tfLieu.getText());
                     selected.setSurface(Float.parseFloat(tfSurface.getText()));
-
-                    sf.updateOne(selected); // Assurez-vous que cette méthode existe dans ServiceFerme
-                    rafraichir();
+                    sf.updateOne(selected);
+                    tvFermes.refresh();
                     viderChamps();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
-            afficherAlerte("Sélection requise", "Veuillez sélectionner une ferme dans le tableau pour la modifier.");
+            afficherAlerte("Sélection requise", "Veuillez sélectionner une ferme dans le tableau.");
         }
     }
 
