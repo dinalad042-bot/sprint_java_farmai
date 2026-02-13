@@ -86,7 +86,7 @@ public class PlantesController implements Initializable {
                 selected.setCycle_vie(tfCycleVie.getText());
                 selected.setId_ferme(cbFerme.getValue().getId_ferme());
                 sp.updateOne(selected);
-                rafraichir();
+                tvPlantes.refresh();
                 viderChamps();
             } catch (SQLException e) { e.printStackTrace(); }
         }
