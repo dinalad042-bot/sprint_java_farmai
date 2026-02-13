@@ -24,6 +24,7 @@ public class PlantesController implements Initializable {
     @FXML private TextField tfNomEspece;
     @FXML private TextField tfCycleVie;
     @FXML private ComboBox<Ferme> cbFerme;
+    @FXML private TextField tfRecherche; // Nouveau champ pour la recherche
 
     @FXML private TableView<Plantes> tvPlantes;
     @FXML private TableColumn<Plantes, String> colNom;
@@ -35,7 +36,6 @@ public class PlantesController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Configuration des colonnes selon ton modèle
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_espece"));
         colCycle.setCellValueFactory(new PropertyValueFactory<>("cycle_vie"));
         colFerme.setCellValueFactory(new PropertyValueFactory<>("id_ferme"));
@@ -43,12 +43,10 @@ public class PlantesController implements Initializable {
         chargerFermes();
         rafraichir();
 
-        // Listener pour remplir le formulaire lors d'un clic sur le tableau
         tvPlantes.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 tfNomEspece.setText(newVal.getNom_espece());
                 tfCycleVie.setText(newVal.getCycle_vie());
-                // Sélection de la ferme correspondante
                 cbFerme.getItems().stream()
                         .filter(f -> f.getId_ferme() == newVal.getId_ferme())
                         .findFirst().ifPresent(f -> cbFerme.setValue(f));
@@ -64,6 +62,21 @@ public class PlantesController implements Initializable {
                 @Override public Ferme fromString(String s) { return null; }
             });
         } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    @FXML
+    private void handleRecherche() {
+        String query = tfRecherche.getText().trim();
+        try {
+            if (query.isEmpty()) {
+                rafraichir();
+            } else {
+                // Utilise la méthode chercherParNom ajoutée au ServicePlantes
+                tvPlantes.setItems(FXCollections.observableArrayList(sp.chercherParNom(query)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -85,8 +98,10 @@ public class PlantesController implements Initializable {
                 selected.setNom_espece(tfNomEspece.getText());
                 selected.setCycle_vie(tfCycleVie.getText());
                 selected.setId_ferme(cbFerme.getValue().getId_ferme());
+
                 sp.updateOne(selected);
-                tvPlantes.refresh();
+                tvPlantes.refresh(); // Rafraîchit l'affichage interne
+                rafraichir();        // Resynchronise avec la liste observable
                 viderChamps();
             } catch (SQLException e) { e.printStackTrace(); }
         }
