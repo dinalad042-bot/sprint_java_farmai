@@ -154,4 +154,29 @@ public class FermeController implements Initializable {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         NavigationUtil.navigateTo(stage, "/tn/esprit/farmai/views/selection-gestion.fxml", "FarmAI - Gestion");
     }
+
+    @FXML
+    private void imprimerPdf() {
+        String[] headers = {"Nom de la Ferme", "Localisation", "Surface (m²)"};
+
+        java.util.function.Function<Ferme, String>[] extractors = new java.util.function.Function[] {
+                (java.util.function.Function<Ferme, String>) f -> f.getNom_ferme(),
+                (java.util.function.Function<Ferme, String>) f -> f.getLieu(),
+                (java.util.function.Function<Ferme, String>) f -> String.valueOf(f.getSurface())
+        };
+
+        try {
+            tn.esprit.farmai.services.PdfGenerator.generatePdf(
+                    "Rapport_Fermes.pdf",
+                    "Liste des Exploitations Agricoles - FarmAI",
+                    tvFermes.getItems(),
+                    headers,
+                    extractors
+            );
+
+            new Alert(Alert.AlertType.INFORMATION, "Le rapport des fermes a été généré !").show();
+        } catch (Exception e) {
+            new Alert(Alert.AlertType.ERROR, "Erreur : " + e.getMessage()).show();
+        }
+    }
 }
