@@ -14,6 +14,7 @@ import tn.esprit.farmai.models.Plantes;
 import tn.esprit.farmai.services.ServiceFerme;
 import tn.esprit.farmai.services.ServicePlantes;
 import tn.esprit.farmai.utils.NavigationUtil;
+import java.util.function.Function;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -138,5 +139,34 @@ public class PlantesController implements Initializable {
     private void handleReturnToSelection(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         NavigationUtil.navigateTo(stage, "/tn/esprit/farmai/views/selection-gestion.fxml", "Gestion");
+    }
+
+    @FXML
+    private void imprimerPdf() {
+        String[] headers = {"Espèce", "Cycle de Vie", "ID Ferme"};
+
+        Function<Plantes, String>[] extractors = new Function[] {
+                (Function<Plantes, String>) p -> p.getNom_espece(),
+                (Function<Plantes, String>) p -> p.getCycle_vie(),
+                (Function<Plantes, String>) p -> String.valueOf(p.getId_ferme())
+        };
+
+        try {
+            tn.esprit.farmai.services.PdfGenerator.generatePdf(
+                    "Rapport_Plantes.pdf",
+                    "Suivi du Cycle de Vie Végétal - FarmAI",
+                    tvPlantes.getItems(),
+                    headers,
+                    extractors
+            );
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Exportation PDF");
+            alert.setHeaderText(null);
+            alert.setContentText("Le rapport des plantes a été généré avec succès !");
+            alert.show();
+        } catch (Exception e) {
+            new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération : " + e.getMessage()).show();
+        }
     }
 }
