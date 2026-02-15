@@ -1,0 +1,492 @@
+/* ============================================
+   FarmAI - Modern Dashboard Styles
+   Template-Based (Green & Grey Theme)
+   ============================================ */
+
+/* === Main Dashboard Container === */
+.dashboard-root {
+    -fx-background-color: #F4F6F8;
+}
+
+/* === Sidebar === */
+.sidebar {
+    -fx-background-color: #263238;
+    /* Dark Grey Blue */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 10, 0, 0, 0);
+}
+
+.sidebar-container {
+    -fx-padding: 20px 15px;
+}
+
+/* Sidebar Profile Card (Top) */
+.sidebar-profile-card {
+    -fx-background-color: #388E3C;
+    /* Main Green */
+    -fx-background-radius: 20px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(56, 142, 60, 0.4), 10, 0, 0, 5);
+}
+
+.sidebar-profile-name {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.sidebar-profile-role {
+    -fx-text-fill: rgba(255, 255, 255, 0.8);
+    -fx-font-size: 11px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.menu-dots {
+    -fx-fill: white;
+    -fx-cursor: hand;
+}
+
+/* === Navigation Menu === */
+.nav-menu {
+    -fx-padding: 30px 5px;
+    -fx-spacing: 10px;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #B0BEC5;
+    -fx-font-size: 14px;
+    -fx-padding: 12px 20px;
+    -fx-background-radius: 12px;
+    -fx-cursor: hand;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-graphic-text-gap: 15px;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    -fx-text-fill: white;
+}
+
+.nav-button.active {
+    -fx-background-color: #1B1D1F;
+    /* Almost Black for contrast */
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 5, 0, 0, 2);
+    -fx-font-weight: bold;
+}
+
+/* === Top Header === */
+.top-header {
+    -fx-background-color: transparent;
+    -fx-padding: 20px 40px 10px 40px;
+}
+
+.search-container {
+    -fx-background-color: white;
+    -fx-background-radius: 30px;
+    -fx-padding: 5px 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.03), 5, 0, 0, 2);
+    -fx-alignment: CENTER_LEFT;
+}
+
+.header-search-field {
+    -fx-background-color: transparent;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #9E9E9E;
+    -fx-pref-width: 250px;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 8px;
+    -fx-background-radius: 50%;
+}
+
+.icon-button:hover {
+    -fx-background-color: rgba(0, 0, 0, 0.05);
+}
+
+.user-avatar-top {
+    -fx-stroke: #4CAF50;
+    -fx-stroke-width: 2px;
+    -fx-fill: #E8F5E9;
+}
+
+/* === Main Content === */
+.main-content {
+    -fx-background-color: #F4F6F8;
+    -fx-padding: 0 40px 40px 40px;
+}
+
+.welcome-section {
+    -fx-padding: 10px 0 30px 0;
+}
+
+.welcome-title {
+    -fx-text-fill: #263238;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.welcome-subtitle {
+    -fx-text-fill: #78909C;
+    -fx-font-size: 14px;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+/* === Vertical Stat Cards (The "Today" Section) === */
+.stats-grid {
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+}
+
+.stat-card-tall {
+    -fx-background-radius: 25px;
+    -fx-padding: 25px;
+    -fx-pref-width: 180px;
+    -fx-pref-height: 220px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 10, 0, 0, 4);
+}
+
+/* Card Variants */
+.card-green {
+    -fx-background-color: linear-gradient(to bottom right, #66BB6A, #43A047);
+}
+
+.card-green .stat-value,
+.card-green .stat-label,
+.card-green .stat-desc {
+    -fx-text-fill: white;
+}
+
+.card-white {
+    -fx-background-color: white;
+}
+
+.card-white .stat-value {
+    -fx-text-fill: #263238;
+}
+
+.card-white .stat-label {
+    -fx-text-fill: #546E7A;
+}
+
+.card-white .stat-desc {
+    -fx-text-fill: #90A4AE;
+}
+
+.card-grey {
+    -fx-background-color: #ECEFF1;
+}
+
+.card-grey .stat-value {
+    -fx-text-fill: #37474F;
+}
+
+.card-grey .stat-label {
+    -fx-text-fill: #546E7A;
+}
+
+.card-grey .stat-desc {
+    -fx-text-fill: #78909C;
+}
+
+.card-dark {
+    -fx-background-color: #263238;
+}
+
+.card-dark .stat-value {
+    -fx-text-fill: white;
+}
+
+.card-dark .stat-label {
+    -fx-text-fill: #B0BEC5;
+}
+
+.card-dark .stat-desc {
+    -fx-text-fill: #78909C;
+}
+
+/* Internal Card Text */
+.stat-value {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+}
+
+.stat-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 0 0 0;
+}
+
+.stat-desc {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.8;
+}
+
+.progress-bar-modern .track {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 10px;
+}
+
+.progress-bar-modern .bar {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+}
+
+.card-white .progress-bar-modern .track {
+    -fx-background-color: #ECEFF1;
+}
+
+.card-white .progress-bar-modern .bar {
+    -fx-background-color: #4CAF50;
+}
+
+/* === Lower Section (Mockup / Activity) === */
+.content-card {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 8, 0, 0, 2);
+    -fx-padding: 25px;
+}
+
+.card-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #263238;
+}
+
+.list-item {
+    -fx-padding: 10px 0;
+    -fx-border-color: #EEEEEE;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.list-item-icon {
+    -fx-fill: #4CAF50;
+    -fx-font-size: 20px;
+}
+
+.list-item-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #455A64;
+}
+
+/* === Filters & ComboBox === */
+.search-field {
+    -fx-background-color: white;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-padding: 10px 20px;
+    -fx-prompt-text-fill: #9E9E9E;
+}
+
+.search-field:focused {
+    -fx-border-color: #2E7D32;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.1), 5, 0, 0, 0);
+}
+
+.filter-combo {
+    -fx-background-color: white;
+    -fx-border-color: #CFD8DC;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 2px 8px;
+    -fx-font-size: 13px;
+}
+
+.filter-combo:hover {
+    -fx-border-color: #B0BEC5;
+    -fx-background-color: #FAFAFA;
+}
+
+.filter-combo .list-cell {
+    -fx-text-fill: #546E7A;
+}
+
+.filter-combo .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.filter-combo .arrow {
+    -fx-background-color: #78909C;
+    -fx-pref-width: 8px;
+    -fx-pref-height: 8px;
+}
+
+/* === Notification Badge === */
+.notification-button {
+    -fx-cursor: hand;
+}
+
+.notification-badge {
+    -fx-background-color: #ff3d00;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 10px;
+    -fx-padding: 1px 5px;
+    -fx-background-radius: 10px;
+    -fx-border-color: white;
+    -fx-border-width: 2px;
+    -fx-border-radius: 10px;
+}
+
+/* === Modern Buttons === */
+.button {
+    -fx-cursor: hand;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-font-family: 'Segoe UI', sans-serif;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 3, 0, 0, 1);
+    -fx-transition: all 0.2s;
+}
+
+.button:pressed {
+    -fx-effect: none;
+    -fx-translate-y: 1;
+}
+
+/* Primary Button (Dark Grey / Green Accent) */
+.primary-btn {
+    -fx-background-color: #263238;
+    /* Dark Grey */
+    -fx-text-fill: white;
+}
+
+.primary-btn:hover {
+    -fx-background-color: #37474F;
+    -fx-effect: dropshadow(three-pass-box, rgba(38, 50, 56, 0.3), 5, 0, 0, 2);
+}
+
+/* Secondary Button (Green) */
+.secondary-btn {
+    -fx-background-color: white;
+    -fx-text-fill: #2E7D32;
+    -fx-border-color: #2E7D32;
+    -fx-border-width: 1.5;
+}
+
+.secondary-btn:hover {
+    -fx-background-color: #E8F5E9;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.2), 5, 0, 0, 2);
+}
+
+/* Danger Button (Red) */
+.danger-btn {
+    -fx-background-color: #FFEBEE;
+    -fx-text-fill: #D32F2F;
+    -fx-border-color: transparent;
+}
+
+.danger-btn:hover {
+    -fx-background-color: #FFCDD2;
+    -fx-text-fill: #B71C1C;
+}
+
+/* Action Button (Blue/Edit) */
+.action-btn {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1976D2;
+}
+
+.action-btn:hover {
+    -fx-background-color: #BBDEFB;
+    -fx-text-fill: #0D47A1;
+}
+
+/* Nav Button (Sidebar) */
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #B0BEC5;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 12px 20px;
+    -fx-font-size: 14px;
+    -fx-font-weight: normal;
+    -fx-background-radius: 8px;
+    -fx-effect: none;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+}
+
+.nav-button.active {
+    -fx-background-color: #2E7D32;
+    /* Green */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.4), 8, 0, 0, 2);
+}
+
+/* === Dialog / Popups === */
+.dialog-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.25), 20, 0, 0, 5);
+    -fx-padding: 0;
+}
+
+.dialog-pane:header .header-panel {
+    -fx-background-color: #263238;
+    /* Dark Grey header */
+    -fx-background-radius: 20px 20px 0 0;
+    -fx-padding: 25px;
+}
+
+.dialog-pane:header .header-panel .label {
+    -fx-text-fill: white;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.dialog-pane>.content {
+    -fx-background-color: white;
+    -fx-padding: 25px;
+}
+
+.dialog-pane .button-bar {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 20px;
+    -fx-background-radius: 0 0 20px 20px;
+    -fx-border-color: #EEEEEE;
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* Dialog Fields */
+.dialog-pane .label {
+    -fx-text-fill: #546E7A;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .text-field,
+.dialog-pane .password-field,
+.dialog-pane .text-area,
+.dialog-pane .combo-box {
+    -fx-background-color: #F4F6F8;
+    -fx-border-color: transparent;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-padding: 12px;
+    -fx-font-size: 14px;
+    -fx-text-fill: #37474F;
+}
+
+.dialog-pane .text-field:focused,
+.dialog-pane .password-field:focused,
+.dialog-pane .text-area:focused,
+.dialog-pane .combo-box:focused {
+    -fx-background-color: white;
+    -fx-border-color: #4CAF50;
+    -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.2), 5, 0, 0, 0);
+}
