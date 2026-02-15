@@ -96,23 +96,30 @@ public class ExpertDashboardController implements Initializable {
     }
 
     /**
-     * Handle recommendations - Open AjoutConseil
+     * Handle recommendations - Open GestionConseils
      */
     @FXML
     private void handleRecommendations() {
         try {
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/ajout-conseil.fxml"));
+                getClass().getResource("/tn/esprit/farmai/views/gestion-conseils.fxml"));
             javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 650, 750);
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
             
-            Stage stage = new Stage();
-            stage.setTitle("FarmAI - Ajouter un Conseil");
+            // Apply CSS
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+            
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             stage.setScene(scene);
-            stage.setResizable(false);
+            stage.setTitle("FarmAI - Gestion des Conseils");
             stage.show();
         } catch (Exception e) {
-            NavigationUtil.showError("Erreur", "Impossible d'ouvrir l'ajout de conseil: " + e.getMessage());
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des conseils: " + e.getMessage());
             e.printStackTrace();
         }
     }

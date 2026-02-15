@@ -60,6 +60,9 @@ public class AjoutConseilController implements Initializable {
     private final AnalyseService analyseService;
     private final ConseilService conseilService;
     private ObservableList<Analyse> analysesList;
+    
+    private Conseil conseilToEdit;
+    private boolean isEditMode = false;
 
     public AjoutConseilController() {
         this.analyseService = new AnalyseService();
@@ -262,6 +265,30 @@ public class AjoutConseilController implements Initializable {
     }
 
     /**
+     * Set edit mode with existing conseil data
+     */
+    public void setEditMode(Conseil conseil) {
+        this.conseilToEdit = conseil;
+        this.isEditMode = true;
+        
+        // Populate fields with existing data
+        descriptionConseilField.setText(conseil.getDescriptionConseil());
+        prioriteComboBox.setValue(conseil.getPriorite());
+        
+        // Find and select the associated analyse
+        for (Analyse analyse : analysesList) {
+            if (analyse.getIdAnalyse() == conseil.getIdAnalyse()) {
+                analyseComboBox.setValue(analyse);
+                handleAnalyseSelection(analyse);
+                break;
+            }
+        }
+        
+        // Update UI for edit mode
+        enregistrerButton.setText("Mettre à jour");
+    }
+
+    /**
      * Handle save button
      */
     @FXML
@@ -273,15 +300,28 @@ public class AjoutConseilController implements Initializable {
         }
 
         try {
-            Conseil conseil = new Conseil();
-            conseil.setDescriptionConseil(descriptionConseilField.getText().trim());
-            conseil.setPriorite(prioriteComboBox.getValue());
-            conseil.setIdAnalyse(analyseComboBox.getValue().getIdAnalyse());
+            if (isEditMode && conseilToEdit != null) {
+                // Update existing conseil
+                conseilToEdit.setDescriptionConseil(descriptionConseilField.getText().trim());
+                conseilToEdit.setPriorite(prioriteComboBox.getValue());
+                conseilToEdit.setIdAnalyse(analyseComboBox.getValue().getIdAnalyse());
+                
+                conseilService.updateOne(conseilToEdit);
+                
+                NavigationUtil.showSuccess("Succès",
+                    "Conseil mis à jour avec succès!\nID: " + conseilToEdit.getIdConseil());
+            } else {
+                // Create new conseil
+                Conseil conseil = new Conseil();
+                conseil.setDescriptionConseil(descriptionConseilField.getText().trim());
+                conseil.setPriorite(prioriteComboBox.getValue());
+                conseil.setIdAnalyse(analyseComboBox.getValue().getIdAnalyse());
 
-            conseilService.insertOne(conseil);
+                conseilService.insertOne(conseil);
 
-            NavigationUtil.showSuccess("Succès",
-                "Conseil enregistré avec succès!\nID: " + conseil.getIdConseil());
+                NavigationUtil.showSuccess("Succès",
+                    "Conseil enregistré avec succès!\nID: " + conseil.getIdConseil());
+            }
 
             // Close the window
             closeWindow();
