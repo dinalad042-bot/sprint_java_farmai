@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.esprit.farmai.controllers.UserLogController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+            
+            <VBox styleClass="sidebar-profile-card" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <ImageView fx:id="profileImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="welcomeLabel" text="User" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Role" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            
+            <Region prefHeight="30"/>
+            
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleDashboard" maxWidth="Infinity"/>
+                <Button text="👥  Utilisateurs" styleClass="nav-button active" onAction="#handleBack" maxWidth="Infinity"/>
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="0" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <!-- Header -->
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
+                <Label text="Audit des Actions Utilisateurs" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <ImageView fx:id="headerAvatarImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
+            </HBox>
+            
+            <!-- Toolbar -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                 <Button text="⬅ Retour" styleClass="secondary-btn" onAction="#handleBack"/>
+                 <Region HBox.hgrow="ALWAYS"/>
+                 <Button text="🔄 Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
+            </HBox>
+            
+            <!-- List View Card -->
+            <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="15">
+                <ListView fx:id="logListView" VBox.vgrow="ALWAYS" styleClass="user-list-view">
+                    <placeholder>
+                        <Label text="Aucun log d'audit trouvé" styleClass="table-placeholder"/>
+                    </placeholder>
+                </ListView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
