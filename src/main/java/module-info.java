@@ -13,6 +13,11 @@ module tn.esprit.farmai {
     // requires eu.hansolo.tilesfx;
     // requires com.almasb.fxgl.all;
     requires java.sql;
+    requires org.junit.jupiter.api;
+    requires org.junit.jupiter.engine;
+    requires org.junit.platform.commons;
+    requires org.junit.platform.engine;
+    requires org.junit.platform.launcher;
 
     // Main package
     opens tn.esprit.farmai to javafx.fxml;
@@ -21,6 +26,11 @@ module tn.esprit.farmai {
 
     // Controllers package
     opens tn.esprit.farmai.controllers to javafx.fxml;
+
+    // Test Package
+    exports tn.esprit.farmai.test;
+
+    opens tn.esprit.farmai.test to org.junit.platform.commons, org.junit.platform.engine;
 
     exports tn.esprit.farmai.controllers;
 

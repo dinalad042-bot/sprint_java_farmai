@@ -55,17 +55,17 @@ public class AdminDashboardController implements Initializable {
     }
 
     @FXML
-    private javafx.scene.shape.Circle sidebarAvatar;
+    private javafx.scene.image.ImageView profileImageView;
 
     @FXML
-    private javafx.scene.text.Text sidebarAvatarText;
+    private javafx.scene.image.ImageView headerProfileImageView;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set user info
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
-            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            updateUI(currentUser);
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
@@ -73,6 +73,11 @@ public class AdminDashboardController implements Initializable {
 
         // Load statistics
         loadStatistics();
+    }
+
+    private void updateUI(User user) {
+        ProfileManager.updateProfileUI(user, welcomeLabel, userNameLabel, null, null, profileImageView);
+        ProfileManager.loadUserImageIntoImageView(headerProfileImageView, user);
     }
 
     /**
@@ -136,7 +141,7 @@ public class AdminDashboardController implements Initializable {
 
         if (updated) {
             User currentUser = SessionManager.getInstance().getCurrentUser();
-            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            updateUI(currentUser);
         }
     }
 

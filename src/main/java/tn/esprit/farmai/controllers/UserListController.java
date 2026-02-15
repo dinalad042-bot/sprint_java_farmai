@@ -15,9 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Role;
@@ -51,21 +49,21 @@ public class UserListController implements Initializable {
     @FXML
     private Button refreshButton;
     @FXML
+    private Button auditButton;
+    @FXML
     private Label totalUsersLabel;
 
     // Sidebar Elements
     @FXML
     private Label welcomeLabel;
     @FXML
-    private Circle userAvatarCircle;
-    @FXML
-    private Text defaultAvatarText;
+    private ImageView profileImageView;
     @FXML
     private Label userRoleLabel;
 
     // Header Elements
     @FXML
-    private Circle headerAvatarCircle;
+    private ImageView headerAvatarImageView;
     @FXML
     private Label notificationBadge;
 
@@ -99,82 +97,13 @@ public class UserListController implements Initializable {
             if (userRoleLabel != null)
                 userRoleLabel.setText(currentUser.getRole().getDisplayName()); // Assuming Role has logic or plain text
 
-            // Update both sidebar and header avatars with robust fallback
-            updateSidebarProfileImage(currentUser);
-            updateHeaderAvatar(currentUser);
+            // Update both sidebar and header avatars using ProfileManager
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(profileImageView, currentUser);
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(headerAvatarImageView, currentUser);
         }
     }
 
-    private void updateSidebarProfileImage(User user) {
-        if (userAvatarCircle == null)
-            return;
-        boolean success = loadUserImageIntoCircle(userAvatarCircle, user);
-
-        if (defaultAvatarText != null) {
-            defaultAvatarText.setVisible(!success);
-        }
-    }
-
-    private void updateHeaderAvatar(User user) {
-        if (headerAvatarCircle == null)
-            return;
-        loadUserImageIntoCircle(headerAvatarCircle, user);
-    }
-
-    // Robust image loading helper
-    private boolean loadUserImageIntoCircle(Circle circle, User user) {
-        if (circle == null || user == null)
-            return false;
-        boolean imageLoaded = false;
-        String imgUrl = user.getImageUrl();
-
-        // 1. Try User Image from Path/URL
-        if (imgUrl != null && !imgUrl.isEmpty()) {
-            try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                    File file = new File(imgUrl);
-                    if (file.exists()) {
-                        pathToLoad = file.toURI().toString();
-                    } else {
-                        // File not found locally, might be relative or broken
-                        // Proceed to fallback
-                    }
-                }
-                Image img = new Image(pathToLoad, false); // false = synchronous to check error? true is better for UI.
-                if (!img.isError()) {
-                    circle.setFill(new ImagePattern(img));
-                    imageLoaded = true;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to load user image: " + e.getMessage());
-            }
-        }
-
-        // 2. Fallback: UI Avatars (Online)
-        if (!imageLoaded) {
-            try {
-                String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                        + (user.getPrenom() != null ? user.getPrenom() : "User");
-                String fallbackUrl = "https://ui-avatars.com/api/?name=" + name
-                        + "&background=random&color=fff&size=128";
-                circle.setFill(new ImagePattern(new Image(fallbackUrl, true)));
-                imageLoaded = true;
-            } catch (Exception e) {
-                // 3. Final Fallback: Simple Color
-                circle.setFill(javafx.scene.paint.Color.web("#90A4AE"));
-                imageLoaded = false; // Still return false to show default text if available
-            }
-        }
-        return imageLoaded;
-    }
-
-    // Kept for backward compat but redirected
-    private void setCircleImage(Circle circle, Text fallbackText, User user) {
-        boolean success = loadUserImageIntoCircle(circle, user);
-        if (fallbackText != null)
-            fallbackText.setVisible(!success);
-    }
+    // Unified profile image loading via ProfileManager
 
     private void setupListView() {
         userListView.setCellFactory(param -> new ListCell<User>() {
@@ -512,6 +441,12 @@ public class UserListController implements Initializable {
     private void handleBackToDashboard() {
         Stage stage = (Stage) userListView.getScene().getWindow();
         NavigationUtil.navigateToDashboard(stage);
+    }
+
+    @FXML
+    private void handleAudit() {
+        Stage stage = (Stage) userListView.getScene().getWindow();
+        NavigationUtil.navigateToAudit(stage);
     }
 
     // --- Notification Logic ---

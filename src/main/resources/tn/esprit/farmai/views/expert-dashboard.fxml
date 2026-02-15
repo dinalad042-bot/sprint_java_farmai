@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" 
             fx:controller="tn.esprit.farmai.controllers.ExpertDashboardController"
@@ -22,8 +23,7 @@
             <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
-                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
-                        <Text fx:id="sidebarAvatarText" text="🔬" fill="white"/>
+                         <ImageView fx:id="profileImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
@@ -69,8 +69,7 @@
                     </StackPane>
                     
                     <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
-                        <Circle radius="18" fill="#E3F2FD" stroke="#2196F3"/>
-                        <Text text="🔬" fill="#1565C0"/>
+                        <ImageView fx:id="headerProfileImageView" fitWidth="36.0" fitHeight="36.0" pickOnBounds="true" preserveRatio="true" />
                     </StackPane>
                 </HBox>
                 

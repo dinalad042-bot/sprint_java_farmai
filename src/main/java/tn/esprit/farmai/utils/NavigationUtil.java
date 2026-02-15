@@ -155,6 +155,10 @@ public class NavigationUtil {
         navigateTo(stage, "views/user-list.fxml", "Gestion des Utilisateurs");
     }
 
+    public static void navigateToAudit(Stage stage) {
+        navigateTo(stage, "views/UserLogView.fxml", "Audit des Actions");
+    }
+
     public static void logout(Stage stage) {
         Optional<ButtonType> result = showConfirmation("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter?");
         if (result.isPresent() && result.get() == ButtonType.OK) {

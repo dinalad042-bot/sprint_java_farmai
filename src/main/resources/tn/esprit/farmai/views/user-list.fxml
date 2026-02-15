@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.image.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" 
             fx:controller="tn.esprit.farmai.controllers.UserListController"
@@ -22,8 +23,7 @@
             <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
-                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
-                        <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
+                        <ImageView fx:id="profileImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
@@ -75,7 +75,7 @@
                 
                 <!-- Header User Avatar -->
                 <HBox spacing="10" alignment="CENTER" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
-                    <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+                    <ImageView fx:id="headerAvatarImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
                 </HBox>
             </HBox>
             
@@ -84,6 +84,7 @@
                  <Label fx:id="totalUsersLabel" text="Total: 0" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
                  <Region HBox.hgrow="ALWAYS"/>
                  <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#loadUsers"/>
+                 <Button fx:id="auditButton" text="📜 Audit" styleClass="secondary-btn" onAction="#handleAudit"/>
                  <Button fx:id="addUserButton" text="+ Ajouter Utilisateur" styleClass="primary-btn" onAction="#handleAddUser"/>
             </HBox>
             

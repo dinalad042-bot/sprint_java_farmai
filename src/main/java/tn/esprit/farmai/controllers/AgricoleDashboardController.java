@@ -3,8 +3,6 @@ package tn.esprit.farmai.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
-import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.utils.NavigationUtil;
@@ -29,20 +27,25 @@ public class AgricoleDashboardController implements Initializable {
     private Label userRoleLabel;
 
     @FXML
-    private Circle sidebarAvatar;
+    private javafx.scene.image.ImageView profileImageView;
 
     @FXML
-    private Text sidebarAvatarText;
+    private javafx.scene.image.ImageView headerProfileImageView;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
-            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            updateUI(currentUser);
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
         }
+    }
+
+    private void updateUI(User user) {
+        ProfileManager.updateProfileUI(user, welcomeLabel, userNameLabel, null, null, profileImageView);
+        ProfileManager.loadUserImageIntoImageView(headerProfileImageView, user);
     }
 
     /**
@@ -62,7 +65,7 @@ public class AgricoleDashboardController implements Initializable {
         boolean updated = ProfileManager.showProfileEditDialog(welcomeLabel.getScene().getWindow());
         if (updated) {
             User currentUser = SessionManager.getInstance().getCurrentUser();
-            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            updateUI(currentUser);
         }
     }
 

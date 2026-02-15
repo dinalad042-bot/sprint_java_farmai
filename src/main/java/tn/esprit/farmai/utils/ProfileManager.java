@@ -12,6 +12,11 @@ import tn.esprit.farmai.services.UserService;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import java.io.File;
+
 /**
  * Utility class to handle user profile editing.
  */
@@ -32,7 +37,7 @@ public class ProfileManager {
 
         Dialog<User> dialog = new Dialog<>();
         dialog.setTitle("Modifier mon profil");
-        dialog.setHeaderText("Mettez à jour vos informations peronnelles");
+        dialog.setHeaderText("Mettez à jour vos informations personnelles");
         dialog.initOwner(owner);
 
         // Apply CSS if available
@@ -68,45 +73,76 @@ public class ProfileManager {
         adresseField.setPrefRowCount(2);
 
         PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Nouveau mot de passe (laisser vide pour garder l'ancien)");
+        passwordField.setPromptText("Nouveau mot de passe (facultatif)");
+
+        // Image Selection Elements
+        ImageView imagePreview = new ImageView();
+        imagePreview.setFitWidth(100);
+        imagePreview.setFitHeight(100);
+        imagePreview.setPreserveRatio(true);
+
+        // Initial image loading
+        loadUserImageIntoImageView(imagePreview, currentUser);
+
+        Button uploadBtn = new Button("Changer Photo");
+        uploadBtn.getStyleClass().add("secondary-btn");
+        final StringBuilder selectedImagePath = new StringBuilder(
+                currentUser.getImageUrl() != null ? currentUser.getImageUrl() : "");
+
+        uploadBtn.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choisir une photo de profil");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+            File file = fileChooser.showOpenDialog(owner);
+            if (file != null) {
+                selectedImagePath.setLength(0);
+                selectedImagePath.append(file.getAbsolutePath());
+                imagePreview.setImage(new Image(file.toURI().toString()));
+                // Re-apply clip in case ImageView properties reset
+                double radius = 50;
+                imagePreview.setClip(new Circle(radius, radius, radius));
+            }
+        });
+
+        javafx.scene.layout.VBox imageBox = new javafx.scene.layout.VBox(10, imagePreview, uploadBtn);
+        imageBox.setAlignment(javafx.geometry.Pos.CENTER);
+        imageBox.setPadding(new Insets(0, 20, 0, 0));
 
         // Layout
         GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setHgap(15);
+        grid.setVgap(12);
+        grid.setPadding(new Insets(20, 20, 20, 20));
 
-        grid.add(new Label("Nom:"), 0, 0);
-        grid.add(nomField, 1, 0);
-        grid.add(new Label("Prénom:"), 0, 1);
-        grid.add(prenomField, 1, 1);
-        grid.add(new Label("Email:"), 0, 2);
-        grid.add(emailField, 1, 2);
-        grid.add(new Label("CIN:"), 0, 3);
-        grid.add(cinField, 1, 3);
-        grid.add(new Label("Téléphone:"), 0, 4);
-        grid.add(telephoneField, 1, 4);
-        grid.add(new Label("Adresse:"), 0, 5);
-        grid.add(adresseField, 1, 5);
-        grid.add(new Label("Mot de passe:"), 0, 6);
-        grid.add(passwordField, 1, 6);
+        grid.add(imageBox, 0, 0, 1, 7);
+        grid.add(new Label("Nom:"), 1, 0);
+        grid.add(nomField, 2, 0);
+        grid.add(new Label("Prénom:"), 1, 1);
+        grid.add(prenomField, 2, 1);
+        grid.add(new Label("Email:"), 1, 2);
+        grid.add(emailField, 2, 2);
+        grid.add(new Label("CIN:"), 1, 3);
+        grid.add(cinField, 2, 3);
+        grid.add(new Label("Téléphone:"), 1, 4);
+        grid.add(telephoneField, 2, 4);
+        grid.add(new Label("Adresse:"), 1, 5);
+        grid.add(adresseField, 2, 5);
+        grid.add(new Label("Mot de passe:"), 1, 6);
+        grid.add(passwordField, 2, 6);
 
         dialog.getDialogPane().setContent(grid);
 
         // Convert result to user object (with updates)
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
-                // Validation could go here
-
-                // Update local object
                 currentUser.setNom(nomField.getText().trim());
                 currentUser.setPrenom(prenomField.getText().trim());
                 currentUser.setEmail(emailField.getText().trim());
                 currentUser.setCin(cinField.getText().trim());
                 currentUser.setTelephone(telephoneField.getText().trim());
                 currentUser.setAdresse(adresseField.getText().trim());
-
-                // Only return user if we plan to save
+                currentUser.setImageUrl(selectedImagePath.toString());
                 return currentUser;
             }
             return null;
@@ -117,20 +153,13 @@ public class ProfileManager {
         if (result.isPresent()) {
             User updatedUser = result.get();
             try {
-                // 1. Update basic info
                 userService.updateOne(updatedUser);
-
-                // 2. Update password if provided
                 if (!passwordField.getText().isEmpty()) {
                     userService.updatePassword(updatedUser.getIdUser(), passwordField.getText());
                 }
-
-                // 3. Update session
                 SessionManager.getInstance().setCurrentUser(updatedUser);
-
                 NavigationUtil.showSuccess("Succès", "Profil mis à jour avec succès.");
                 return true;
-
             } catch (SQLException e) {
                 NavigationUtil.showError("Erreur", "Erreur lors de la mise à jour: " + e.getMessage());
                 e.printStackTrace();
@@ -144,7 +173,7 @@ public class ProfileManager {
      * Updates common dashboard UI elements after a profile change.
      */
     public static void updateProfileUI(User user, Label welcomeLabel, Label userNameLabel, Circle avatarCircle,
-            Text avatarText) {
+            Text avatarText, javafx.scene.image.ImageView avatarImageView) {
         if (user == null)
             return;
 
@@ -158,6 +187,82 @@ public class ProfileManager {
             boolean success = loadUserImageIntoCircle(avatarCircle, user);
             if (avatarText != null) {
                 avatarText.setVisible(!success);
+            }
+        }
+        if (avatarImageView != null) {
+            loadUserImageIntoImageView(avatarImageView, user);
+        }
+    }
+
+    /**
+     * Overloaded version for backward compatibility.
+     */
+    public static void updateProfileUI(User user, Label welcomeLabel, Label userNameLabel, Circle avatarCircle,
+            Text avatarText) {
+        updateProfileUI(user, welcomeLabel, userNameLabel, avatarCircle, avatarText, null);
+    }
+
+    /**
+     * Loads a user's image into an ImageView with circular clipping.
+     * Handles null/invalid cases by showing a default avatar.
+     * 
+     * @param imageView The ImageView to update
+     * @param user      The user whose image to load
+     */
+    public static void loadUserImageIntoImageView(javafx.scene.image.ImageView imageView, User user) {
+        if (imageView == null)
+            return;
+
+        // Apply circular clip
+        double width = imageView.getFitWidth();
+        double height = imageView.getFitHeight();
+        if (width <= 0)
+            width = 40;
+        if (height <= 0)
+            height = 40;
+
+        double radius = Math.min(width, height) / 2;
+        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(radius, radius, radius);
+        imageView.setClip(clip);
+
+        String imgUrl = (user != null) ? user.getImageUrl() : null;
+        boolean imageLoaded = false;
+
+        // 1. Try User Image
+        if (imgUrl != null && !imgUrl.isEmpty()) {
+            try {
+                String pathToLoad = imgUrl;
+                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
+                    java.io.File file = new java.io.File(imgUrl);
+                    if (file.exists()) {
+                        pathToLoad = file.toURI().toString();
+                    }
+                }
+                javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
+                if (!img.isError()) {
+                    imageView.setImage(img);
+                    imageLoaded = true;
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to load user image into ImageView: " + e.getMessage());
+            }
+        }
+
+        // 2. Fallback: UI Avatars
+        if (!imageLoaded) {
+            try {
+                String name = (user != null)
+                        ? ((user.getNom() != null ? user.getNom() : "U") + "+"
+                                + (user.getPrenom() != null ? user.getPrenom() : "User"))
+                        : "Default+User";
+
+                String fallbackUrl = "https://ui-avatars.com/api/?name=" + name
+                        + "&background=random&color=fff&size=256";
+                javafx.scene.image.Image fallbackImg = new javafx.scene.image.Image(fallbackUrl, true);
+                imageView.setImage(fallbackImg);
+            } catch (Exception e) {
+                // Final placeholder if all fails
+                System.err.println("Failed to load fallback image: " + e.getMessage());
             }
         }
     }
