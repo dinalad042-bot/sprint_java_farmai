@@ -114,39 +114,18 @@ public class UserListController implements Initializable {
                 if (empty || user == null) {
                     setText(null);
                     setGraphic(null);
-                    setStyle("-fx-background-color: transparent; -fx-padding: 5px;");
                 } else {
                     HBox card = new HBox(15);
                     card.setAlignment(Pos.CENTER_LEFT);
-                    card.setStyle(
-                            "-fx-background-color: white; -fx-background-radius: 12px; -fx-padding: 15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);");
+                    card.getStyleClass().add("content-card"); // Reuse card styling
+                    card.setStyle("-fx-padding: 15px; -fx-background-radius: 12px;");
 
                     ImageView avatar = new ImageView();
                     avatar.setFitWidth(50);
                     avatar.setFitHeight(50);
-                    avatar.setClip(new Circle(25, 25, 25));
 
-                    try {
-                        String imgUrl = user.getImageUrl();
-                        boolean loaded = false;
-                        if (imgUrl != null && !imgUrl.isEmpty()) {
-                            if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                                File file = new File(imgUrl);
-                                if (file.exists())
-                                    imgUrl = file.toURI().toString();
-                            }
-                            avatar.setImage(new Image(imgUrl, true));
-                            loaded = true;
-                        }
-
-                        if (!loaded) {
-                            String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                                    + (user.getPrenom() != null ? user.getPrenom() : "User");
-                            avatar.setImage(
-                                    new Image("https://ui-avatars.com/api/?name=" + name + "&background=random", true));
-                        }
-                    } catch (Exception e) {
-                    }
+                    // Use ProfileManager for consistent image loading
+                    tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(avatar, user);
 
                     VBox infoBox = new VBox(5);
                     Label nameLabel = new Label(user.getFullName());
@@ -168,17 +147,22 @@ public class UserListController implements Initializable {
 
                     HBox actionsBox = new HBox(8);
                     actionsBox.setAlignment(Pos.CENTER_RIGHT);
-                    Button editBtn = new Button("✎");
+
+                    // Improved icons using Unicode symbols that are widely supported
+                    Button editBtn = new Button("\u270E"); // ✎ Lower Right Pencil
                     editBtn.getStyleClass().add("action-btn");
+                    editBtn.setTooltip(new Tooltip("Modifier l'utilisateur"));
                     editBtn.setOnAction(e -> handleEditUser(user));
-                    Button deleteBtn = new Button("🗑");
+
+                    Button deleteBtn = new Button("\uD83D\uDDD1"); // 🗑 Wastebasket
                     deleteBtn.getStyleClass().add("danger-btn");
+                    deleteBtn.setTooltip(new Tooltip("Supprimer l'utilisateur"));
                     deleteBtn.setOnAction(e -> handleDeleteUser(user));
+
                     actionsBox.getChildren().addAll(editBtn, deleteBtn);
 
                     card.getChildren().addAll(avatar, infoBox, detailsBox, actionsBox);
                     setGraphic(card);
-                    setStyle("-fx-background-color: transparent; -fx-padding: 5px 0;");
                 }
             }
         });
@@ -325,14 +309,8 @@ public class UserListController implements Initializable {
         imagePreview.setFitWidth(80);
         imagePreview.setFitHeight(80);
         imagePreview.setPreserveRatio(true);
-        if (user != null && user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
-            try {
-                String path = user.getImageUrl();
-                if (!path.startsWith("http") && !path.startsWith("file:"))
-                    path = new File(path).toURI().toString();
-                imagePreview.setImage(new Image(path));
-            } catch (Exception e) {
-            }
+        if (user != null) {
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(imagePreview, user);
         }
 
         Button uploadImageBtn = new Button("Choisir Photo");

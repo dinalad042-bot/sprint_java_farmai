@@ -490,3 +490,49 @@
     -fx-border-color: #4CAF50;
     -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.2), 5, 0, 0, 0);
 }
+
+/* === User List Specific Styles === */
+
+.user-list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.user-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 8px 0;
+}
+
+.user-list-view .list-cell:filled:selected {
+    -fx-background-color: transparent;
+}
+
+.user-list-view .list-cell:filled:hover {
+    -fx-background-color: rgba(76, 175, 80, 0.05);
+}
+
+.table-placeholder {
+    -fx-text-fill: #90A4AE;
+    -fx-font-size: 16px;
+    -fx-font-style: italic;
+}
+
+/* Improve Action Buttons for better visibility */
+.action-btn {
+    -fx-background-color: #E3F2FD;
+    -fx-text-fill: #1976D2;
+    -fx-font-size: 14px;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-background-radius: 50%;
+}
+
+.danger-btn {
+    -fx-background-color: #FFEBEE;
+    -fx-text-fill: #D32F2F;
+    -fx-font-size: 14px;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-background-radius: 50%;
+}

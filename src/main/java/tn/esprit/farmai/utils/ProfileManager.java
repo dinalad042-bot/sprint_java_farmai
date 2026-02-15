@@ -231,20 +231,26 @@ public class ProfileManager {
         // 1. Try User Image
         if (imgUrl != null && !imgUrl.isEmpty()) {
             try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
+                String pathToLoad = null;
+                if (imgUrl.startsWith("http") || imgUrl.startsWith("file:") || imgUrl.startsWith("jar:")) {
+                    pathToLoad = imgUrl;
+                } else {
                     java.io.File file = new java.io.File(imgUrl);
                     if (file.exists()) {
                         pathToLoad = file.toURI().toString();
                     }
                 }
-                javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
-                if (!img.isError()) {
-                    imageView.setImage(img);
-                    imageLoaded = true;
+
+                if (pathToLoad != null) {
+                    javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
+                    // Check for error immediately if possible, or wait if background loading
+                    if (!img.isError()) {
+                        imageView.setImage(img);
+                        imageLoaded = true;
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("Failed to load user image into ImageView: " + e.getMessage());
+                System.err.println("Skipping invalid image path [" + imgUrl + "]: " + e.getMessage());
             }
         }
 
@@ -280,20 +286,25 @@ public class ProfileManager {
         // 1. Try User Image from Path/URL
         if (imgUrl != null && !imgUrl.isEmpty()) {
             try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
+                String pathToLoad = null;
+                if (imgUrl.startsWith("http") || imgUrl.startsWith("file:") || imgUrl.startsWith("jar:")) {
+                    pathToLoad = imgUrl;
+                } else {
                     java.io.File file = new java.io.File(imgUrl);
                     if (file.exists()) {
                         pathToLoad = file.toURI().toString();
                     }
                 }
-                javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
-                if (!img.isError()) {
-                    circle.setFill(new javafx.scene.paint.ImagePattern(img));
-                    imageLoaded = true;
+
+                if (pathToLoad != null) {
+                    javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
+                    if (!img.isError()) {
+                        circle.setFill(new javafx.scene.paint.ImagePattern(img));
+                        imageLoaded = true;
+                    }
                 }
             } catch (Exception e) {
-                System.err.println("Failed to load user image: " + e.getMessage());
+                System.err.println("Skipping invalid image path [" + imgUrl + "]: " + e.getMessage());
             }
         }
 

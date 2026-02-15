@@ -54,7 +54,7 @@ public class UserServicesTest {
     @Order(2)
     public void testModifier() throws SQLException {
         // Setup: Create a user to modify
-        testUser = new User("ToModify", "User", "modify.usertest@example.com", "Password123!", "99999999", "Sousse",
+        testUser = new User("ToModify", "User", "modify.usertest@example.com", "Password123!", "22222222", "Sousse",
                 "72222222", "img.png", Role.AGRICOLE);
         userService.insertOne(testUser);
 
