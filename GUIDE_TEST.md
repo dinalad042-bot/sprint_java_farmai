@@ -277,3 +277,55 @@ GROUP BY a.id_analyse;
 1. Vérifier que des données existent en base
 2. Vérifier que `analysesTableView.setItems(analysesList)` est appelé
 3. Vérifier les logs pour les erreurs SQL
+
+
+
+## 🔍 FarmIA-SWAE-Sprint1: Architectural Audit Plan
+
+Based on my analysis of the codebase, here's what I've found and my plan for the Séance 5 compliance validation:
+
+---
+
+### 📋 PRELIMINARY FINDINGS (Code Analysis)
+
+#### 1️⃣ Architecture (Singleton & JDBC) - ✅ COMPLIANT
+| Component | Status | Details |
+|-----------|--------|---------|
+| **MyDBConnexion.java** | ✅ PASS | Singleton pattern correctly implemented: private constructor, static instance, getInstance() method, URL: `jdbc:mysql://localhost:3306/farmai` |
+| **CRUD Interface** | ✅ PASS | Generic interface with insertOne, updateOne, deleteOne, selectAll all properly defined |
+| **AnalyseService** | ✅ PASS | Implements CRUD<Analyse>, all methods use @Override |
+| **ConseilService** | ✅ PASS | Implements CRUD<Conseil>, all methods use @Override |
+
+#### 2️⃣ Security & SQL Integrity - ✅ COMPLIANT
+| Criterion | Status | Details |
+|-----------|--------|---------|
+| **PreparedStatements** | ✅ PASS | All SQL queries use PreparedStatement with parameterized queries (ps.setString, ps.setInt, etc.) |
+| **1:N Relationship** | ✅ PASS | Conseil model correctly holds `idAnalyse` foreign key; ConseilService.findByAnalyse() validates the relationship |
+| **Image Handling** | ✅ PASS | Images stored as URL strings (VARCHAR), NOT BLOBs |
+
+#### 3️⃣ Test Files Identified
+- `TestAnalyse.java` - Full CRUD test suite
+- `TestMechanisme1N.java` - 1:N relationship validation test
+- `MainExpert.java` - JavaFX entry point (not a CRUD test)
+
+---
+
+### 🎯 PLAN FOR ACT MODE EXECUTION
+
+To complete the Séance 5 validation, I need to execute the test files and verify database persistence:
+
+1. **Execute CRUD Tests** - Run `TestAnalyse.java` to verify:
+    - Connection to MySQL database
+    - Insert, Select, Update operations
+
+2. **Execute 1:N Relationship Test** - Run `TestMechanisme1N.java` to verify:
+    - Analyse creation with auto-generated ID
+    - Conseil creation linked to Analyse
+    - Retrieval of Conseils by Analyse ID
+
+3. **Generate Final Compliance Report** with PASS/FAIL status for each validation point.
+
+---
+
+**Ready to proceed?**
+Please **toggle to Act mode** so I can execute the tests and complete the Séance 5 compliance validation.
