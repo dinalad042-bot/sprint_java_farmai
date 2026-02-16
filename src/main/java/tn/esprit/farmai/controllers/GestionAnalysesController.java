@@ -247,30 +247,62 @@ public class GestionAnalysesController implements Initializable {
     }
 
     /**
-     * Handle back button - return to Expert Dashboard
+     * Handle back button - return to Expert Dashboard with fade transition
      */
     @FXML
     private void handleBack() {
+        navigateWithFade("/tn/esprit/farmai/views/expert-dashboard.fxml",
+                        "FarmAI - Tableau de Bord Expert");
+    }
+
+    /**
+     * Navigate to a view with smooth fade transition
+     */
+    private void navigateWithFade(String fxmlPath, String title) {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/expert-dashboard.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
-
-            // Apply CSS
-            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
-                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
-                    : null;
-            if (cssPath != null) {
-                scene.getStylesheets().add(cssPath);
-            }
-
             javafx.stage.Stage stage = (javafx.stage.Stage) backButton.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("FarmAI - Tableau de Bord Expert");
-            stage.show();
+            javafx.scene.Parent currentRoot = backButton.getScene().getRoot();
+
+            // Fade out
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                javafx.util.Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(event -> {
+                try {
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        getClass().getResource(fxmlPath));
+                    javafx.scene.Parent newRoot = loader.load();
+                    javafx.scene.Scene scene = new javafx.scene.Scene(newRoot, 1200, 800);
+
+                    String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                            ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                            : null;
+                    if (cssPath != null) {
+                        scene.getStylesheets().add(cssPath);
+                    }
+
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+                    stage.setTitle(title);
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                    stage.show();
+                } catch (Exception e) {
+                    NavigationUtil.showError("Erreur", "Impossible de charger la vue: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
+            fadeOut.play();
         } catch (Exception e) {
-            NavigationUtil.showError("Erreur", "Impossible de retourner au tableau de bord: " + e.getMessage());
+            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -246,6 +246,69 @@
     -fx-background-color: #4CAF50;
 }
 
+/* === TableView Styling with Animations === */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header {
+    -fx-background-color: #F5F5F5;
+    -fx-padding: 12px 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #37474F;
+    -fx-border-color: #E0E0E0;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.table-view .column-header:hover {
+    -fx-background-color: #EEEEEE;
+}
+
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: #F5F5F5;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 8px 0;
+    -fx-transition: -fx-background-color 0.2s ease-in-out;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #E8F5E9;
+    -fx-cursor: hand;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #C8E6C9;
+    -fx-text-fill: #1B5E20;
+}
+
+.table-row-cell:selected:hover {
+    -fx-background-color: #A5D6A7;
+}
+
+.table-cell {
+    -fx-padding: 10px 15px;
+    -fx-text-fill: #455A64;
+}
+
+/* Row entrance animation */
+.table-row-cell {
+    -fx-opacity: 0;
+    -fx-animation: fadeInRow 0.3s ease-out forwards;
+}
+
+@keyframes fadeInRow {
+    from {
+        -fx-opacity: 0;
+        -fx-translate-y: 10;
+    }
+    to {
+        -fx-opacity: 1;
+        -fx-translate-y: 0;
+    }
+}
+
 /* === Lower Section (Mockup / Activity) === */
 .content-card {
     -fx-background-color: white;

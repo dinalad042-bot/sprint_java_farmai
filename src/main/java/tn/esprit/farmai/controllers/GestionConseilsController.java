@@ -312,29 +312,59 @@ public class GestionConseilsController implements Initializable {
     }
 
     /**
-     * Handle back button - return to Expert Dashboard
+     * Handle back button - return to Expert Dashboard with fade transition
      */
     @FXML
     private void handleBack() {
+        navigateWithFade("/tn/esprit/farmai/views/expert-dashboard.fxml",
+                        "FarmAI - Tableau de Bord Expert");
+    }
+
+    /**
+     * Navigate to a view with smooth fade transition
+     */
+    private void navigateWithFade(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/expert-dashboard.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root, 1200, 800);
-
-            // Apply CSS
-            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
-            if (cssUrl != null) {
-                scene.getStylesheets().add(cssUrl.toExternalForm());
-            }
-
             Stage stage = (Stage) backButton.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("FarmAI - Tableau de Bord Expert");
-            stage.show();
+            Parent currentRoot = backButton.getScene().getRoot();
+
+            // Fade out
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                javafx.util.Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(event -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+                    Parent newRoot = loader.load();
+                    Scene scene = new Scene(newRoot, 1200, 800);
+
+                    java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+                    if (cssUrl != null) {
+                        scene.getStylesheets().add(cssUrl.toExternalForm());
+                    }
+
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+                    stage.setTitle(title);
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                        javafx.util.Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                    stage.show();
+                } catch (Exception e) {
+                    NavigationUtil.showError("Erreur", "Impossible de charger la vue: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
+            fadeOut.play();
         } catch (Exception e) {
-            NavigationUtil.showError("Erreur",
-                "Impossible de retourner au tableau de bord: " + e.getMessage());
+            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
             e.printStackTrace();
         }
     }

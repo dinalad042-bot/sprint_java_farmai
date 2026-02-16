@@ -1,11 +1,15 @@
 package tn.esprit.farmai.controllers;
 
+import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
@@ -67,60 +71,99 @@ public class ExpertDashboardController implements Initializable {
     }
 
     /**
-     * Handle consultations - Open GestionAnalyses
+     * Handle consultations - Open GestionAnalyses with fade transition
      */
     @FXML
     private void handleConsultations() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-analyses.fxml", 
+                        "FarmAI - Gestion des Analyses");
+    }
+
+    /**
+     * Handle recommendations - Open GestionConseils with fade transition
+     */
+    @FXML
+    private void handleRecommendations() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-conseils.fxml", 
+                        "FarmAI - Gestion des Conseils");
+    }
+
+    /**
+     * Navigate to a new view with smooth fade transition
+     */
+    private void navigateWithFade(String fxmlPath, String title) {
         try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/gestion-analyses.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
-            
-            // Apply CSS
-            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
-                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
-                    : null;
-            if (cssPath != null) {
-                scene.getStylesheets().add(cssPath);
-            }
-            
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("FarmAI - Gestion des Analyses");
-            stage.show();
+            javafx.scene.Parent currentRoot = welcomeLabel.getScene().getRoot();
+            
+            // Fade out current scene
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+            
+            fadeOut.setOnFinished(event -> {
+                try {
+                    // Load new view
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        getClass().getResource(fxmlPath));
+                    javafx.scene.Parent newRoot = loader.load();
+                    
+                    // Create scene with new root
+                    Scene scene = new Scene(newRoot, 1200, 800);
+                    
+                    // Apply CSS
+                    String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                            ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                            : null;
+                    if (cssPath != null) {
+                        scene.getStylesheets().add(cssPath);
+                    }
+                    
+                    // Set initial opacity for fade in
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+                    stage.setTitle(title);
+                    
+                    // Fade in new scene
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+                    
+                    stage.show();
+                } catch (Exception e) {
+                    NavigationUtil.showError("Erreur", "Impossible de charger la vue: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+            
+            fadeOut.play();
+            
         } catch (Exception e) {
-            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des analyses: " + e.getMessage());
+            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Handle recommendations - Open GestionConseils
+     * Play entrance animation for dashboard elements
      */
-    @FXML
-    private void handleRecommendations() {
-        try {
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/gestion-conseils.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+    private void playEntranceAnimation() {
+        if (welcomeLabel != null) {
+            welcomeLabel.setOpacity(0.0);
+            welcomeLabel.setTranslateY(20);
             
-            // Apply CSS
-            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
-                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
-                    : null;
-            if (cssPath != null) {
-                scene.getStylesheets().add(cssPath);
-            }
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(400), welcomeLabel);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
             
-            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("FarmAI - Gestion des Conseils");
-            stage.show();
-        } catch (Exception e) {
-            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des conseils: " + e.getMessage());
-            e.printStackTrace();
+            javafx.animation.TranslateTransition slideUp = new javafx.animation.TranslateTransition(
+                Duration.millis(400), welcomeLabel);
+            slideUp.setFromY(20);
+            slideUp.setToY(0);
+            
+            fadeIn.play();
+            slideUp.play();
         }
     }
 }

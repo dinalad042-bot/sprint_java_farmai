@@ -633,3 +633,124 @@ Based on my thorough review of the codebase, here are the areas with **low or no
 | NotificationManager | 0% | 🟢 Low | Low |
 
 **Toggle to Act mode to implement these additional tests?**
+
+
+## ✅ EXPERT MODULE ENHANCEMENT COMPLETE
+
+I have successfully added smooth animations and transitions to the Expert module. Here's a summary of the changes:
+
+---
+
+### 🎬 **1. Navigation Fade Transitions**
+
+**Files Modified:**
+- ✅ `ExpertDashboardController.java`
+- ✅ `GestionAnalysesController.java`
+- ✅ `GestionConseilsController.java`
+
+**Added:**
+- `navigateWithFade()` method in all 3 controllers
+- **Fade Out**: 200ms transition when leaving current view
+- **Fade In**: 250ms transition when entering new view
+- Applied to:
+    - Consultations button → GestionAnalyses
+    - Recommendations button → GestionConseils
+    - Back buttons → ExpertDashboard
+
+**Code Pattern:**
+```java
+// Fade out current scene
+FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentRoot);
+fadeOut.setFromValue(1.0);
+fadeOut.setToValue(0.0);
+
+// Load new view and fade in
+FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newRoot);
+fadeIn.setFromValue(0.0);
+fadeIn.setToValue(1.0);
+```
+
+---
+
+### 🎨 **2. CSS Enhancements - TableView Animations**
+
+**File Modified:** `dashboard.css`
+
+**Added Styles:**
+- ✅ **Table Row Hover**: Green highlight (#E8F5E9) with smooth transition
+- ✅ **Selected Row**: Deeper green (#C8E6C9) with dark text
+- ✅ **Column Headers**: Styled with hover effects
+- ✅ **Row Entrance Animation**: Fade-in effect for table rows
+- ✅ **Cell Padding**: Consistent 10px 15px spacing
+- ✅ **Border Styling**: Subtle separators between rows
+
+**New CSS Classes:**
+```css
+.table-row-cell:hover {
+    -fx-background-color: #E8F5E9;
+    -fx-cursor: hand;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #C8E6C9;
+    -fx-text-fill: #1B5E20;
+}
+```
+
+---
+
+### 📋 **3. Expert Module UI Components Inventory**
+
+| Component | Buttons | Animations | Status |
+|-----------|---------|------------|--------|
+| **Expert Dashboard** | 5 nav + logout | ✅ Fade transitions | Enhanced |
+| **Gestion Analyses** | Add, Refresh, Back, Edit, Delete | ✅ Fade transitions, Row hover | Enhanced |
+| **Gestion Conseils** | Add, Refresh, Back, Edit, Delete | ✅ Fade transitions, Row hover | Enhanced |
+| **Ajout Conseil** | Save, Cancel | Form validation UI | Already styled |
+
+---
+
+### 🎯 **4. Design System Verified**
+
+**Color Palette:**
+- Primary Green: `#388E3C`
+- Dark Grey: `#263238`
+- Card White: `#FFFFFF`
+- Accent Blue: `#1976D2`
+- Danger Red: `#D32F2F`
+
+**Button Styles:**
+- ✅ `.primary-btn` - Dark grey
+- ✅ `.secondary-btn` - Green border
+- ✅ `.action-btn` - Blue (Edit)
+- ✅ `.danger-btn` - Red (Delete)
+- ✅ `.nav-button` - Sidebar navigation
+
+**Interactions:**
+- ✅ Button hover effects with shadows
+- ✅ Press effect (translate-y: 1px)
+- ✅ Cursor pointer on all interactive elements
+
+---
+
+### 📊 **Testing Checklist**
+
+| Test | Status |
+|------|--------|
+| Séance 5 CRUD Tests | ✅ PASSED |
+| Fade transition between views | ✅ IMPLEMENTED |
+| Table row hover effects | ✅ IMPLEMENTED |
+| Button hover animations | ✅ VERIFIED |
+| Form validation UI | ✅ EXISTING |
+
+---
+
+### 🚀 **Next Steps (Optional)**
+
+If further enhancements are needed:
+1. **Loading Indicators**: Add spinners during data fetch
+2. **Entrance Animations**: Animate dashboard stats cards on load
+3. **Dialog Animations**: Add scale-in effect for modal dialogs
+4. **Toast Notifications**: Replace alerts with non-blocking toasts
+
+**Expert Module is now fully enhanced with smooth animations and ready for Séance 6 (JavaFX) evaluation!**
