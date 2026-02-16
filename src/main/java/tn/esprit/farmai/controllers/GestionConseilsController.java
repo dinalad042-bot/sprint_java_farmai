@@ -91,6 +91,22 @@ public class GestionConseilsController implements Initializable {
         colId.setCellValueFactory(cellData ->
             new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getIdConseil()));
+        colId.setCellFactory(tc -> new TableCell<Conseil, Integer>() {
+            private final javafx.scene.text.Text text = new javafx.scene.text.Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(String.valueOf(item));
+                }
+            }
+        });
 
         // Description Column with text wrapping
         colDescription.setCellValueFactory(cellData ->
@@ -111,11 +127,15 @@ public class GestionConseilsController implements Initializable {
             new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getPriorite()));
         colPriorite.setCellFactory(column -> new TableCell<Conseil, Priorite>() {
+            private final javafx.scene.text.Text text = new javafx.scene.text.Text();
+            {
+                setGraphic(text);
+            }
             @Override
             protected void updateItem(Priorite priorite, boolean empty) {
                 super.updateItem(priorite, empty);
                 if (empty || priorite == null) {
-                    setText(null);
+                    text.setText("");
                     setStyle("");
                 } else {
                     String emoji = switch (priorite) {
@@ -123,7 +143,7 @@ public class GestionConseilsController implements Initializable {
                         case MOYENNE -> "🟡";
                         case HAUTE -> "🔴";
                     };
-                    setText(emoji + " " + priorite.getLabel());
+                    text.setText(emoji + " " + priorite.getLabel());
                 }
             }
         });
@@ -132,6 +152,22 @@ public class GestionConseilsController implements Initializable {
         colAnalyseId.setCellValueFactory(cellData ->
             new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getIdAnalyse()));
+        colAnalyseId.setCellFactory(tc -> new TableCell<Conseil, Integer>() {
+            private final javafx.scene.text.Text text = new javafx.scene.text.Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(String.valueOf(item));
+                }
+            }
+        });
 
         // Actions Column (Edit/Delete)
         colActions.setCellFactory(param -> new TableCell<Conseil, Void>() {

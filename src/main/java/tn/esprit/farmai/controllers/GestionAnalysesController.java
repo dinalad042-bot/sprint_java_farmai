@@ -1,5 +1,7 @@
 package tn.esprit.farmai.controllers;
 
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -10,6 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.utils.AnalyseDialog;
@@ -96,33 +99,115 @@ public class GestionAnalysesController implements Initializable {
     }
 
     /**
-     * Configure the TableView columns
+     * Configure the TableView columns - using setGraphic like GestionConseilsController
      */
     private void setupTableView() {
-        // ID Column
+        // ID Column - using setGraphic with Text
         colId.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getIdAnalyse()));
-
-        // Date Column
-        colDate.setCellValueFactory(cellData -> {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-            return new javafx.beans.property.SimpleStringProperty(
-                cellData.getValue().getDateAnalyse().format(formatter));
+            new SimpleObjectProperty<>(cellData.getValue().getIdAnalyse()));
+        colId.setCellFactory(tc -> new TableCell<Analyse, Integer>() {
+            private final Text text = new Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(String.valueOf(item));
+                }
+            }
         });
 
-        // Resultat Column
+        // Date Column - using setGraphic with Text
+        colDate.setCellValueFactory(cellData -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            return new SimpleStringProperty(
+                cellData.getValue().getDateAnalyse().format(formatter));
+        });
+        colDate.setCellFactory(tc -> new TableCell<Analyse, String>() {
+            private final Text text = new Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(item);
+                }
+            }
+        });
+
+        // Resultat Column - using setGraphic with Text
         colResultat.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getResultatTechnique()));
+            new SimpleStringProperty(cellData.getValue().getResultatTechnique()));
+        colResultat.setCellFactory(tc -> new TableCell<Analyse, String>() {
+            private final Text text = new Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(item);
+                }
+            }
+        });
 
-        // Technicien Column
+        // Technicien Column - using setGraphic with Text
         colTechnicien.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getIdTechnicien()));
+            new SimpleObjectProperty<>(cellData.getValue().getIdTechnicien()));
+        colTechnicien.setCellFactory(tc -> new TableCell<Analyse, Integer>() {
+            private final Text text = new Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(String.valueOf(item));
+                }
+            }
+        });
 
-        // Ferme Column
+        // Ferme Column - using setGraphic with Text
         colFerme.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(cellData.getValue().getIdFerme()));
+            new SimpleObjectProperty<>(cellData.getValue().getIdFerme()));
+        colFerme.setCellFactory(tc -> new TableCell<Analyse, Integer>() {
+            private final Text text = new Text();
+            {
+                text.setStyle("-fx-fill: #000000;");
+                setGraphic(text);
+            }
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    text.setText("");
+                } else {
+                    text.setText(String.valueOf(item));
+                }
+            }
+        });
 
         // Image Column - Display thumbnail
+        colImage.setCellValueFactory(cellData ->
+            new SimpleStringProperty(cellData.getValue().getImageUrl()));
         colImage.setCellFactory(param -> new TableCell<Analyse, String>() {
             private final ImageView imageView = new ImageView();
             {
@@ -208,6 +293,7 @@ public class GestionAnalysesController implements Initializable {
             analysesList.clear();
             analysesList.addAll(analyseService.selectAll());
             analysesTableView.setItems(analysesList);
+
             updateTotalLabel();
         } catch (SQLException e) {
             NavigationUtil.showError("Erreur", "Impossible de charger les analyses: " + e.getMessage());
@@ -232,6 +318,7 @@ public class GestionAnalysesController implements Initializable {
                 }
             }
             analysesTableView.setItems(filteredList);
+            analysesTableView.refresh();
             updateTotalLabel();
         } catch (Exception e) {
             e.printStackTrace();

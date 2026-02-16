@@ -246,7 +246,7 @@
     -fx-background-color: #4CAF50;
 }
 
-/* === TableView Styling with Animations === */
+/* === TableView Styling - FIXED === */
 .table-view {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -265,12 +265,14 @@
     -fx-background-color: #EEEEEE;
 }
 
+/* FIXED: Increased row height and padding to prevent content clipping */
 .table-row-cell {
     -fx-background-color: white;
     -fx-border-color: #F5F5F5;
     -fx-border-width: 0 0 1px 0;
-    -fx-padding: 8px 0;
-    -fx-transition: -fx-background-color 0.2s ease-in-out;
+    -fx-padding: 15px 0;
+    -fx-min-height: 50px;
+    -fx-pref-height: 50px;
 }
 
 .table-row-cell:hover {
@@ -287,26 +289,16 @@
     -fx-background-color: #A5D6A7;
 }
 
+/* FIXED: Increased cell padding for better content visibility */
 .table-cell {
-    -fx-padding: 10px 15px;
-    -fx-text-fill: #455A64;
+    -fx-padding: 12px 15px;
+    -fx-text-fill: #000000;
+    -fx-alignment: CENTER_LEFT;
 }
 
-/* Row entrance animation */
-.table-row-cell {
-    -fx-opacity: 0;
-    -fx-animation: fadeInRow 0.3s ease-out forwards;
-}
-
-@keyframes fadeInRow {
-    from {
-        -fx-opacity: 0;
-        -fx-translate-y: 10;
-    }
-    to {
-        -fx-opacity: 1;
-        -fx-translate-y: 0;
-    }
+/* FIXED: Ensure text is visible in all table cells */
+.table-cell .text {
+    -fx-fill: #000000;
 }
 
 /* === Lower Section (Mockup / Activity) === */
@@ -498,21 +490,20 @@
     -fx-padding: 0;
 }
 
-.dialog-pane:header .header-panel {
+.dialog-pane > .header-panel {
     -fx-background-color: #263238;
-    /* Dark Grey header */
     -fx-background-radius: 20px 20px 0 0;
     -fx-padding: 25px;
 }
 
-.dialog-pane:header .header-panel .label {
+.dialog-pane > .header-panel .label {
     -fx-text-fill: white;
     -fx-font-size: 22px;
     -fx-font-weight: bold;
     -fx-font-family: "Segoe UI", sans-serif;
 }
 
-.dialog-pane>.content {
+.dialog-pane > .content {
     -fx-background-color: white;
     -fx-padding: 25px;
 }
