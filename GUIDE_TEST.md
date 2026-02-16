@@ -423,3 +423,213 @@ Your module is **FULLY READY** for Séance 5 evaluation. All architectural requi
 - ✅ `src/main/java/tn/esprit/farmai/models/Conseil.java`
 
 **Status**: 🟢 **APPROVED FOR SÉANCE 5**
+
+
+
+## 🔍 UNVISITED AREAS ANALYSIS - FarmAI Codebase
+
+Based on my thorough review of the codebase, here are the areas with **low or no test coverage** that were not covered by the Séance 5 CRUD tests:
+
+---
+
+## 📊 COVERAGE GAP SUMMARY
+
+### ✅ WELL COVERED (Séance 5 Tests)
+| Component | Coverage | Status |
+|-----------|----------|--------|
+| AnalyseService | CRUD + Custom queries | ✅ 100% |
+| ConseilService | CRUD + 1:N relationship | ✅ 100% |
+| MyDBConnexion | Singleton pattern | ✅ 100% |
+
+---
+
+## ⚠️ AREAS WITH LOW/NO COVERAGE
+
+### 1. 🔐 UserService - PARTIALLY COVERED (30%)
+**File:** `src/main/java/tn/esprit/farmai/services/UserService.java`
+
+**Tested (UserServicesTest.java):**
+- ✅ insertOne()
+- ✅ updateOne()
+- ✅ deleteById()
+- ✅ selectAll()
+- ✅ findById()
+
+**NOT TESTED (Critical Gaps):**
+- ❌ `authenticate()` - **SECURITY CRITICAL** - No authentication flow tests
+- ❌ `findByEmail()` - No email lookup tests
+- ❌ `findByCin()` - No CIN lookup tests
+- ❌ `emailExists()` - No duplicate email validation tests
+- ❌ `cinExists()` - No duplicate CIN validation tests
+- ❌ `findByRole()` - No role-based filtering tests
+- ❌ `search()` - No search functionality tests
+- ❌ `countAll()` / `countByRole()` - No statistics tests
+- ❌ `updatePassword()` - **SECURITY CRITICAL** - No password change tests
+
+**Risk Level:** 🔴 HIGH (Security-related methods untested)
+
+---
+
+### 2. 📝 UserLogService - NO COVERAGE (0%)
+**File:** `src/main/java/tn/esprit/farmai/services/UserLogService.java`
+
+**NOT TESTED:**
+- ❌ `createTableIfNotExists()` - Auto-table creation not validated
+- ❌ `insertOne()` - No audit log creation tests
+- ❌ `updateOne()` - No log modification tests
+- ❌ `deleteOne()` - No log deletion tests
+- ❌ `selectAll()` - No log retrieval tests
+- ❌ `findByUserId()` - No user-specific log queries tested
+
+**Risk Level:** 🟡 MEDIUM (Audit trail functionality unvalidated)
+
+---
+
+### 3. 🔒 PasswordUtil - NO COVERAGE (0%)
+**File:** `src/main/java/tn/esprit/farmai/utils/PasswordUtil.java`
+
+**NOT TESTED (All Security-Critical):**
+- ❌ `hashPassword()` - Password hashing algorithm not validated
+- ❌ `verifyPassword()` - Password verification logic not tested
+- ❌ `simpleHash()` - Alternative hash method untested
+- ❌ Salt generation randomness not verified
+- ❌ Hash format validation (salt$hash) not tested
+
+**Risk Level:** 🔴 **CRITICAL** (Core security mechanism untested)
+
+---
+
+### 4. 👤 SessionManager - NO COVERAGE (0%)
+**File:** `src/main/java/tn/esprit/farmai/utils/SessionManager.java`
+
+**NOT TESTED:**
+- ❌ Singleton instance management
+- ❌ `setCurrentUser()` / `getCurrentUser()` - Session state management
+- ❌ `isLoggedIn()` - Authentication state checks
+- ❌ `hasRole()` - Role verification logic
+- ❌ `isAdmin()` / `isExpert()` / `isAgricole()` / `isFournisseur()` - All role checks
+- ❌ `logout()` - Session cleanup
+
+**Risk Level:** 🟡 MEDIUM (Session management unvalidated)
+
+---
+
+### 5. 🧭 NavigationUtil - NO COVERAGE (0%)
+**File:** `src/main/java/tn/esprit/farmai/utils/NavigationUtil.java`
+
+**NOT TESTED:**
+- ❌ All navigation methods (require JavaFX runtime)
+- ❌ Error handling for missing FXML files
+- ❌ CSS loading logic
+- ❌ Alert/dialog methods
+
+**Risk Level:** 🟢 LOW (UI utilities, hard to unit test)
+
+---
+
+### 6. 🔔 NotificationManager - NO COVERAGE (0%)
+**File:** `src/main/java/tn/esprit/farmai/utils/NotificationManager.java`
+
+**NOT TESTED:**
+- ❌ `addNotification()` - Notification creation
+- ❌ `getUnreadCount()` - Unread counter logic
+- ❌ `markAllAsRead()` - Read status management
+- ❌ `clearAll()` - Cleanup functionality
+- ❌ ObservableList synchronization
+
+**Risk Level:** 🟢 LOW (Utility feature)
+
+---
+
+### 7. 🎮 Controllers - NO COVERAGE (0%)
+**Directory:** `src/main/java/tn/esprit/farmai/controllers/`
+
+**Files NOT TESTED:**
+- ❌ `LoginController.java` - Authentication UI flow
+- ❌ `SignupController.java` - Registration flow
+- ❌ `AdminDashboardController.java`
+- ❌ `ExpertDashboardController.java`
+- ❌ `AgricoleDashboardController.java`
+- ❌ `FournisseurDashboardController.java`
+- ❌ `GestionAnalysesController.java`
+- ❌ `GestionConseilsController.java`
+- ❌ `AjoutConseilController.java`
+- ❌ `UserListController.java`
+- ❌ `UserLogController.java`
+- ❌ `NotificationsController.java`
+
+**Risk Level:** 🟡 MEDIUM (UI logic unvalidated, requires integration testing)
+
+---
+
+### 8. 🗄️ Database Scripts - NO COVERAGE (0%)
+**Directory:** `database/`
+
+**Files NOT VALIDATED:**
+- ❌ `farmai.sql` - Main schema not tested
+- ❌ `alter_tables.sql` - Migration scripts
+- ❌ `setup.sql` - Setup scripts
+- ❌ `update_farmai.sql` - Update scripts
+
+**Risk Level:** 🟡 MEDIUM (Schema changes not validated)
+
+---
+
+## 🎯 RECOMMENDED TESTING PLAN
+
+### Phase 1: Security-Critical Tests (Priority: 🔴 HIGH)
+```
+1. PasswordUtilTest
+   - testHashPassword() - Verify hash format and uniqueness
+   - testVerifyPassword() - Correct and incorrect password verification
+   - testSaltRandomness() - Ensure different salts each time
+   
+2. UserServiceAuthTest
+   - testAuthenticateSuccess()
+   - testAuthenticateFailure()
+   - testEmailExists()
+   - testCinExists()
+   - testUpdatePassword()
+```
+
+### Phase 2: Session & Audit Tests (Priority: 🟡 MEDIUM)
+```
+3. SessionManagerTest
+   - testSingletonInstance()
+   - testSessionLifecycle()
+   - testRoleChecking()
+   
+4. UserLogServiceTest
+   - testLogCreation()
+   - testLogRetrieval()
+   - testFindByUserId()
+```
+
+### Phase 3: Integration Tests (Priority: 🟢 LOW)
+```
+5. UserFlowIntegrationTest
+   - testCompleteRegistrationFlow()
+   - testLoginToDashboardFlow()
+   
+6. DatabaseMigrationTest
+   - testSchemaCreation()
+   - testTableConstraints()
+```
+
+---
+
+## 📋 SUMMARY TABLE
+
+| Component | Current Coverage | Risk Level | Priority |
+|-----------|-----------------|------------|----------|
+| AnalyseService | 100% | 🟢 None | Done |
+| ConseilService | 100% | 🟢 None | Done |
+| **PasswordUtil** | **0%** | 🔴 **Critical** | **HIGH** |
+| **UserService (auth)** | **0%** | 🔴 **High** | **HIGH** |
+| UserLogService | 0% | 🟡 Medium | Medium |
+| SessionManager | 0% | 🟡 Medium | Medium |
+| Controllers | 0% | 🟡 Medium | Low |
+| NavigationUtil | 0% | 🟢 Low | Low |
+| NotificationManager | 0% | 🟢 Low | Low |
+
+**Toggle to Act mode to implement these additional tests?**
