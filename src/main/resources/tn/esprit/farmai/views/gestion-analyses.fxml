@@ -23,7 +23,7 @@
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
                         <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
-                        <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
+                        <Label fx:id="defaultAvatarText" text="U" textFill="white" visible="false"/>
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
@@ -38,12 +38,12 @@
 
             <!-- Navigation Menu -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
-                <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity"/>
-                <Button text="🔬  Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="💡  Conseils" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Tableau de bord" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="Conseils" styleClass="nav-button" maxWidth="Infinity"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Deconnexion" styleClass="nav-button" maxWidth="Infinity"/>
             </VBox>
         </VBox>
     </left>
@@ -61,14 +61,14 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <HBox styleClass="search-container" alignment="CENTER_LEFT">
-                    <Text text="🔍" fill="#9E9E9E"/>
+                    <Label text="?" style="-fx-text-fill: #9E9E9E; -fx-font-weight: bold;"/>
                     <TextField promptText="Recherche..." styleClass="header-search-field"/>
                 </HBox>
 
                 <!-- Notifications -->
                 <StackPane style="-fx-cursor: hand;">
                     <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
-                    <Text text="🔔" style="-fx-font-size: 22px;" fill="#546E7A"/>
+                    <Label text="(!)" style="-fx-font-size: 18px; -fx-text-fill: #546E7A;"/>
                     <Label text="0" styleClass="notification-badge" visible="false" StackPane.alignment="TOP_RIGHT"/>
                 </StackPane>
 
@@ -78,10 +78,12 @@
 
             <!-- Action Toolbar -->
             <HBox spacing="15" alignment="CENTER_LEFT">
-                <Button fx:id="backButton" text="← Retour" styleClass="secondary-btn" onAction="#handleBack"/>
+                <Button fx:id="backButton" text="Retour" styleClass="secondary-btn" onAction="#handleBack"/>
                 <Label fx:id="totalAnalysesLabel" text="Total: 0 analyses" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
+                <Button fx:id="refreshButton" text="Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
+                <Button fx:id="aiDiagnosticButton" text="AI Diagnostic" styleClass="info-btn" onAction="#handleAIDiagnostic"/>
+                <Button fx:id="exportPdfButton" text="Export PDF" styleClass="warning-btn" onAction="#handleExportPDF"/>
                 <Button fx:id="addAnalyseButton" text="+ Nouvelle Analyse" styleClass="primary-btn" onAction="#handleAddAnalyse"/>
             </HBox>
 
@@ -91,7 +93,7 @@
                 <!-- Filters -->
                 <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10px 0;">
                     <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" style="-fx-background-color: #F5F5F5; -fx-background-radius: 8px; -fx-padding: 5px 10px;">
-                        <Text text="🔍" fill="#90A4AE"/>
+                        <Text text="Recherche:" fill="#90A4AE"/>
                         <TextField fx:id="searchField"
                                    promptText="Rechercher une analyse..."
                                    style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS"/>

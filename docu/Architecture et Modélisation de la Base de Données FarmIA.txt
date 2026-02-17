@@ -1,0 +1,41 @@
+﻿Architecture et Modélisation de la Base de Données FarmIA
+En tant qu'architecte logiciel chevronné, habitué à concevoir des systèmes complexes à grande échelle, je vais structurer votre base de données SQL et votre diagramme de classes pour FarmIA en respectant strictement votre "railway track" tout en y intégrant les exigences techniques des sources, notamment la contrainte de posséder au moins deux entités et une relation par module [1].
+Voici la conception détaillée de votre base de données :
+Module 1 : Gestion des Utilisateurs
+Bien que votre schéma initial ne mentionne que la table User, les sources imposent deux entités par module [1]. Pour assurer une architecture robuste et extensible (type RBAC - Role Based Access Control), nous divisons l'entité.
+• Table User : Stocke les informations d'authentification et de profil.
+    ◦ Attributs : id_user (PK), nom, prenom, email (unique), password, cin, adresse, telephone [2, 3].
+• Table Role : Définit les droits d'accès pour les acteurs (Admin, Technicien Expert, Fournisseur, Fermier, Client) [4-6].
+    ◦ Attributs : id_role (PK), libelle_role.
+• Relation : Un User possède un Role (1:1 ou 1:N selon la flexibilité souhaitée) [1, 6].
+Module 2 : Gestion de la Ferme
+Ce module centralise l'exploitation agricole et ses ressources vivantes [5, 7].
+• Table Ferme : L'unité d'exploitation gérée par le Fermier [5, 8].
+    ◦ Attributs : id_ferme (PK), nom_ferme, lieu, surface, id_fermier (FK vers User).
+• Table Animaux : Suivi du bétail [4, 9].
+    ◦ Attributs : id_animal (PK), espece, etat_sante, date_naissance, id_ferme (FK).
+• Table Plantes (Cultures) : Suivi des cycles de culture [7, 9].
+    ◦ Attributs : id_plante (PK), nom_espece, cycle_vie (ex: semis, croissance, récolte), id_ferme (FK).
+• Relations : Une Ferme contient plusieurs Animaux et Plantes (1:N) [1].
+Module 3 : Gestion Analyse & Conseil
+Ce module permet l'intervention du Technicien Expert pour optimiser la production [4, 10].
+• Table Analyse : Diagnostic réalisé sur une ferme ou une culture [9, 10].
+    ◦ Attributs : id_analyse (PK), date_analyse, resultat_technique, id_technicien (FK vers User), id_ferme (FK).
+• Table Conseil : Recommandations basées sur les analyses [7, 10, 11].
+    ◦ Attributs : id_conseil (PK), description_conseil, priorite, id_analyse (FK).
+• Relation : Une Analyse peut générer un ou plusieurs Conseils (1:N) [1].
+Module 4 : Gestion Achat et Stocks
+Ce module assure la communication entre les fournisseurs, les fermiers et les clients pour la gestion des ressources [5, 11].
+• Table Service : Prestations ou produits proposés par le Fournisseur [7].
+    ◦ Attributs : id_service (PK), nom_service, description, prix_unitaire, id_fournisseur (FK vers User).
+• Table Achat : Transaction effectuée par un Fermier ou un Client [6, 11].
+    ◦ Attributs : id_achat (PK), date_achat, montant_total, id_acheteur (FK vers User).
+• Table Liste_Achat : Table de liaison (associative) gérant le stock et les détails de la commande [1, 11].
+    ◦ Attributs : id_liste (PK), quantite, id_achat (FK), id_service (FK).
+• Relation : Un Achat est lié à plusieurs Services via la Liste_Achat (N:M décomposée) [1].
+Synthèse des Interactions des Acteurs
+• Administrateur : Supervise tous les modules, notamment la gestion des comptes et la surveillance des stocks [4, 5, 12].
+• Fermier : Propriétaire des entités Ferme, il consulte les Analyses et effectue des Achats pour ses stocks [4, 5].
+• Technicien Expert : Alimente exclusivement le module Analyse & Conseil [4, 9, 10].
+• Fournisseur : Définit les entités dans Service et est lié aux transactions du module Achat [5, 11].
+Note d'expert : Pour respecter la contrainte technique de partage de données, veillez à ce que vos interfaces Java (Desktop) et Symfony (Web) pointent vers cette base de données unique via JDBC pour Java et Doctrine pour le Web [1, 13, 14].

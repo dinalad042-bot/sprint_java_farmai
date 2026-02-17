@@ -1,5 +1,6 @@
 package tn.esprit.farmai.utils;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -155,6 +156,18 @@ public class NavigationUtil {
         navigateTo(stage, "views/user-list.fxml", "Gestion des Utilisateurs");
     }
 
+    public static void navigateToGestionAnalyses(Stage stage) {
+        navigateTo(stage, "views/gestion-analyses.fxml", "Gestion des Analyses");
+    }
+
+    public static void navigateToGestionConseils(Stage stage) {
+        navigateTo(stage, "views/gestion-conseils.fxml", "Gestion des Conseils");
+    }
+
+    public static void navigateToStatistics(Stage stage) {
+        navigateTo(stage, "views/statistics.fxml", "Statistiques");
+    }
+
     public static void logout(Stage stage) {
         Optional<ButtonType> result = showConfirmation("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter?");
         if (result.isPresent() && result.get() == ButtonType.OK) {
@@ -164,19 +177,23 @@ public class NavigationUtil {
     }
 
     public static void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 
     public static void showSuccess(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 
     public static Optional<ButtonType> showConfirmation(String title, String message) {
@@ -188,26 +205,32 @@ public class NavigationUtil {
     }
 
     public static void showWarning(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 
     public static void showInfo(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 
     public static void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+        Platform.runLater(() -> {
+            Alert alert = new Alert(type);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.show();
+        });
     }
 }

@@ -40,6 +40,7 @@
                 <Button text="🏠  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
                 <Button text="📋  Consultations" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
                 <Button text="💡  Recommandations" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
                 <Button text="📚  Base Connaissances" styleClass="nav-button" maxWidth="Infinity"/>
                 <Button text="⚙️  Paramètres" styleClass="nav-button" maxWidth="Infinity"/>
                 

@@ -89,6 +89,15 @@ public class ExpertDashboardController implements Initializable {
     }
 
     /**
+     * Handle statistics - Open Statistics Dashboard (US10)
+     */
+    @FXML
+    private void handleStatistics() {
+        navigateWithFade("/tn/esprit/farmai/views/statistics.fxml", 
+                        "FarmAI - Statistiques");
+    }
+
+    /**
      * Navigate to a new view with smooth fade transition
      */
     private void navigateWithFade(String fxmlPath, String title) {

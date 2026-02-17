@@ -270,9 +270,10 @@
     -fx-background-color: white;
     -fx-border-color: #F5F5F5;
     -fx-border-width: 0 0 1px 0;
-    -fx-padding: 15px 0;
-    -fx-min-height: 50px;
-    -fx-pref-height: 50px;
+    -fx-padding: 8px 0;
+    -fx-min-height: 45px;
+    -fx-pref-height: 55px;
+    -fx-cell-size: 55px;
 }
 
 .table-row-cell:hover {
@@ -291,14 +292,21 @@
 
 /* FIXED: Increased cell padding for better content visibility */
 .table-cell {
-    -fx-padding: 12px 15px;
+    -fx-padding: 10px 12px;
     -fx-text-fill: #000000;
     -fx-alignment: CENTER_LEFT;
+    -fx-valignment: CENTER;
 }
 
 /* FIXED: Ensure text is visible in all table cells */
 .table-cell .text {
     -fx-fill: #000000;
+}
+
+/* Ensure labels in cells have proper padding */
+.table-cell .label {
+    -fx-padding: 5px 0;
+    -fx-text-alignment: LEFT;
 }
 
 /* === Lower Section (Mockup / Activity) === */
@@ -543,4 +551,73 @@
     -fx-background-color: white;
     -fx-border-color: #4CAF50;
     -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.2), 5, 0, 0, 0);
+}
+
+/* === Missing Button Styles - ADDED FOR FUNCTIONALITY === */
+
+/* AI Diagnostic Button - Information Blue */
+.info-btn {
+    -fx-background-color: #17a2b8;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.info-btn:hover {
+    -fx-background-color: #138496;
+}
+
+.info-btn:pressed {
+    -fx-background-color: #117a8b;
+}
+
+/* Export PDF Button - Warning Yellow */
+.warning-btn {
+    -fx-background-color: #ffc107;
+    -fx-text-fill: #212529;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+}
+
+.warning-btn:hover {
+    -fx-background-color: #e0a800;
+}
+
+.warning-btn:pressed {
+    -fx-background-color: #c69500;
+}
+
+/* Fix for potentially invisible table text */
+.table-cell {
+    -fx-text-fill: #212529;
+    -fx-font-size: 13px;
+}
+
+.table-view .table-cell .text {
+    -fx-fill: #212529 !important;
+}
+
+.table-view .table-cell .label {
+    -fx-text-fill: #212529 !important;
+}
+
+/* Force visible text in all table cells */
+.table-row-cell .table-cell {
+    -fx-text-fill: black !important;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #1B5E20 !important;
+}
+
+/* Ensure table cell content is visible */
+.table-view .table-row-cell .table-cell * {
+    -fx-fill: black;
+    -fx-text-fill: black;
 }

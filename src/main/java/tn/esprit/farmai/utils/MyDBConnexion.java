@@ -3,6 +3,7 @@ package tn.esprit.farmai.utils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class MyDBConnexion {
     // 1. Attributs de connexion
@@ -35,5 +36,22 @@ public class MyDBConnexion {
     // 5. Getter pour la connexion
     public Connection getCnx() {
         return cnx;
+    }
+    
+    // 6. Méthode pour tester la connexion
+    public boolean testConnection() {
+        try {
+            if (cnx == null || cnx.isClosed()) {
+                return false;
+            }
+            // Simple test query to verify connection
+            try (Statement stmt = cnx.createStatement()) {
+                stmt.execute("SELECT 1");
+                return true;
+            }
+        } catch (SQLException e) {
+            System.err.println("Database connection test failed: " + e.getMessage());
+            return false;
+        }
     }
 }
