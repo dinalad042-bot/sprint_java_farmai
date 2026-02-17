@@ -9,7 +9,7 @@ import org.json.JSONObject;
 
 public class ExpertChatbotService {
 
-    private static final String API_KEY = "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";
+    private static final String API_KEY = "";
     private static final String API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
     public String genererReponseAI(String questionTexte) {
