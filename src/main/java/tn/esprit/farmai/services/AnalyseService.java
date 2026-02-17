@@ -8,21 +8,13 @@ import tn.esprit.farmai.utils.MyDBConnexion;
 import tn.esprit.farmai.utils.SimpleHttpClient;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.layout.Document;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.List;
-import com.itextpdf.layout.element.ListItem;
-import com.itextpdf.layout.properties.TextAlignment;
 
 /**
  * Service class for Analyse CRUD operations with advanced features.
@@ -228,8 +220,6 @@ public class AnalyseService implements CRUD<Analyse> {
                     }
                 }
             }
-        } catch (IOException e) {
-            throw e;
         } catch (Exception e) {
             throw new IOException("Failed to parse AI response: " + e.getMessage());
         }
@@ -238,10 +228,10 @@ public class AnalyseService implements CRUD<Analyse> {
     }
 
     /**
-     * US9: PDF Technical Reporting
+     * US9: HTML Technical Report - opens in browser
      * 
      * @param idAnalyse The analysis ID to export
-     * @return Path to generated report file
+     * @return Path to generated HTML report file
      * @throws SQLException if database error occurs
      * @throws IOException if file creation fails
      * 
@@ -258,68 +248,76 @@ public class AnalyseService implements CRUD<Analyse> {
             outputDir.mkdirs();
         }
 
-        String fileName = "analysis_" + idAnalyse + "_" + 
-                         System.currentTimeMillis() + ".pdf";
+        String fileName = "analysis_" + idAnalyse + "_" + System.currentTimeMillis() + ".html";
         String filePath = Config.PDF_OUTPUT_DIR + fileName;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         String dateFormatted = analyse.getDateAnalyse().format(formatter);
 
-        PdfWriter writer = new PdfWriter(filePath);
-        PdfDocument pdfDoc = new PdfDocument(writer);
-        Document document = new Document(pdfDoc);
-
-        document.add(new Paragraph("FARMIA TECHNICAL ANALYSIS REPORT")
-            .setBold()
-            .setFontSize(18)
-            .setTextAlignment(TextAlignment.CENTER)
-            .setMarginBottom(20));
-
-        document.add(new Paragraph("Analysis ID: " + idAnalyse)
-            .setFontSize(12)
-            .setTextAlignment(TextAlignment.CENTER)
-            .setMarginBottom(30));
-
-        document.add(new Paragraph("ANALYSIS DETAILS")
-            .setBold()
-            .setFontSize(14)
-            .setMarginBottom(10));
-
-        document.add(new Paragraph("Date: " + dateFormatted).setMarginBottom(5));
-        document.add(new Paragraph("Farm ID: " + analyse.getIdFerme()).setMarginBottom(5));
-        document.add(new Paragraph("Technician ID: " + analyse.getIdTechnicien()).setMarginBottom(5));
-        document.add(new Paragraph("Technical Result:").setBold().setMarginTop(15).setMarginBottom(5));
-        document.add(new Paragraph(analyse.getResultatTechnique()).setMarginBottom(20));
-
-        document.add(new Paragraph("TECHNICAL RECOMMENDATIONS (" + conseils.size() + ")")
-            .setBold()
-            .setFontSize(14)
-            .setMarginTop(20)
-            .setMarginBottom(10));
-
+        StringBuilder html = new StringBuilder();
+        html.append("<!DOCTYPE html>\n");
+        html.append("<html lang='en'>\n<head>\n");
+        html.append("<meta charset='UTF-8'>\n");
+        html.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>\n");
+        html.append("<title>FarmIA Technical Report - Analysis #").append(idAnalyse).append("</title>\n");
+        html.append("<style>\n");
+        html.append("body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; background: #f5f5f5; }\n");
+        html.append(".container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }\n");
+        html.append("h1 { color: #2E7D32; text-align: center; border-bottom: 3px solid #2E7D32; padding-bottom: 20px; }\n");
+        html.append("h2 { color: #1565C0; margin-top: 30px; }\n");
+        html.append(".meta { color: #666; font-size: 14px; }\n");
+        html.append(".meta span { display: inline-block; margin-right: 30px; }\n");
+        html.append(".result { background: #E8F5E9; padding: 20px; border-left: 4px solid #2E7D32; margin: 20px 0; }\n");
+        html.append(".recommendations { margin-top: 30px; }\n");
+        html.append(".recommendation { background: #f5f5f5; padding: 15px; margin-bottom: 15px; border-radius: 5px; }\n");
+        html.append(".priority { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }\n");
+        html.append(".priority-HAUTE { background: #FFEBEE; color: #C62828; }\n");
+        html.append(".priority-MOYENNE { background: #FFF3E0; color: #EF6C00; }\n");
+        html.append(".priority-BASSE { background: #E8F5E9; color: #2E7D32; }\n");
+        html.append(".footer { text-align: center; color: #999; font-size: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; }\n");
+        html.append("</style>\n</head>\n<body>\n");
+        
+        html.append("<div class='container'>\n");
+        html.append("<h1>FARMIA Technical Analysis Report</h1>\n");
+        
+        html.append("<div class='meta'>\n");
+        html.append("<span><strong>Analysis ID:</strong> #").append(idAnalyse).append("</span>\n");
+        html.append("<span><strong>Date:</strong> ").append(dateFormatted).append("</span>\n");
+        html.append("</div>\n");
+        
+        html.append("<div class='meta' style='margin-top: 10px;'>\n");
+        html.append("<span><strong>Farm ID:</strong> ").append(analyse.getIdFerme()).append("</span>\n");
+        html.append("<span><strong>Technician ID:</strong> ").append(analyse.getIdTechnicien()).append("</span>\n");
+        html.append("</div>\n");
+        
+        html.append("<h2>Technical Result</h2>\n");
+        html.append("<div class='result'>\n");
+        html.append("<p>").append(analyse.getResultatTechnique() != null ? analyse.getResultatTechnique() : "N/A").append("</p>\n");
+        html.append("</div>\n");
+        
+        html.append("<h2>Recommendations (").append(conseils.size()).append(")</h2>\n");
+        
         if (conseils.isEmpty()) {
-            document.add(new Paragraph("No recommendations available for this analysis.")
-                .setItalic());
+            html.append("<p><i>No recommendations available for this analysis.</i></p>\n");
         } else {
-            List pdfList = new List();
+            html.append("<div class='recommendations'>\n");
             for (Conseil conseil : conseils) {
-                ListItem item = new ListItem();
-                item.add(new Paragraph(conseil.getDescriptionConseil()));
-                item.add(new Paragraph("Priority: " + conseil.getPriorite().name())
-                    .setFontSize(10)
-                    .setItalic());
-                pdfList.add(item);
+                html.append("<div class='recommendation'>\n");
+                html.append("<p>").append(conseil.getDescriptionConseil()).append("</p>\n");
+                html.append("<span class='priority priority-").append(conseil.getPriorite().name()).append("'>");
+                html.append(conseil.getPriorite().getLabel()).append(" Priority</span>\n");
+                html.append("</div>\n");
             }
-            document.add(pdfList);
+            html.append("</div>\n");
         }
+        
+        html.append("<div class='footer'>\n");
+        html.append("<p>Generated by: ").append(Config.PDF_CREATOR).append("</p>\n");
+        html.append("</div>\n");
+        
+        html.append("</div>\n</body>\n</html>");
 
-        document.add(new Paragraph("Generated by: " + Config.PDF_CREATOR)
-            .setFontSize(9)
-            .setItalic()
-            .setTextAlignment(TextAlignment.CENTER)
-            .setMarginTop(30));
-
-        document.close();
+        Files.write(new File(filePath).toPath(), html.toString().getBytes());
 
         return filePath;
     }
