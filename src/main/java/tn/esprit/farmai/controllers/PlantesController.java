@@ -1,5 +1,6 @@
 package tn.esprit.farmai.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,36 +8,50 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import org.json.JSONObject;
 import tn.esprit.farmai.models.Ferme;
 import tn.esprit.farmai.models.Plantes;
+import tn.esprit.farmai.services.IrrigationAI;
 import tn.esprit.farmai.services.ServiceFerme;
 import tn.esprit.farmai.services.ServicePlantes;
+import tn.esprit.farmai.services.WeatherService;
 import tn.esprit.farmai.utils.NavigationUtil;
-import java.util.function.Function;
 
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.function.Function;
 
 public class PlantesController implements Initializable {
 
+    // FXML Gestion
     @FXML private TextField tfNomEspece;
     @FXML private TextField tfCycleVie;
     @FXML private ComboBox<Ferme> cbFerme;
-    @FXML private TextField tfRecherche; // Nouveau champ pour la recherche
-
+    @FXML private TextField tfRecherche;
     @FXML private TableView<Plantes> tvPlantes;
     @FXML private TableColumn<Plantes, String> colNom;
     @FXML private TableColumn<Plantes, String> colCycle;
     @FXML private TableColumn<Plantes, Integer> colFerme;
 
+    // FXML IA Advisor
+    @FXML private TextField tfVilleIA;
+    @FXML private Label lblMeteo;
+    @FXML private Label lblConseilIA;
+    @FXML private VBox paneResultatIA;
+
+    // Services
     private final ServicePlantes sp = new ServicePlantes();
     private final ServiceFerme sf = new ServiceFerme();
+    private final WeatherService weatherService = new WeatherService();
+    private final IrrigationAI irrigationAI = new IrrigationAI();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Setup TableView
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_espece"));
         colCycle.setCellValueFactory(new PropertyValueFactory<>("cycle_vie"));
         colFerme.setCellValueFactory(new PropertyValueFactory<>("id_ferme"));
@@ -44,16 +59,55 @@ public class PlantesController implements Initializable {
         chargerFermes();
         rafraichir();
 
+        // Listener de sélection
         tvPlantes.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 tfNomEspece.setText(newVal.getNom_espece());
                 tfCycleVie.setText(newVal.getCycle_vie());
                 cbFerme.getItems().stream()
                         .filter(f -> f.getId_ferme() == newVal.getId_ferme())
-                        .findFirst().ifPresent(f -> cbFerme.setValue(f));
+                        .findFirst().ifPresent(f -> {
+                            cbFerme.setValue(f);
+                            // Optionnel : remplir automatiquement la ville IA
+                            tfVilleIA.setText(f.getLieu());
+                        });
             }
         });
     }
+
+    // --- LOGIQUE IA IRRIGATION ---
+
+    @FXML
+    private void analyserIrrigationIA() {
+        String ville = tfVilleIA.getText().trim();
+        String planteActuelle = tfNomEspece.getText().isEmpty() ? "votre culture" : tfNomEspece.getText();
+
+        if (ville.isEmpty()) {
+            new Alert(Alert.AlertType.WARNING, "Veuillez entrer une ville pour l'IA.").show();
+            return;
+        }
+
+        paneResultatIA.setVisible(true);
+        lblConseilIA.setText("⏳ Analyse des données en cours...");
+
+        new Thread(() -> {
+            JSONObject data = weatherService.getWeatherData(ville);
+            Platform.runLater(() -> {
+                if (data != null && data.has("main")) {
+                    double temp = data.getJSONObject("main").getDouble("temp");
+                    int hum = data.getJSONObject("main").getInt("humidity");
+                    lblMeteo.setText(String.format("🌡️ %.1f°C | 💧 %d%% Humidité", temp, hum));
+
+                    String conseil = irrigationAI.getRecommendation(data, planteActuelle);
+                    lblConseilIA.setText(conseil);
+                } else {
+                    lblConseilIA.setText("❌ Erreur : Impossible de récupérer la météo.");
+                }
+            });
+        }).start();
+    }
+
+    // --- LOGIQUE GESTION CRUD ---
 
     private void chargerFermes() {
         try {
@@ -69,23 +123,16 @@ public class PlantesController implements Initializable {
     private void handleRecherche() {
         String query = tfRecherche.getText().trim();
         try {
-            if (query.isEmpty()) {
-                rafraichir();
-            } else {
-                // Utilise la méthode chercherParNom ajoutée au ServicePlantes
-                tvPlantes.setItems(FXCollections.observableArrayList(sp.chercherParNom(query)));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            if (query.isEmpty()) rafraichir();
+            else tvPlantes.setItems(FXCollections.observableArrayList(sp.chercherParNom(query)));
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     @FXML
     private void ajouter() {
         if (!validerChamps()) return;
         try {
-            Plantes p = new Plantes(0, tfNomEspece.getText(), tfCycleVie.getText(), cbFerme.getValue().getId_ferme());
-            sp.insertOne(p);
+            sp.insertOne(new Plantes(0, tfNomEspece.getText(), tfCycleVie.getText(), cbFerme.getValue().getId_ferme()));
             rafraichir();
             viderChamps();
         } catch (SQLException e) { e.printStackTrace(); }
@@ -99,10 +146,8 @@ public class PlantesController implements Initializable {
                 selected.setNom_espece(tfNomEspece.getText());
                 selected.setCycle_vie(tfCycleVie.getText());
                 selected.setId_ferme(cbFerme.getValue().getId_ferme());
-
                 sp.updateOne(selected);
-                tvPlantes.refresh(); // Rafraîchit l'affichage interne
-                rafraichir();        // Resynchronise avec la liste observable
+                rafraichir();
                 viderChamps();
             } catch (SQLException e) { e.printStackTrace(); }
         }
@@ -133,6 +178,7 @@ public class PlantesController implements Initializable {
         tfNomEspece.clear(); tfCycleVie.clear();
         cbFerme.getSelectionModel().clearSelection();
         tvPlantes.getSelectionModel().clearSelection();
+        paneResultatIA.setVisible(false);
     }
 
     @FXML
@@ -144,29 +190,14 @@ public class PlantesController implements Initializable {
     @FXML
     private void imprimerPdf() {
         String[] headers = {"Espèce", "Cycle de Vie", "ID Ferme"};
-
         Function<Plantes, String>[] extractors = new Function[] {
                 (Function<Plantes, String>) p -> p.getNom_espece(),
                 (Function<Plantes, String>) p -> p.getCycle_vie(),
                 (Function<Plantes, String>) p -> String.valueOf(p.getId_ferme())
         };
-
         try {
-            tn.esprit.farmai.services.PdfGenerator.generatePdf(
-                    "Rapport_Plantes.pdf",
-                    "Suivi du Cycle de Vie Végétal - FarmAI",
-                    tvPlantes.getItems(),
-                    headers,
-                    extractors
-            );
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Exportation PDF");
-            alert.setHeaderText(null);
-            alert.setContentText("Le rapport des plantes a été généré avec succès !");
-            alert.show();
-        } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Erreur lors de la génération : " + e.getMessage()).show();
-        }
+            tn.esprit.farmai.services.PdfGenerator.generatePdf("Rapport_Plantes.pdf", "Suivi FarmAI", tvPlantes.getItems(), headers, extractors);
+            new Alert(Alert.AlertType.INFORMATION, "PDF généré !").show();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }
