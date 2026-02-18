@@ -7,8 +7,17 @@ import tn.esprit.farmai.utils.Config;
 import tn.esprit.farmai.utils.MyDBConnexion;
 import tn.esprit.farmai.utils.SimpleHttpClient;
 
-import java.io.File;
-import java.io.IOException;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
 import java.nio.file.Files;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
@@ -228,16 +237,307 @@ public class AnalyseService implements CRUD<Analyse> {
     }
 
     /**
-     * US9: HTML Technical Report - opens in browser
+     * US9: PDF Technical Report - generates real binary PDF
+     * 
+     * @param idAnalyse The analysis ID to export
+     * @return Path to generated PDF report file
+     * @throws SQLException if database error occurs
+     * @throws IOException if file creation fails
+     * 
+     * Railway Track: Implements 1:N relationship (Analyse -> Conseil)
+     * Uses Apache PDFBox for binary PDF generation
+     */
+    public String exportAnalysisToPDF(int idAnalyse) throws SQLException, IOException {
+        Analyse analyse = findById(idAnalyse).orElseThrow(() -> 
+            new SQLException("Analysis not found with ID: " + idAnalyse));
+        
+        List<Conseil> conseils = getConseilsByAnalyse(idAnalyse);
+
+        File outputDir = new File(Config.PDF_OUTPUT_DIR);
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+
+        String fileName = "analysis_" + idAnalyse + "_" + System.currentTimeMillis() + ".pdf";
+        String filePath = Config.PDF_OUTPUT_DIR + fileName;
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        String dateFormatted = analyse.getDateAnalyse().format(formatter);
+
+        // Create PDF document
+        try (PDDocument document = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            document.addPage(page);
+            
+            float margin = 50;
+            float yPosition = page.getMediaBox().getHeight() - margin;
+            float pageWidth = page.getMediaBox().getWidth() - 2 * margin;
+            
+            try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
+                // Title
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 18);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("FARMIA TECHNICAL ANALYSIS REPORT");
+                contentStream.endText();
+                yPosition -= 30;
+                
+                // Underline
+                contentStream.setLineWidth(1f);
+                contentStream.moveTo(margin, yPosition);
+                contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition);
+                contentStream.stroke();
+                yPosition -= 25;
+                
+                // Metadata section
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 11);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("Analysis ID: #" + idAnalyse);
+                contentStream.endText();
+                
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin + 200, yPosition);
+                contentStream.showText("Date: " + dateFormatted);
+                contentStream.endText();
+                yPosition -= 20;
+                
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 11);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("Farm ID: " + analyse.getIdFerme());
+                contentStream.endText();
+                
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin + 200, yPosition);
+                contentStream.showText("Technician ID: " + analyse.getIdTechnicien());
+                contentStream.endText();
+                yPosition -= 30;
+                
+                // Technical Result Section
+                yPosition = drawSectionHeader(contentStream, "TECHNICAL RESULT", margin, yPosition);
+                String resultText = analyse.getResultatTechnique() != null ? analyse.getResultatTechnique() : "N/A";
+                yPosition = drawWrappedText(contentStream, resultText, margin, yPosition, pageWidth, 10);
+                yPosition -= 20;
+                
+                // Image section if URL exists
+                if (analyse.getImageUrl() != null && !analyse.getImageUrl().trim().isEmpty()) {
+                    yPosition = drawSectionHeader(contentStream, "ANALYSIS IMAGE", margin, yPosition);
+                    yPosition = drawImageFromUrl(document, contentStream, analyse.getImageUrl(), margin, yPosition, pageWidth);
+                    yPosition -= 20;
+                }
+                
+                // Check if we need a new page for recommendations
+                if (yPosition < 150 && !conseils.isEmpty()) {
+                    contentStream.close();
+                    page = new PDPage(PDRectangle.A4);
+                    document.addPage(page);
+                    yPosition = page.getMediaBox().getHeight() - margin;
+                }
+                
+                // Recommendations Section
+                if (!conseils.isEmpty()) {
+                    yPosition = drawSectionHeader(contentStream, "RECOMMENDATIONS (" + conseils.size() + ")", margin, yPosition);
+                    
+                    for (int i = 0; i < conseils.size(); i++) {
+                        Conseil conseil = conseils.get(i);
+                        
+                        // Check if we need a new page
+                        if (yPosition < 100) {
+                            contentStream.close();
+                            page = new PDPage(PDRectangle.A4);
+                            document.addPage(page);
+                            yPosition = page.getMediaBox().getHeight() - margin;
+                        }
+                        
+                        // Recommendation number and priority
+                        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 10);
+                        contentStream.beginText();
+                        contentStream.newLineAtOffset(margin, yPosition);
+                        contentStream.showText((i + 1) + ". [" + conseil.getPriorite().getLabel().toUpperCase() + " PRIORITY]");
+                        contentStream.endText();
+                        yPosition -= 15;
+                        
+                        // Recommendation description
+                        yPosition = drawWrappedText(contentStream, conseil.getDescriptionConseil(), margin + 15, yPosition, pageWidth - 15, 10);
+                        yPosition -= 10;
+                    }
+                }
+                
+                // Footer
+                yPosition = margin + 20;
+                contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 8);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(margin, yPosition);
+                contentStream.showText("Generated by: " + Config.PDF_CREATOR);
+                contentStream.endText();
+            }
+            
+            // Save the document
+            document.save(filePath);
+        }
+
+        return filePath;
+    }
+    
+    /**
+     * Helper method to draw section headers in PDF
+     */
+    private float drawSectionHeader(PDPageContentStream contentStream, String header, float x, float y) throws IOException {
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        contentStream.beginText();
+        contentStream.newLineAtOffset(x, y);
+        contentStream.showText(header);
+        contentStream.endText();
+        return y - 20;
+    }
+    
+    /**
+     * Helper method to draw wrapped text in PDF
+     */
+    private float drawWrappedText(PDPageContentStream contentStream, String text, float x, float y, float maxWidth, int fontSize) throws IOException {
+        contentStream.setFont(PDType1Font.HELVETICA, fontSize);
+        
+        // Clean text - remove newlines and extra spaces
+        String cleanText = text.replace("\r", " ").replace("\n", " ").replaceAll("\\s+", " ").trim();
+        
+        if (cleanText.isEmpty()) {
+            return y;
+        }
+        
+        float charWidth = fontSize * 0.5f; // Approximate char width
+        int charsPerLine = (int) (maxWidth / charWidth);
+        
+        String[] words = cleanText.split(" ");
+        StringBuilder currentLine = new StringBuilder();
+        
+        for (String word : words) {
+            if (currentLine.length() + word.length() + 1 > charsPerLine) {
+                // Draw current line
+                contentStream.beginText();
+                contentStream.newLineAtOffset(x, y);
+                contentStream.showText(currentLine.toString().trim());
+                contentStream.endText();
+                y -= fontSize + 2;
+                currentLine = new StringBuilder(word + " ");
+            } else {
+                currentLine.append(word).append(" ");
+            }
+        }
+        
+        // Draw last line
+        if (currentLine.length() > 0) {
+            contentStream.beginText();
+            contentStream.newLineAtOffset(x, y);
+            contentStream.showText(currentLine.toString().trim());
+            contentStream.endText();
+            y -= fontSize + 2;
+        }
+        
+        return y;
+    }
+    
+    /**
+     * Helper method to draw image from URL in PDF
+     * Railway Track: Images are loaded from URLs (String) stored in database
+     * Uses timeout to prevent hanging on network issues
+     */
+    private float drawImageFromUrl(PDDocument document, PDPageContentStream contentStream, String imageUrl, float x, float y, float maxWidth) throws IOException {
+        BufferedImage bufferedImage = null;
+        
+        try {
+            // Check if it's a file path first (local file)
+            File imageFile = new File(imageUrl);
+            if (imageFile.exists() && imageFile.isFile()) {
+                bufferedImage = ImageIO.read(imageFile);
+            } else {
+                // Try as URL with timeout to prevent hanging
+                URL url = new URL(imageUrl);
+                java.net.URLConnection connection = url.openConnection();
+                connection.setConnectTimeout(3000); // 3 seconds timeout
+                connection.setReadTimeout(5000);    // 5 seconds read timeout
+                
+                try (InputStream is = connection.getInputStream()) {
+                    bufferedImage = ImageIO.read(is);
+                }
+            }
+            
+            if (bufferedImage != null) {
+                // Create temporary file for PDFBox
+                File tempFile = File.createTempFile("pdf_img_", ".jpg");
+                tempFile.deleteOnExit();
+                
+                // Write as JPEG for smaller size
+                ImageIO.write(bufferedImage, "JPEG", tempFile);
+                
+                // Load into PDF
+                PDImageXObject pdImage = PDImageXObject.createFromFileByContent(tempFile, document);
+                
+                // Calculate scaling
+                float imageWidth = pdImage.getWidth();
+                float imageHeight = pdImage.getHeight();
+                float maxHeight = 150; // Reduced max height
+                float scale = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+                
+                float scaledWidth = imageWidth * scale;
+                float scaledHeight = imageHeight * scale;
+                
+                // Ensure we have space on page
+                if (y - scaledHeight < 100) {
+                    // Not enough space, draw message instead
+                    contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+                    contentStream.beginText();
+                    contentStream.newLineAtOffset(x, y);
+                    contentStream.showText("[Image available but too large for remaining space]");
+                    contentStream.endText();
+                    return y - 15;
+                }
+                
+                // Draw image
+                contentStream.drawImage(pdImage, x, y - scaledHeight, scaledWidth, scaledHeight);
+                return y - scaledHeight - 15;
+            } else {
+                contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+                contentStream.beginText();
+                contentStream.newLineAtOffset(x, y);
+                contentStream.showText("[Image not loadable: " + truncateString(imageUrl, 40) + "]");
+                contentStream.endText();
+                return y - 15;
+            }
+        } catch (java.net.SocketTimeoutException e) {
+            contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(x, y);
+            contentStream.showText("[Image timeout - network too slow]");
+            contentStream.endText();
+            return y - 15;
+        } catch (Exception e) {
+            contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(x, y);
+            contentStream.showText("[Image error: " + truncateString(e.getMessage(), 35) + "]");
+            contentStream.endText();
+            return y - 15;
+        }
+    }
+    
+    /**
+     * Helper to truncate strings for display
+     */
+    private String truncateString(String str, int maxLen) {
+        if (str == null) return "";
+        return str.length() > maxLen ? str.substring(0, maxLen) + "..." : str;
+    }
+    
+    /**
+     * US9: HTML Technical Report - opens in browser (Secondary option)
      * 
      * @param idAnalyse The analysis ID to export
      * @return Path to generated HTML report file
      * @throws SQLException if database error occurs
      * @throws IOException if file creation fails
-     * 
-     * Railway Track: Implements 1:N relationship (Analyse -> Conseil)
      */
-    public String exportAnalysisToPDF(int idAnalyse) throws SQLException, IOException {
+    public String exportAnalysisToHTML(int idAnalyse) throws SQLException, IOException {
         Analyse analyse = findById(idAnalyse).orElseThrow(() -> 
             new SQLException("Analysis not found with ID: " + idAnalyse));
         
@@ -294,6 +594,12 @@ public class AnalyseService implements CRUD<Analyse> {
         html.append("<div class='result'>\n");
         html.append("<p>").append(analyse.getResultatTechnique() != null ? analyse.getResultatTechnique() : "N/A").append("</p>\n");
         html.append("</div>\n");
+        
+        // Add image to HTML if exists
+        if (analyse.getImageUrl() != null && !analyse.getImageUrl().trim().isEmpty()) {
+            html.append("<h2>Analysis Image</h2>\n");
+            html.append("<img src='").append(analyse.getImageUrl()).append("' style='max-width: 100%; border-radius: 5px;' alt='Analysis Image'/>\n");
+        }
         
         html.append("<h2>Recommendations (").append(conseils.size()).append(")</h2>\n");
         

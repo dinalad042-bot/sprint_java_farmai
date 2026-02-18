@@ -14,6 +14,10 @@ module tn.esprit.farmai {
     // requires com.almasb.fxgl.all;
     requires java.sql;
     requires mysql.connector.j;
+    
+    // PDF Generation - Apache PDFBox
+    requires org.apache.pdfbox;
+    requires java.desktop; // For ImageIO and BufferedImage
 
     // Main package
     opens tn.esprit.farmai to javafx.fxml;

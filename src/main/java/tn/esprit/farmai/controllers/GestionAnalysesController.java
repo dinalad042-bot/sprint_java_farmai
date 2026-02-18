@@ -15,6 +15,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.services.AnalyseService;
@@ -233,7 +234,7 @@ public class GestionAnalysesController implements Initializable {
     }
 
     /**
-     * US9: Handle PDF export
+     * US9: Handle PDF export - Non-blocking implementation
      */
     @FXML
     private void handleExportPDF() {
@@ -245,71 +246,191 @@ public class GestionAnalysesController implements Initializable {
             return;
         }
 
+        // Disable the export button during generation
+        exportPdfButton.setDisable(true);
+        
+        // Create progress dialog (non-blocking)
+        Stage progressStage = new Stage();
+        progressStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        progressStage.setTitle("PDF Generation");
+        progressStage.setResizable(false);
+        
+        VBox progressBox = new VBox(15);
+        progressBox.setAlignment(Pos.CENTER);
+        progressBox.setPadding(new javafx.geometry.Insets(20));
+        progressBox.setPrefWidth(300);
+        
+        ProgressIndicator progressIndicator = new ProgressIndicator();
+        progressIndicator.setPrefSize(50, 50);
+        
+        Label statusLabel = new Label("Generating PDF report...");
+        statusLabel.setStyle("-fx-font-size: 13px;");
+        
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #dc3545; -fx-text-fill: white;");
+        
+        progressBox.getChildren().addAll(progressIndicator, statusLabel, cancelButton);
+        
+        Scene progressScene = new Scene(progressBox);
+        progressStage.setScene(progressScene);
+        
+        // Thread reference for cancellation
+        final Thread[] generationThread = new Thread[1];
+        
+        cancelButton.setOnAction(e -> {
+            if (generationThread[0] != null) {
+                generationThread[0].interrupt();
+            }
+            progressStage.close();
+            exportPdfButton.setDisable(false);
+        });
+        
+        // Run PDF generation in background thread
+        generationThread[0] = new Thread(() -> {
+            try {
+                String pdfPath = analyseService.exportAnalysisToPDF(selectedAnalyse.getIdAnalyse());
+                
+                Platform.runLater(() -> {
+                    if (progressStage.isShowing()) {
+                        progressStage.close();
+                    }
+                    exportPdfButton.setDisable(false);
+                    showPDFSuccessDialog(pdfPath);
+                });
+                
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    if (progressStage.isShowing()) {
+                        progressStage.close();
+                    }
+                    exportPdfButton.setDisable(false);
+                    showAlert(Alert.AlertType.ERROR, "PDF Error", 
+                             "Failed to generate PDF: " + e.getMessage());
+                    e.printStackTrace();
+                });
+            }
+        });
+        
+        generationThread[0].setDaemon(true);
+        generationThread[0].start();
+        
+        // Show progress stage
+        progressStage.show();
+    }
+    
+    /**
+     * Show PDF generation success dialog with file path
+     */
+    private void showPDFSuccessDialog(String pdfPath) {
+        // Create custom dialog
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("PDF Generated Successfully");
+        dialog.setHeaderText(null);
+        
+        // Create content
+        VBox content = new VBox(10);
+        content.setPadding(new javafx.geometry.Insets(20));
+        content.setPrefWidth(500);
+        content.setStyle("-fx-background-color: #f8f9fa;");
+        
+        // Success icon and message
+        Label successLabel = new Label("✓ Report saved successfully!");
+        successLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #28a745;");
+        
+        // File path section
+        Label locationLabel = new Label("File Location:");
+        locationLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #495057;");
+        
+        TextField pathField = new TextField(pdfPath);
+        pathField.setEditable(false);
+        pathField.setPrefWidth(460);
+        pathField.setStyle("-fx-font-family: 'Consolas', monospace; -fx-font-size: 11px; " +
+                          "-fx-background-color: white; -fx-border-color: #dee2e6; " +
+                          "-fx-border-radius: 4px; -fx-padding: 8px;");
+        pathField.setTooltip(new Tooltip("Full path to the generated PDF file"));
+        
+        // File name display
+        File pdfFile = new File(pdfPath);
+        Label filenameLabel = new Label("Filename: " + pdfFile.getName());
+        filenameLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6c757d;");
+        
+        // Tips section
+        Label tipLabel = new Label("💡 The PDF has been saved to your temp folder. " +
+                                  "You can copy the path above to open it.");
+        tipLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #6c757d; -fx-font-style: italic;");
+        tipLabel.setWrapText(true);
+        
+        content.getChildren().addAll(
+            successLabel,
+            new Separator(),
+            locationLabel,
+            pathField,
+            filenameLabel,
+            new Separator(),
+            tipLabel
+        );
+        
+        dialog.getDialogPane().setContent(content);
+        
+        // Add buttons
+        ButtonType openFolderBtn = new ButtonType("Open Folder", ButtonBar.ButtonData.LEFT);
+        ButtonType copyPathBtn = new ButtonType("Copy Path", ButtonBar.ButtonData.LEFT);
+        ButtonType okBtn = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
+        
+        dialog.getDialogPane().getButtonTypes().addAll(openFolderBtn, copyPathBtn, okBtn);
+        
+        // Style the buttons
+        Button openFolderButton = (Button) dialog.getDialogPane().lookupButton(openFolderBtn);
+        openFolderButton.setStyle("-fx-background-color: #17a2b8; -fx-text-fill: white;");
+        
+        Button copyPathButton = (Button) dialog.getDialogPane().lookupButton(copyPathBtn);
+        copyPathButton.setStyle("-fx-background-color: #6c757d; -fx-text-fill: white;");
+        
+        // Handle button actions
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == openFolderBtn) {
+                openFolderContainingFile(pdfPath);
+            } else if (buttonType == copyPathBtn) {
+                copyToClipboard(pdfPath);
+                showInfo("Copied", "File path copied to clipboard!");
+            }
+            return buttonType;
+        });
+        
+        dialog.showAndWait();
+    }
+    
+    /**
+     * Open the folder containing the generated PDF
+     */
+    private void openFolderContainingFile(String filePath) {
         try {
-            // Show progress
-            ProgressIndicator progressIndicator = new ProgressIndicator();
-            progressIndicator.setPrefSize(50, 50);
+            File file = new File(filePath);
+            File parentDir = file.getParentFile();
             
-            Dialog<String> progressDialog = new Dialog<>();
-            progressDialog.setTitle("PDF Generation");
-            progressDialog.setHeaderText("Generating PDF report...");
-            progressDialog.getDialogPane().setContent(progressIndicator);
-            progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-            
-            // Run PDF generation in background thread
-            new Thread(() -> {
-                try {
-                    String pdfPath = analyseService.exportAnalysisToPDF(selectedAnalyse.getIdAnalyse());
-                    
-                    Platform.runLater(() -> {
-                        progressDialog.close();
-                        
-                        VBox content = new VBox(15);
-                        content.setPadding(new javafx.geometry.Insets(15));
-                        content.setStyle("-fx-background-color: white;");
-                        
-                        Label titleLabel = new Label("Report saved successfully!");
-                        titleLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
-                        
-                        Label pathLabel = new Label("File location:");
-                        pathLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
-                        
-                        TextField pathField = new TextField(pdfPath);
-                        pathField.setEditable(false);
-                        pathField.setPrefWidth(480);
-                        pathField.setStyle("-fx-font-family: monospace; -fx-font-size: 11px; -fx-background-color: #f5f5f5;");
-                        pathField.selectAll();
-                        
-                        Label tipLabel = new Label("Tip: Press Ctrl+C to copy the path, then paste in File Explorer");
-                        tipLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #888; -fx-font-style: italic;");
-                        
-                        content.getChildren().addAll(titleLabel, pathLabel, pathField, tipLabel);
-                        
-                        Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                        successAlert.setTitle("Report Generated");
-                        successAlert.setHeaderText(null);
-                        successAlert.getDialogPane().setContent(content);
-                        successAlert.getDialogPane().setPrefWidth(550);
-                        successAlert.showAndWait();
-                    });
-                    
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        progressDialog.close();
-                        showAlert(Alert.AlertType.ERROR, "PDF Error", 
-                                 "Failed to generate PDF: " + e.getMessage());
-                        e.printStackTrace();
-                    });
+            if (parentDir != null && parentDir.exists()) {
+                String os = System.getProperty("os.name").toLowerCase();
+                if (os.contains("win")) {
+                    Runtime.getRuntime().exec("explorer.exe /select,\"" + filePath + "\"");
+                } else if (os.contains("mac")) {
+                    Runtime.getRuntime().exec(new String[]{"open", "-R", filePath});
+                } else {
+                    Runtime.getRuntime().exec(new String[]{"xdg-open", parentDir.getAbsolutePath()});
                 }
-            }).start();
-            
-            progressDialog.showAndWait();
-            
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Export Error", 
-                     "Failed to export PDF: " + e.getMessage());
-            e.printStackTrace();
+            }
+        } catch (IOException e) {
+            showError("Error", "Could not open folder: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Copy text to system clipboard
+     */
+    private void copyToClipboard(String text) {
+        javafx.scene.input.Clipboard clipboard = javafx.scene.input.Clipboard.getSystemClipboard();
+        javafx.scene.input.ClipboardContent content = new javafx.scene.input.ClipboardContent();
+        content.putString(text);
+        clipboard.setContent(content);
     }
 
     /**
