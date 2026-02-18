@@ -151,15 +151,18 @@ public class AnalyseDialog {
         Node saveButton = dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.setDisable(false);
 
+        // Prevent dialog from closing when validation fails
+        saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            if (!validateFields(datePicker, resultatField, idTechnicienSpinner, idFermeSpinner,
+                    dateErrorLabel, resultatErrorLabel, technicienErrorLabel, fermeErrorLabel)) {
+                event.consume(); // Prevent dialog from closing
+            }
+        });
+
         // Convert the result to Analyse when save button is clicked
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
-                // US11: Validation before saving
-                if (!validateFields(datePicker, resultatField, idTechnicienSpinner, idFermeSpinner,
-                        dateErrorLabel, resultatErrorLabel, technicienErrorLabel, fermeErrorLabel)) {
-                    return null;
-                }
-
+                // Validation already done in event filter, just create the analyse
                 analyse.setDateAnalyse(LocalDateTime.of(datePicker.getValue(), LocalTime.now()));
                 analyse.setResultatTechnique(resultatField.getText().trim());
                 analyse.setIdTechnicien(idTechnicienSpinner.getValue());

@@ -182,7 +182,7 @@ public class NavigationUtil {
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
-            alert.show();
+            alert.showAndWait();
         });
     }
 
@@ -192,7 +192,7 @@ public class NavigationUtil {
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
-            alert.show();
+            alert.showAndWait();
         });
     }
 
@@ -210,7 +210,7 @@ public class NavigationUtil {
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
-            alert.show();
+            alert.showAndWait();
         });
     }
 
@@ -220,7 +220,7 @@ public class NavigationUtil {
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
-            alert.show();
+            alert.showAndWait();
         });
     }
 
@@ -230,7 +230,7 @@ public class NavigationUtil {
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
-            alert.show();
+            alert.showAndWait();
         });
     }
 }
