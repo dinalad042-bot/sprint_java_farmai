@@ -1,5 +1,7 @@
 package tn.esprit.farmai.controllers;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -7,14 +9,15 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import netscape.javascript.JSObject;
 import tn.esprit.farmai.models.Ferme;
-import tn.esprit.farmai.models.Animaux;
-import tn.esprit.farmai.models.Plantes;
 import tn.esprit.farmai.services.ServiceAnimaux;
 import tn.esprit.farmai.services.ServiceFerme;
 import tn.esprit.farmai.services.ServicePlantes;
@@ -33,10 +36,9 @@ public class AdminMapController implements Initializable {
     @FXML private Label lblNomFerme;
     @FXML private ListView<String> lvAnimaux;
     @FXML private ListView<String> lvPlantes;
+    @FXML private ImageView ivQRCode;
 
     private WebEngine webEngine;
-
-    // Services
     private final ServiceFerme sf = new ServiceFerme();
     private final ServiceAnimaux sa = new ServiceAnimaux();
     private final ServicePlantes sp = new ServicePlantes();
@@ -45,40 +47,38 @@ public class AdminMapController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         webEngine = mapWebView.getEngine();
 
-        // Injection Leaflet.js
-        String htmlContent = "<!DOCTYPE html>" +
-                "<html><head>" +
+        // HTML avec fonction rattachée à l'objet global 'window'
+        String htmlContent = "<!DOCTYPE html><html><head>" +
                 "<link rel='stylesheet' href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' />" +
                 "<script src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'></script>" +
-                "<style>" +
-                "  #map { height: 100vh; width: 100%; margin: 0; padding: 0; }" +
-                "  body { margin: 0; overflow: hidden; }" +
-                "</style>" +
-                "</head><body>" +
-                "<div id='map'></div>" +
-                "<script>" +
+                "<style>#map { height: 100vh; width: 100%; margin: 0; } body { margin: 0; }</style>" +
+                "</head><body><div id='map'></div><script>" +
                 "  var map = L.map('map').setView([33.8869, 9.5375], 7);" +
                 "  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);" +
-                "  function addFermeByAddress(address, nom, id) {" +
+                "  " +
+                "  window.addFermeByAddress = function(address, nom, id) {" +
                 "    fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address))" +
                 "      .then(res => res.json()).then(data => {" +
                 "        if (data.length > 0) {" +
                 "          var marker = L.marker([data[0].lat, data[0].lon]).addTo(map);" +
                 "          marker.bindTooltip('<b>' + nom + '</b>');" +
-                "          marker.on('click', () => javaApp.onMarkerClick(id, nom));" +
+                "          marker.on('click', () => javaApp.onMarkerClick(id, nom, address));" +
                 "        }" +
-                "      }).catch(e => console.error('Erreur Geocoding:', e));" +
-                "  }" +
+                "      });" +
+                "  };" +
                 "</script></body></html>";
 
         webEngine.loadContent(htmlContent);
 
-        // Passerelle Java -> JavaScript
+        // Liaison Java-JS une fois le chargement réussi
         webEngine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
             if (newState.toString().equals("SUCCEEDED")) {
                 JSObject window = (JSObject) webEngine.executeScript("window");
                 window.setMember("javaApp", this);
-                chargerFermesSurCarte();
+
+                // Délai de sécurité pour éviter le 'ReferenceError'
+                Timeline waitJS = new Timeline(new KeyFrame(Duration.millis(600), e -> chargerFermesSurCarte()));
+                waitJS.play();
             }
         });
     }
@@ -88,71 +88,55 @@ public class AdminMapController implements Initializable {
             List<Ferme> fermes = sf.selectALL();
             for (Ferme f : fermes) {
                 if (f.getLieu() != null && !f.getLieu().isEmpty()) {
-                    webEngine.executeScript(String.format("addFermeByAddress('%s', '%s', %d)",
+                    String script = String.format(
+                            "if(typeof window.addFermeByAddress === 'function') { window.addFermeByAddress('%s', '%s', %d); }",
                             f.getLieu().replace("'", "\\'"),
                             f.getNom_ferme().replace("'", "\\'"),
-                            f.getId_ferme()));
+                            f.getId_ferme()
+                    );
+                    webEngine.executeScript(script);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    /**
-     * Méthode appelée par JavaScript lors du clic sur un marqueur
-     */
-    public void onMarkerClick(int idFerme, String nomFerme) {
+    public void onMarkerClick(int idFerme, String nomFerme, String lieu) {
         Platform.runLater(() -> {
             lblNomFerme.setText(nomFerme);
             paneDetails.setVisible(true);
             paneDetails.setManaged(true);
 
+            // Génération QR Code via API
+            String qrData = "Ferme:" + nomFerme + "|Lieu:" + lieu;
+            String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + qrData.replace(" ", "%20");
+            ivQRCode.setImage(new Image(qrUrl, true));
+
+            // Mise à jour des listes
             try {
-                // Filtrage Animaux
                 lvAnimaux.getItems().clear();
-                List<Animaux> animauxFerme = sa.selectALL().stream()
+                sa.selectALL().stream()
                         .filter(a -> a.getId_ferme() == idFerme)
-                        .collect(Collectors.toList());
+                        .forEach(a -> lvAnimaux.getItems().add("🐄 " + a.getEspece() + " (" + a.getEtat_sante() + ")"));
 
-                if (animauxFerme.isEmpty()) {
-                    lvAnimaux.getItems().add("Aucun animal");
-                } else {
-                    for (Animaux a : animauxFerme) {
-                        lvAnimaux.getItems().add("🐄 " + a.getEspece() + " (" + a.getEtat_sante() + ")");
-                    }
-                }
-
-                // Filtrage Plantes
                 lvPlantes.getItems().clear();
-                List<Plantes> plantesFerme = sp.selectALL().stream()
+                sp.selectALL().stream()
                         .filter(p -> p.getId_ferme() == idFerme)
-                        .collect(Collectors.toList());
+                        .forEach(p -> lvPlantes.getItems().add("🌱 " + p.getNom_espece()));
 
-                if (plantesFerme.isEmpty()) {
-                    lvPlantes.getItems().add("Aucune plante");
-                } else {
-                    for (Plantes p : plantesFerme) {
-                        lvPlantes.getItems().add("🌱 " + p.getNom_espece() + " [" + p.getCycle_vie() + "]");
-                    }
-                }
+                if(lvAnimaux.getItems().isEmpty()) lvAnimaux.getItems().add("Aucun animal.");
+                if(lvPlantes.getItems().isEmpty()) lvPlantes.getItems().add("Aucune culture.");
 
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            } catch (SQLException e) { e.printStackTrace(); }
         });
     }
 
-    @FXML
-    private void closeDetails() {
+    @FXML private void closeDetails() {
         paneDetails.setVisible(false);
         paneDetails.setManaged(false);
     }
 
-    @FXML
-    private void handleBack(ActionEvent event) {
+    @FXML private void handleBack(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        // S'assure que le chemin correspond à votre admin-dashboard.fxml
         NavigationUtil.navigateTo(stage, "/tn/esprit/farmai/views/admin-dashboard.fxml", "Admin Dashboard");
     }
 }
