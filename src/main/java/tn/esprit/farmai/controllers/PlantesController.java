@@ -46,8 +46,8 @@ public class PlantesController implements Initializable {
 
     // FXML Finance (Export)
     @FXML private TextField tfPrixLocal;
-    @FXML private Label lblPrixExport;       // Prix unitaire ($/Kg)
-    @FXML private Label lblPrixTotalExport;  // Revenu global total ($)
+    @FXML private Label lblPrixExport;
+    @FXML private Label lblPrixTotalExport;
 
     // Services
     private final ServicePlantes sp = new ServicePlantes();
@@ -58,7 +58,6 @@ public class PlantesController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Configuration des colonnes de la table
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_espece"));
         colCycle.setCellValueFactory(new PropertyValueFactory<>("cycle_vie"));
         colFerme.setCellValueFactory(new PropertyValueFactory<>("id_ferme"));
@@ -67,14 +66,12 @@ public class PlantesController implements Initializable {
         chargerFermes();
         rafraichir();
 
-        // Listener pour la sélection dans le tableau
         tvPlantes.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 tfNomEspece.setText(newVal.getNom_espece());
                 tfCycleVie.setText(newVal.getCycle_vie());
                 tfQuantite.setText(String.valueOf(newVal.getQuantite()));
 
-                // Mise à jour de la ferme et de la ville IA
                 cbFerme.getItems().stream()
                         .filter(f -> f.getId_ferme() == newVal.getId_ferme())
                         .findFirst().ifPresent(f -> {
@@ -82,7 +79,6 @@ public class PlantesController implements Initializable {
                             tfVilleIA.setText(f.getLieu());
                         });
 
-                // Réinitialisation des labels d'export lors d'une nouvelle sélection
                 lblPrixExport.setText("Valeur Export de " + newVal.getNom_espece() + " : -- $");
                 lblPrixExport.setStyle("-fx-text-fill: #546E7A; -fx-font-weight: normal;");
                 lblPrixTotalExport.setText("Prêt pour le calcul du revenu total.");
@@ -90,58 +86,7 @@ public class PlantesController implements Initializable {
         });
     }
 
-    // --- LOGIQUE FINANCE & EXPORT ---
-
-    @FXML
-    private void calculerExport() {
-        Plantes planteSelectionnee = tvPlantes.getSelectionModel().getSelectedItem();
-
-        if (planteSelectionnee == null) {
-            new Alert(Alert.AlertType.WARNING, "Sélectionnez d'abord une plante dans le tableau !").show();
-            return;
-        }
-
-        String prixTxt = tfPrixLocal.getText();
-        if (prixTxt.isEmpty()) {
-            new Alert(Alert.AlertType.WARNING, "Entrez un prix en TND pour " + planteSelectionnee.getNom_espece()).show();
-            return;
-        }
-
-        new Thread(() -> {
-            try {
-                double taux = marketService.getExchangeRate("USD");
-                double prixUnitaireTND = Double.parseDouble(prixTxt);
-                double quantite = planteSelectionnee.getQuantite();
-
-                // Calculs
-                double prixUnitaireUSD = prixUnitaireTND * taux;
-                double totalGlobalUSD = prixUnitaireUSD * quantite;
-
-                Platform.runLater(() -> {
-                    // Affichage Prix Unitaire
-                    lblPrixExport.setText(String.format("Valeur : %.2f $ / Kg", prixUnitaireUSD));
-
-                    // Affichage Revenu Total
-                    lblPrixTotalExport.setText(String.format("Revenu Total (%s) : %.2f $",
-                            planteSelectionnee.getNom_espece(), totalGlobalUSD));
-
-                    // Style si le taux est avantageux
-                    if (taux > 0.32) {
-                        lblPrixTotalExport.setStyle("-fx-text-fill: #1B5E20; -fx-font-weight: bold;");
-                        lblPrixTotalExport.setText(lblPrixTotalExport.getText() + " 🚀");
-                    } else {
-                        lblPrixTotalExport.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
-                    }
-                });
-            } catch (NumberFormatException e) {
-                Platform.runLater(() -> lblPrixTotalExport.setText("❌ Prix invalide"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    // --- LOGIQUE IA IRRIGATION & CLIMAT ---
+    // --- LOGIQUE IA IRRIGATION (CORRIGÉE) ---
 
     @FXML
     private void analyserIrrigationIA() {
@@ -157,29 +102,42 @@ public class PlantesController implements Initializable {
         lblConseilIA.setText("⏳ Analyse en cours...");
 
         new Thread(() -> {
-            JSONObject data = weatherService.getWeatherData(ville);
-            Platform.runLater(() -> {
-                if (data != null && data.has("main")) {
-                    double temp = data.getJSONObject("main").getDouble("temp");
-                    int hum = data.getJSONObject("main").getInt("humidity");
-                    lblTemp.setText(String.format("%.1f°C", temp));
-                    lblHum.setText(hum + "%");
+            try {
+                // Appel au service météo (opération bloquante dans le thread)
+                JSONObject data = weatherService.getWeatherData(ville);
 
-                    int aqi = data.optInt("air_quality_index", 1);
-                    updateAirQualityUI(aqi);
+                Platform.runLater(() -> {
+                    if (data != null && data.has("main")) {
+                        double temp = data.getJSONObject("main").getDouble("temp");
+                        int hum = data.getJSONObject("main").getInt("humidity");
 
-                    String conseil = irrigationAI.getRecommendation(data, planteActuelle);
-                    lblConseilIA.setText(conseil);
+                        lblTemp.setText(String.format("%.1f°C", temp));
+                        lblHum.setText(hum + "%");
 
-                    if (temp < 2 || temp > 38 || aqi >= 4) {
-                        lblConseilIA.setStyle("-fx-background-color: #FFEBEE; -fx-text-fill: #B71C1C; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #EF9A9A;");
+                        // Récupération du conseil via le service IA
+                        String conseil = irrigationAI.getRecommendation(data, planteActuelle);
+                        lblConseilIA.setText(conseil);
+
+                        // Gestion de la qualité de l'air
+                        int aqi = data.optInt("air_quality_index", 1);
+                        updateAirQualityUI(aqi);
+
+                        // Mise à jour du style selon l'urgence
+                        if (temp < 2 || temp > 38 || aqi >= 4) {
+                            lblConseilIA.setStyle("-fx-background-color: #FFEBEE; -fx-text-fill: #B71C1C; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #EF9A9A;");
+                        } else {
+                            lblConseilIA.setStyle("-fx-background-color: white; -fx-text-fill: #2E7D32; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #C8E6C9;");
+                        }
+
                     } else {
-                        lblConseilIA.setStyle("-fx-background-color: white; -fx-text-fill: #2E7D32; -fx-padding: 12; -fx-background-radius: 10; -fx-border-color: #C8E6C9;");
+                        lblConseilIA.setText("❌ Erreur : Ville introuvable ou problème API.");
                     }
-                } else {
-                    lblConseilIA.setText("❌ Erreur météo.");
-                }
-            });
+                });
+            } catch (Exception e) {
+                // Débloque l'UI en cas d'exception (Time-out, erreur JSON, etc.)
+                Platform.runLater(() -> lblConseilIA.setText("❌ Erreur lors de la récupération des données."));
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -195,6 +153,47 @@ public class PlantesController implements Initializable {
         }
         lblAirQual.setText(status);
         lblAirQual.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+    }
+
+    // --- LOGIQUE FINANCE & EXPORT ---
+
+    @FXML
+    private void calculerExport() {
+        Plantes planteSelectionnee = tvPlantes.getSelectionModel().getSelectedItem();
+        if (planteSelectionnee == null) {
+            new Alert(Alert.AlertType.WARNING, "Sélectionnez une plante !").show();
+            return;
+        }
+
+        String prixTxt = tfPrixLocal.getText();
+        if (prixTxt.isEmpty()) {
+            new Alert(Alert.AlertType.WARNING, "Entrez un prix en TND.").show();
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                double taux = marketService.getExchangeRate("USD");
+                double prixUnitaireTND = Double.parseDouble(prixTxt);
+                double prixUnitaireUSD = prixUnitaireTND * taux;
+                double totalGlobalUSD = prixUnitaireUSD * planteSelectionnee.getQuantite();
+
+                Platform.runLater(() -> {
+                    lblPrixExport.setText(String.format("Valeur : %.2f $ / Kg", prixUnitaireUSD));
+                    lblPrixTotalExport.setText(String.format("Revenu Total (%s) : %.2f $",
+                            planteSelectionnee.getNom_espece(), totalGlobalUSD));
+
+                    if (taux > 0.32) {
+                        lblPrixTotalExport.setStyle("-fx-text-fill: #1B5E20; -fx-font-weight: bold;");
+                        lblPrixTotalExport.setText(lblPrixTotalExport.getText() + " 🚀");
+                    } else {
+                        lblPrixTotalExport.setStyle("-fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> lblPrixTotalExport.setText("❌ Erreur calcul"));
+            }
+        }).start();
     }
 
     // --- LOGIQUE GESTION CRUD ---
@@ -231,21 +230,16 @@ public class PlantesController implements Initializable {
     @FXML
     private void modifier() {
         Plantes selected = tvPlantes.getSelectionModel().getSelectedItem();
-
         if (selected != null && validerChamps()) {
             try {
                 selected.setNom_espece(tfNomEspece.getText());
                 selected.setCycle_vie(tfCycleVie.getText());
                 selected.setId_ferme(cbFerme.getValue().getId_ferme());
                 selected.setQuantite(Double.parseDouble(tfQuantite.getText()));
-
                 sp.updateOne(selected);
-                rafraichir();
-                viderChamps();
+                rafraichir(); viderChamps();
                 tvPlantes.refresh();
-            } catch (SQLException | NumberFormatException e) {
-                e.printStackTrace();
-            }
+            } catch (SQLException | NumberFormatException e) { e.printStackTrace(); }
         }
     }
 
@@ -267,7 +261,7 @@ public class PlantesController implements Initializable {
 
     private boolean validerChamps() {
         if (tfNomEspece.getText().isEmpty() || tfQuantite.getText().isEmpty() || cbFerme.getValue() == null) {
-            new Alert(Alert.AlertType.ERROR, "Remplissez le nom, la quantité et la ferme.").show();
+            new Alert(Alert.AlertType.ERROR, "Champs obligatoires manquants.").show();
             return false;
         }
         return true;
