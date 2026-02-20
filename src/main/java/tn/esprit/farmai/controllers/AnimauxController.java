@@ -1,5 +1,6 @@
 package tn.esprit.farmai.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -16,7 +17,7 @@ import tn.esprit.farmai.services.ServiceFerme;
 import tn.esprit.farmai.services.PdfGenerator;
 import tn.esprit.farmai.services.ExpertChatbotService;
 import tn.esprit.farmai.services.ExpertVoiceService;
-import tn.esprit.farmai.services.VoiceRecorder; // Assure-toi que l'import est correct
+import tn.esprit.farmai.services.VoiceRecorder;
 import tn.esprit.farmai.utils.NavigationUtil;
 
 import java.net.URL;
@@ -27,7 +28,6 @@ import java.util.function.Function;
 
 public class AnimauxController implements Initializable {
 
-    // Éléments FXML
     @FXML private TextField tfEspece;
     @FXML private TextField tfEtat;
     @FXML private DatePicker dpDate;
@@ -40,14 +40,13 @@ public class AnimauxController implements Initializable {
     @FXML private TableColumn<Animaux, Integer> colIdFerme;
     @FXML private Label lblStatusVocale;
     @FXML private Button btnMicro;
-    @FXML private Button btnStopVoice; // Assure-toi d'ajouter ce bouton dans ton FXML
+    @FXML private Button btnStopVoice;
 
-    // Services (Instances non-statiques)
     private final ServiceAnimaux sa = new ServiceAnimaux();
     private final ServiceFerme sf = new ServiceFerme();
     private final VoiceRecorder recorder = new VoiceRecorder();
     private final ExpertChatbotService chatbot = new ExpertChatbotService();
-    private final ExpertVoiceService tts = new ExpertVoiceService(); // Instance unique pour le contrôleur
+    private final ExpertVoiceService tts = new ExpertVoiceService();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -56,7 +55,6 @@ public class AnimauxController implements Initializable {
         colDate.setCellValueFactory(new PropertyValueFactory<>("date_naissance"));
         colIdFerme.setCellValueFactory(new PropertyValueFactory<>("id_ferme"));
 
-        // Masquer le bouton stop au démarrage
         if (btnStopVoice != null) btnStopVoice.setVisible(false);
 
         chargerFermes();
@@ -76,7 +74,7 @@ public class AnimauxController implements Initializable {
         });
     }
 
-    // --- ASSISTANT VOCAL AVEC IA REELLE (GROQ/LLAMA3.3) ---
+    // --- ASSISTANT VOCAL (NETTOYAGE DES ** INCLUS) ---
 
     @FXML
     private void handleVoiceQuery() {
@@ -87,31 +85,34 @@ public class AnimauxController implements Initializable {
 
         new Thread(() -> {
             try {
-                Thread.sleep(4000); // Enregistrement de 4 secondes
+                Thread.sleep(4000);
                 recorder.stopRecording();
 
-                javafx.application.Platform.runLater(() -> {
+                Platform.runLater(() -> {
                     lblStatusVocale.setText("⏳ Réflexion de l'expert IA...");
                 });
 
-                // Question simulée (en attendant STT)
-                String questionFermier = "Quels conseils pour un mouton qui ne mange pas ?";
-                String reponseIA = chatbot.genererReponseAI(questionFermier);
+                String questionFermier = "Donne moi des conseils vétérinaires pour un animal malade";
+                String reponseIABrute = chatbot.genererReponseAI(questionFermier);
 
-                javafx.application.Platform.runLater(() -> {
+                // NETTOYAGE DU TEXTE : Supprimer les ** et formater les listes
+                String reponsePropre = reponseIABrute.replace("**", "")
+                        .replace("- ", "\n• ");
+
+                Platform.runLater(() -> {
                     if (lblStatusVocale != null) {
-                        lblStatusVocale.setText("🤖 IA: " + reponseIA);
+                        lblStatusVocale.setText("🤖 IA: " + reponsePropre);
                     }
 
-                    // On affiche le bouton stop avant de parler
                     if (btnStopVoice != null) btnStopVoice.setVisible(true);
 
-                    tts.repondre(reponseIA);
+                    // La voix lit le texte nettoyé pour éviter de prononcer "étoile étoile"
+                    tts.repondre(reponsePropre);
                 });
 
             } catch (Exception e) {
                 e.printStackTrace();
-                javafx.application.Platform.runLater(() -> {
+                Platform.runLater(() -> {
                     lblStatusVocale.setText("❌ Erreur de l'IA.");
                 });
             }
@@ -120,14 +121,11 @@ public class AnimauxController implements Initializable {
 
     @FXML
     private void onStopButtonClicked() {
-        // APPEL CORRECT : utilise l'instance 'tts' au lieu de la classe
         tts.arreterLecture();
-
         if (btnStopVoice != null) btnStopVoice.setVisible(false);
-        System.out.println("Lecture vocale interrompue.");
     }
 
-    // --- LOGIQUE CRUD & PDF ---
+    // --- LOGIQUE CRUD ---
 
     private void chargerFermes() {
         try {
@@ -224,7 +222,6 @@ public class AnimauxController implements Initializable {
 
     @FXML
     private void handleReturnToSelection(ActionEvent event) {
-        // Arrêter la voix si on quitte la page
         tts.arreterLecture();
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         NavigationUtil.navigateTo(stage, "/tn/esprit/farmai/views/selection-gestion.fxml", "Gestion");
