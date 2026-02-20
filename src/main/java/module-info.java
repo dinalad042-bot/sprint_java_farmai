@@ -11,6 +11,7 @@ module tn.esprit.farmai {
     // Commented out for simpler build - uncomment if needed
     // requires eu.hansolo.tilesfx;
     // requires com.almasb.fxgl.all;
+    requires jdk.jsobject;
     requires java.sql;
     requires java.desktop;
     requires java.net.http;
