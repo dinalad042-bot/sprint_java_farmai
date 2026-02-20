@@ -115,6 +115,13 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>8.2.0</version>
         </dependency>
+
+        <!-- JavaCV + OpenCV (bundled natives — no manual DLL setup) -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.10</version>
+        </dependency>
     </dependencies>
 
     <build>

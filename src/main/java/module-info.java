@@ -19,6 +19,11 @@ module tn.esprit.farmai {
     requires org.junit.platform.engine;
     requires org.junit.platform.launcher;
 
+    // Face Recognition Dependencies
+    requires org.bytedeco.javacv;
+    requires org.bytedeco.opencv;
+    requires java.desktop; // For BufferedImage/Java2D
+
     // Main package
     opens tn.esprit.farmai to javafx.fxml;
 

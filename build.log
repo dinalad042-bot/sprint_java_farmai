@@ -1,0 +1,99 @@
+[INFO] Starting ULTRA SAFE build...
+[INFO] Mounting JDK to J: ...
+[INFO] JAVA_HOME: ""
+openjdk version "17.0.14" 2025-01-21
+OpenJDK Runtime Environment JBR-17.0.14+1-1367.22-nomod (build 17.0.14+1-b1367.22)
+OpenJDK 64-Bit Server VM JBR-17.0.14+1-1367.22-nomod (build 17.0.14+1-b1367.22, mixed mode, sharing)
+[INFO] Mounting Project to Z: ...
+[INFO] Cleaning and Compiling...
+Syntaxe : java [options] <mainclass> [args...]
+           (pour exécuter une classe)
+   ou  java [options] -jar <jarfile> [args...]
+           (pour exécuter un fichier JAR)
+   ou  java [options] -m <module>[/<mainclass>] [args...]
+       java [options] --module <module>[/<mainclass>] [args...]
+           (pour exécuter la classe principale dans un module)
+
+ Les arguments suivant la classe principale -jar <jarfile>, -m ou --module
+ <module>/<mainclass> sont transmis en tant qu'arguments à la classe principale.
+
+ où options comprend les éléments suivants :
+
+    -cp <chemin de recherche de classe de répertoires et de fichiers ZIP/JAR>
+    -classpath <chemin de recherche de classe de répertoires et de fichiers ZIP/JAR>
+    --class-path <chemin de recherche de classe de répertoires et de fichiers ZIP/JAR>
+                  Liste, avec séparateur ;, de répertoires, d'archives JAR
+                  et darchives ZIP pour rechercher des fichiers de classe.
+    -p <chemin de modules>
+    --module-path <chemin de modules>...
+                  Liste, avec séparateur {0}, de répertoires, chaque répertoire
+                  est un répertoire de modules.
+    --upgrade-module-path <chemin de modules>...
+                  Liste, avec séparateur {0}, de répertoires, chaque répertoire
+                  est un répertoire de module qui remplace les modules
+                  pouvant être mis à niveau dans limage dexécution
+    --add-modules <nom de module>[,<nom de module>...]
+                  modules racine à résoudre en plus du module initial.
+                  <nom de module> peut également être ALL-DEFAULT, ALL-SYSTEM,
+                  ALL-MODULE-PATH.
+    --list-modules
+                  répertorier les modules observables et quitter
+    -d <nom de module>
+    --describe-module <nom de module>
+                  décrire un module et quitter
+    --dry-run     créer une machine virtuelle et charger la classe principale mais ne pas exécuter la méthode principale.
+                  Loption--dry-run peut être utile pour la validation des
+                  options de ligne de commande telles que la configuration du système de modules.
+    --validate-modules
+                  valider tous les modules et quitter
+                  Loption --validate-modules peut être utile pour la recherche de
+                  conflits et dautres erreurs avec des modules dans le chemin de modules.
+    -D<name>=<value>
+                  définir une propriété système
+    -verbose:[class|module|gc|jni]
+                  activer la sortie en mode verbose
+    -version      afficher la version de produit dans le flux derreur et quitter
+    --version     afficher la version de produit dans le flux de sortie et quitter
+    -showversion  afficher la version de produit dans le flux derreur et continuer
+    --show-version
+                  afficher la version de produit dans le flux de sortie et continuer
+    --show-module-resolution
+                  afficher la sortie de résolution de module lors du démarrage
+    -? -h -help
+                  afficher ce message daide dans le flux derreur
+    --help        afficher ce message derreur dans le flux de sortie
+    -X            afficher laide sur des options supplémentaires dans le flux derreur
+    --help-extra  afficher laide sur des options supplémentaires dans le flux de sortie
+    -ea[:<packagename>...|:<classname>]
+    -enableassertions[:<packagename>...|:<classname>]
+                  activer des assertions avec la granularité spécifiée
+    -da[:<packagename>...|:<classname>]
+    -disableassertions[:<packagename>...|:<classname>]
+                  désactiver des assertions avec la granularité spécifiée
+    -esa | -enablesystemassertions
+                  activer des assertions système
+    -dsa | -disablesystemassertions
+                  désactiver des assertions système
+    -agentlib:<libname>[=<options>]
+                  charger la bibliothèque dagent natif <libname>, par ex. -agentlib:jdwp
+                  voir également -agentlib:jdwp=help
+    -agentpath:<pathname>[=<options>]
+                  charger la bibliothèque dagent natif par nom de chemin complet
+    -javaagent:<jarpath>[=<options>]
+                  charger lagent de langage de programmation, voir java.lang.instrument
+    -splash:<imagepath>
+                  afficher lécran daccueil avec limage indiquée
+                  Les images redimensionnées HiDPI sont automatiquement prises en charge et utilisées
+                  si elles sont disponibles. Le nom de fichier dune image non redimensionnée, par ex. image.ext,
+                  doit toujours être transmis comme argument à loption -splash.
+                  Limage redimensionnée fournie la plus appropriée sera automatiquement
+                  sélectionnée.
+                  Pour plus dinformations, reportez-vous à la documentation relative à lAPI SplashScreen
+    fichiers @argument
+                  fichiers darguments contenant des options
+    -disable-@files
+                  empêcher le développement supplémentaire de fichiers darguments
+Afin dindiquer un argument pour une option longue, vous pouvez utiliser --<name>=<value> ou
+--<name> <value>.
+
+[ERROR] Compilation failed!

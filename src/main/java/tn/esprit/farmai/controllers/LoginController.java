@@ -3,7 +3,10 @@ package tn.esprit.farmai.controllers;
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -13,6 +16,7 @@ import tn.esprit.farmai.services.UserService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.SessionManager;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -242,5 +246,27 @@ public class LoginController implements Initializable {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         return email.matches(emailRegex);
+    }
+
+    /**
+     * Opens the Face Login pop-up window.
+     */
+    @FXML
+    private void handleFaceLogin() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-login-view.fxml"));
+            Parent root = loader.load();
+            FaceLoginController ctrl = loader.getController();
+
+            Stage faceStage = new Stage();
+            faceStage.setTitle("FarmAi — Connexion par visage");
+            faceStage.setScene(new Scene(root));
+            faceStage.setOnCloseRequest(e -> ctrl.cleanup());
+            faceStage.show();
+        } catch (IOException e) {
+            showError("Impossible d'ouvrir la caméra: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

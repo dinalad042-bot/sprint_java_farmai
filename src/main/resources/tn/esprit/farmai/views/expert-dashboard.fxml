@@ -42,6 +42,7 @@
                 <Button text="💡  Recommandations" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
                 <Button text="📚  Base Connaissances" styleClass="nav-button" maxWidth="Infinity"/>
                 <Button text="⚙️  Paramètres" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>

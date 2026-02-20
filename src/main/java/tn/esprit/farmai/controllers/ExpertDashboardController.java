@@ -84,4 +84,10 @@ public class ExpertDashboardController implements Initializable {
     private void handleRecommendations() {
         NavigationUtil.showSuccess("Recommandations", "Module de recommandations à venir.");
     }
+
+    @FXML
+    private void handleFaceRecognition() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/face-recognition-view.fxml", "Reconnaissance Faciale");
+    }
 }

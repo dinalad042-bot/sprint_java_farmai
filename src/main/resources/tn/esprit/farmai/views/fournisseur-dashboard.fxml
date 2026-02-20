@@ -42,6 +42,7 @@
                 <Button text="🛒  Commandes" styleClass="nav-button" onAction="#handleOrders" maxWidth="Infinity"/>
                 <Button text="🚚  Livraisons" styleClass="nav-button" onAction="#handleDeliveries" maxWidth="Infinity"/>
                 <Button text="📈  Ventes" styleClass="nav-button" onAction="#handleSales" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>

@@ -44,6 +44,7 @@
                 <Button text="🌾  Cultures" styleClass="nav-button" maxWidth="Infinity"/>
                 <Button text="📦  Produits" styleClass="nav-button" maxWidth="Infinity"/>
                 <Button text="🔐  Sécurité" styleClass="nav-button" onAction="#handleProfileEdit" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
 
                 
                 <Region VBox.vgrow="ALWAYS"/>

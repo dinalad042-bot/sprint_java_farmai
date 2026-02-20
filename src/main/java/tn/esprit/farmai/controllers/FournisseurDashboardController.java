@@ -116,4 +116,10 @@ public class FournisseurDashboardController implements Initializable {
     private void handleStatistics() {
         NavigationUtil.showSuccess("Statistiques", "Module des statistiques à venir.");
     }
+
+    @FXML
+    private void handleFaceRecognition() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/face-recognition-view.fxml", "Reconnaissance Faciale");
+    }
 }

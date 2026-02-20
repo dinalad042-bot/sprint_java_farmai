@@ -42,6 +42,7 @@
                 <Button text="🌱  Mes Cultures" styleClass="nav-button" onAction="#handleMyCrops" maxWidth="Infinity"/>
                 <Button text="🛒  Commandes" styleClass="nav-button" onAction="#handleOrders" maxWidth="Infinity"/>
                 <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>

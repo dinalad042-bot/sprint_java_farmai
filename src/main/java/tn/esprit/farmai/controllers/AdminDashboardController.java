@@ -1,7 +1,10 @@
 package tn.esprit.farmai.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -12,6 +15,7 @@ import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
@@ -151,5 +155,28 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private void handleProfile() {
         handleProfileEdit();
+    }
+
+    /**
+     * Opens the Face Recognition (camera + detection) window.
+     * Users can enrol their face here.
+     */
+    @FXML
+    private void handleFaceRecognition() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            Parent root = loader.load();
+            FaceRecognitionController ctrl = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("FarmAi — Reconnaissance Faciale");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> ctrl.cleanup());
+            stage.show();
+        } catch (IOException e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale.");
+            e.printStackTrace();
+        }
     }
 }

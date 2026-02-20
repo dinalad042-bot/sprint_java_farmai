@@ -100,4 +100,10 @@ public class AgricoleDashboardController implements Initializable {
     private void handleAIAnalysis() {
         NavigationUtil.showSuccess("Analyse IA", "Module d'analyse IA à venir.");
     }
+
+    @FXML
+    private void handleFaceRecognition() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/face-recognition-view.fxml", "Reconnaissance Faciale");
+    }
 }
