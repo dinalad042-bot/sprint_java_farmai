@@ -3,50 +3,71 @@ package tn.esprit.farmai.services;
 import org.json.JSONObject;
 
 /**
- * Système Expert d'aide à la décision pour l'irrigation
+ * Système Expert d'aide à la décision avancé pour l'irrigation et la santé végétale.
  */
 public class IrrigationAI {
 
     /**
-     * Analyse les données météo et retourne une recommandation textuelle
-     * @param weatherData Objet JSON provenant de WeatherService
-     * @param typePlante Nom de la culture (ex: Tomate, Blé)
-     * @return Message de recommandation IA
+     * Analyse les données météo et de pollution pour retourner une recommandation intelligente.
+     * @param weatherData Objet JSON enrichi provenant de WeatherService
+     * @param typePlante Nom de la culture (ex: Tomate, Maïs)
+     * @return Message de recommandation IA formaté
      */
     public String getRecommendation(JSONObject weatherData, String typePlante) {
         try {
-            // 1. Extraction des paramètres vitaux
+            // 1. Extraction des paramètres météorologiques
             double temp = weatherData.getJSONObject("main").getDouble("temp");
             int humidity = weatherData.getJSONObject("main").getInt("humidity");
             String mainWeather = weatherData.getJSONArray("weather").getJSONObject(0).getString("main");
             double windSpeed = weatherData.getJSONObject("wind").getDouble("speed");
 
-            // 2. Logique décisionnelle (Arbre de décision IA)
+            // 2. Extraction du nouvel indice de qualité de l'air (AQI)
+            // L'indice va de 1 (Excellent) à 5 (Très pauvre)
+            int aqi = weatherData.optInt("air_quality_index", 1);
 
-            // Cas de pluie : On annule l'irrigation
-            if (mainWeather.equalsIgnoreCase("Rain") || mainWeather.equalsIgnoreCase("Drizzle")) {
-                return "🌧️ Statut : Pluie détectée. \nAction : Arrosage annulé pour vos " + typePlante + ".";
+            // 3. Logique décisionnelle augmentée (Arbre de décision IA)
+
+            // PRIORITÉ 1 : Alertes critiques (Gel ou Canicule extrême)
+            if (temp < 2.0) {
+                return "❄️ ALERTE GEL ! \nAction : Risque de mort cellulaire pour " + typePlante + ". Couvrez vos cultures ou activez le chauffage de serre.";
             }
 
-            // Cas de forte chaleur (Stress hydrique)
-            if (temp > 32 && humidity < 35) {
-                return "⚠️ Alerte Stress Hydrique ! \nAction : Arrosage intensif requis immédiatement. Température élevée (" + temp + "°C).";
+            if (temp > 38.0) {
+                return "🔥 CANICULE EXTRÊME : \nAction : Arrosage de survie requis. Ombrage fortement conseillé pour protéger les feuilles.";
             }
 
-            // Cas de vent fort (Évaporation rapide)
-            if (windSpeed > 40) {
-                return "🌬️ Vent fort détecté. \nAction : Arrosage déconseillé (l'eau s'évaporera avant d'atteindre les racines).";
+            // PRIORITÉ 2 : Conditions de l'air (Pollution)
+            if (aqi >= 4) {
+                return "⚠️ AIR POLLUÉ (AQI: " + aqi + ") : \nAction : Les particules fines bouchent les stomates. Une brumisation légère est conseillée pour nettoyer le feuillage.";
             }
 
-            // Cas optimal
-            if (temp >= 20 && temp <= 28 && humidity > 50) {
-                return "✅ Conditions optimales. \nAction : Arrosage modéré programmé pour ce soir.";
+            // PRIORITÉ 3 : Météo actuelle (Pluie)
+            if (mainWeather.equalsIgnoreCase("Rain") || mainWeather.equalsIgnoreCase("Drizzle") || mainWeather.equalsIgnoreCase("Thunderstorm")) {
+                return "🌧️ PLUIE DÉTECTÉE : \nAction : Arrosage annulé. Profitez de l'apport naturel en eau pour vos " + typePlante + ".";
             }
 
-            return "ℹ️ Analyse IA : Sol stable. \nAction : Aucune intervention urgente requise pour le moment.";
+            // PRIORITÉ 4 : Stress hydrique et évaporation
+            if (temp > 30 && humidity < 40) {
+                if (windSpeed > 30) {
+                    return "🌬️ VENT & CHALEUR : \nAction : Évapotranspiration critique. Arrosez au pied (goutte-à-goutte) uniquement pour éviter la perte par dérive.";
+                }
+                return "⚠️ STRESS HYDRIQUE : \nAction : Arrosage intensif requis. Les conditions favorisent le dessèchement rapide.";
+            }
+
+            // PRIORITÉ 5 : Vent fort
+            if (windSpeed > 45) {
+                return "🌬️ VENT VIOLENT : \nAction : Arrosage déconseillé. Risque de casse mécanique et gaspillage d'eau par pulvérisation.";
+            }
+
+            // PRIORITÉ 6 : Conditions Optimales
+            if (temp >= 18 && temp <= 26 && humidity > 50) {
+                return "✅ CONDITIONS IDÉALES : \nAction : Arrosage standard programmé. Vos " + typePlante + " sont dans leur zone de confort thermique.";
+            }
+
+            return "ℹ️ ANALYSE STABLE : \nAction : Pas d'intervention urgente. Le sol conserve une humidité suffisante selon les relevés.";
 
         } catch (Exception e) {
-            return "❌ Erreur : Impossible d'analyser les données pour l'irrigation.";
+            return "❌ ERREUR IA : Les données reçues sont incomplètes pour une analyse précise.";
         }
     }
 }
