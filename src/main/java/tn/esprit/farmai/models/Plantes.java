@@ -7,14 +7,16 @@ public class Plantes {
     private String nom_espece;
     private String cycle_vie;
     private int id_ferme;
+    private double quantite;
 
     public Plantes() {}
 
-    public Plantes(int id_plante, String nom_espece, String cycle_vie, int id_ferme) {
+    public Plantes(int id_plante, String nom_espece, String cycle_vie, int id_ferme, double quantite) {
         this.id_plante = id_plante;
         this.nom_espece = nom_espece;
         this.cycle_vie = cycle_vie;
         this.id_ferme = id_ferme;
+        this.quantite = quantite;
     }
 
     public int getId_plante() { return id_plante; }
@@ -25,6 +27,8 @@ public class Plantes {
     public void setCycle_vie(String cycle_vie) { this.cycle_vie = cycle_vie; }
     public int getId_ferme() { return id_ferme; }
     public void setId_ferme(int id_ferme) { this.id_ferme = id_ferme; }
+    public double getQuantite() { return quantite; }
+    public void setQuantite(double quantite) { this.quantite = quantite; }
 
     @Override
     public String toString() {
