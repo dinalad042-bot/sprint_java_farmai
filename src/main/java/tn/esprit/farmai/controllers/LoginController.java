@@ -158,8 +158,38 @@ public class LoginController implements Initializable {
         result.ifPresent(email -> {
             try {
                 if (userService.emailExists(email)) {
-                    NavigationUtil.showSuccess("Email envoyé",
-                            "Un email de réinitialisation a été envoyé à " + email);
+                    // Generate OTP and Send Mail
+                    String otp = tn.esprit.farmai.services.OTPService.generateOTP(email);
+                    tn.esprit.farmai.utils.MailingService.sendMail(email, "Réinitialisation de mot de passe",
+                            "Votre code de vérification pour la réinitialisation de votre mot de passe est : " + otp);
+
+                    // Navigate to Verification View
+                    try {
+                        FXMLLoader loader = new FXMLLoader(
+                                tn.esprit.farmai.HelloApplication.class.getResource("views/verification.fxml"));
+                        Parent root = loader.load();
+
+                        VerificationController controller = loader.getController();
+                        controller.setUserEmail(email);
+
+                        Stage stage = (Stage) loginButton.getScene().getWindow();
+                        Scene scene = new Scene(root, 900, 600);
+
+                        String cssPath = tn.esprit.farmai.HelloApplication.class.getResource("styles/auth.css") != null
+                                ? tn.esprit.farmai.HelloApplication.class.getResource("styles/auth.css")
+                                        .toExternalForm()
+                                : null;
+                        if (cssPath != null) {
+                            scene.getStylesheets().add(cssPath);
+                        }
+
+                        stage.setScene(scene);
+                        stage.setTitle("FarmAI - Vérification");
+                        stage.centerOnScreen();
+                    } catch (IOException e) {
+                        showError("Erreur lors du chargement de la page de vérification.");
+                        e.printStackTrace();
+                    }
                 } else {
                     NavigationUtil.showWarning("Email non trouvé",
                             "Aucun compte associé à cet email.");

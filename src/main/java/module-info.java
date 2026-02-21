@@ -3,7 +3,8 @@ module tn.esprit.farmai {
     requires javafx.fxml;
     requires javafx.web;
     requires javafx.graphics;
-
+    requires jakarta.mail;
+    requires jakarta.activation;
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;

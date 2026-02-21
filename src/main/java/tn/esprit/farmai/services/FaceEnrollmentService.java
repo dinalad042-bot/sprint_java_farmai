@@ -120,7 +120,7 @@ public class FaceEnrollmentService {
                 "FROM face_data fd JOIN user u ON fd.user_id = u.id_user";
 
         try (Statement st = cnx.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
                 byte[] modelBytes = rs.getBytes("face_model");
@@ -154,7 +154,7 @@ public class FaceEnrollmentService {
     public boolean hasAnyEnrolledFace() throws SQLException {
         String sql = "SELECT COUNT(*) FROM face_data";
         try (Statement st = cnx.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+                ResultSet rs = st.executeQuery(sql)) {
             return rs.next() && rs.getInt(1) > 0;
         }
     }
