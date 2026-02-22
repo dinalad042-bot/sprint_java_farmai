@@ -1,5 +1,7 @@
 package tn.esprit.farmai.utils;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -9,33 +11,43 @@ import javafx.scene.layout.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import tn.esprit.farmai.models.Analyse;
+import tn.esprit.farmai.models.Ferme;
+import tn.esprit.farmai.services.FermeService;
 
 import java.io.File;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Dialog for adding and editing Analyse.
  * Implements US11 validation and uses PreparedStatement.
+ * Updated: ComboBox for Ferme selection instead of manual ID input.
  */
 public class AnalyseDialog {
 
     private Analyse analyse;
     private boolean isEditMode;
     private String imageUrl = "";
+    private FermeService fermeService;
+    private ObservableList<Ferme> fermesList;
 
     public AnalyseDialog() {
         this.analyse = new Analyse();
         this.isEditMode = false;
+        this.fermeService = new FermeService();
+        this.fermesList = FXCollections.observableArrayList();
     }
 
     public AnalyseDialog(Analyse analyse) {
         this.analyse = analyse;
         this.isEditMode = true;
         this.imageUrl = analyse.getImageUrl() != null ? analyse.getImageUrl() : "";
+        this.fermeService = new FermeService();
+        this.fermesList = FXCollections.observableArrayList();
     }
 
     /**
@@ -44,9 +56,9 @@ public class AnalyseDialog {
     public Optional<Analyse> showAndWait(Window owner) {
         Dialog<Analyse> dialog = new Dialog<>();
         dialog.setTitle(isEditMode ? "Modifier l'Analyse" : "Nouvelle Analyse");
-        dialog.setHeaderText(isEditMode 
-            ? "Modifier l'analyse ID: " + analyse.getIdAnalyse()
-            : "Créer une nouvelle analyse");
+        dialog.setHeaderText(isEditMode
+                ? "Modifier l'analyse ID: " + analyse.getIdAnalyse()
+                : "Créer une nouvelle analyse");
 
         // Set the button types
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
@@ -64,13 +76,15 @@ public class AnalyseDialog {
         resultatField.setText(isEditMode ? analyse.getResultatTechnique() : "");
         resultatField.setPromptText("Résultat technique");
 
-        Spinner<Integer> idTechnicienSpinner = new Spinner<>(1, 9999, 
-            isEditMode ? analyse.getIdTechnicien() : 1);
+        Spinner<Integer> idTechnicienSpinner = new Spinner<>(1, 9999,
+                isEditMode ? analyse.getIdTechnicien() : 1);
         idTechnicienSpinner.setEditable(true);
 
-        Spinner<Integer> idFermeSpinner = new Spinner<>(1, 9999, 
-            isEditMode ? analyse.getIdFerme() : 1);
-        idFermeSpinner.setEditable(true);
+        // ComboBox for Ferme selection (replaces Spinner)
+        ComboBox<Ferme> fermeComboBox = new ComboBox<>();
+        fermeComboBox.setPromptText("Sélectionner une ferme");
+        fermeComboBox.setPrefWidth(250);
+        loadFermes(fermeComboBox);
 
         // Image URL field with preview
         TextField imageUrlField = new TextField();
@@ -93,8 +107,7 @@ public class AnalyseDialog {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Sélectionner une image");
             fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif")
-            );
+                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif"));
             File selectedFile = fileChooser.showOpenDialog(dialog.getDialogPane().getScene().getWindow());
             if (selectedFile != null) {
                 imageUrlField.setText(selectedFile.getAbsolutePath());
@@ -108,7 +121,8 @@ public class AnalyseDialog {
         Label dateErrorLabel = createErrorLabel("Veuillez sélectionner une date");
         Label resultatErrorLabel = createErrorLabel("Le résultat est requis (min 5 caractères)");
         Label technicienErrorLabel = createErrorLabel("ID technicien invalide");
-        Label fermeErrorLabel = createErrorLabel("ID ferme invalide");
+        Label fermeErrorLabel = createErrorLabel("Veuillez sélectionner une ferme");
+        Label imageErrorLabel = createErrorLabel("L'URL de l'image est requise (US11/US6)");
 
         // Add fields to grid
         int row = 0;
@@ -127,14 +141,15 @@ public class AnalyseDialog {
         grid.add(technicienErrorLabel, 1, row + 1);
         row += 2;
 
-        grid.add(new Label("ID Ferme *"), 0, row);
-        grid.add(idFermeSpinner, 1, row);
+        grid.add(new Label("Ferme de destination *"), 0, row);
+        grid.add(fermeComboBox, 1, row);
         grid.add(fermeErrorLabel, 1, row + 1);
         row += 2;
 
-        grid.add(new Label("Image"), 0, row);
+        grid.add(new Label("Image *"), 0, row);
         grid.add(imageBox, 1, row);
-        row++;
+        grid.add(imageErrorLabel, 1, row + 1);
+        row += 2;
 
         grid.add(imagePreview, 1, row);
         GridPane.setMargin(imagePreview, new Insets(10, 0, 0, 0));
@@ -153,8 +168,8 @@ public class AnalyseDialog {
 
         // Prevent dialog from closing when validation fails
         saveButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            if (!validateFields(datePicker, resultatField, idTechnicienSpinner, idFermeSpinner,
-                    dateErrorLabel, resultatErrorLabel, technicienErrorLabel, fermeErrorLabel)) {
+            if (!validateFields(datePicker, resultatField, idTechnicienSpinner, fermeComboBox, imageUrlField,
+                    dateErrorLabel, resultatErrorLabel, technicienErrorLabel, fermeErrorLabel, imageErrorLabel)) {
                 event.consume(); // Prevent dialog from closing
             }
         });
@@ -166,7 +181,11 @@ public class AnalyseDialog {
                 analyse.setDateAnalyse(LocalDateTime.of(datePicker.getValue(), LocalTime.now()));
                 analyse.setResultatTechnique(resultatField.getText().trim());
                 analyse.setIdTechnicien(idTechnicienSpinner.getValue());
-                analyse.setIdFerme(idFermeSpinner.getValue());
+                // Get the selected ferme's ID
+                Ferme selectedFerme = fermeComboBox.getValue();
+                if (selectedFerme != null) {
+                    analyse.setIdFerme(selectedFerme.getIdFerme());
+                }
                 analyse.setImageUrl(imageUrlField.getText().trim());
 
                 return analyse;
@@ -178,12 +197,39 @@ public class AnalyseDialog {
     }
 
     /**
+     * Load fermes from database into ComboBox
+     */
+    private void loadFermes(ComboBox<Ferme> fermeComboBox) {
+        try {
+            List<Ferme> fermes = fermeService.selectAll();
+            fermesList.addAll(fermes);
+            fermeComboBox.setItems(fermesList);
+
+            // In edit mode, select the current ferme
+            if (isEditMode) {
+                for (Ferme f : fermes) {
+                    if (f.getIdFerme() == analyse.getIdFerme()) {
+                        fermeComboBox.setValue(f);
+                        break;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors du chargement des fermes: " + e.getMessage());
+            // Show error in ComboBox
+            fermeComboBox.setPromptText("Erreur de chargement des fermes");
+        }
+    }
+
+    /**
      * Validate all fields (US11)
      */
     private boolean validateFields(DatePicker datePicker, TextField resultatField,
-                                   Spinner<Integer> idTechnicienSpinner, Spinner<Integer> idFermeSpinner,
-                                   Label dateErrorLabel, Label resultatErrorLabel,
-                                   Label technicienErrorLabel, Label fermeErrorLabel) {
+            Spinner<Integer> idTechnicienSpinner, ComboBox<Ferme> fermeComboBox,
+            TextField imageUrlField,
+            Label dateErrorLabel, Label resultatErrorLabel,
+            Label technicienErrorLabel, Label fermeErrorLabel,
+            Label imageErrorLabel) {
         boolean isValid = true;
 
         // Validate date
@@ -222,44 +268,34 @@ public class AnalyseDialog {
             isValid = false;
         }
 
-        // Validate ferme ID
-        try {
-            int fermeId = idFermeSpinner.getValue();
-            if (fermeId <= 0) {
-                throw new IllegalArgumentException();
-            }
-            hideError(fermeErrorLabel);
-        } catch (Exception e) {
+        // Validate ferme selection
+        Ferme selectedFerme = fermeComboBox.getValue();
+        if (selectedFerme == null) {
+            fermeErrorLabel.setText("Veuillez sélectionner une ferme de destination");
             showError(fermeErrorLabel);
+            fermeComboBox.setStyle("-fx-border-color: #D32F2F; -fx-border-width: 2px;");
             isValid = false;
+        } else {
+            hideError(fermeErrorLabel);
+            fermeComboBox.setStyle("-fx-border-color: transparent;");
         }
 
         // Validate image URL (US6 and US11)
-
-        if (this.imageUrl == null || this.imageUrl.trim().isEmpty()) {
-
-            Alert alertUrl = new Alert(Alert.AlertType.ERROR);
-
-            alertUrl.setTitle("Erreur de Validation");
-
-            alertUrl.setHeaderText("URL de l'image invalide");
-
-            alertUrl.setContentText("L'URL de l'image ne peut pas �tre vide (US6/US11).");
-
-            alertUrl.showAndWait();
-
+        if (imageUrlField != null && (imageUrlField.getText() == null || imageUrlField.getText().trim().isEmpty())) {
+            showError(imageErrorLabel);
+            imageUrlField.setStyle("-fx-border-color: #D32F2F; -fx-border-width: 2px;");
             isValid = false;
-
+        } else if (imageUrlField != null) {
+            hideError(imageErrorLabel);
+            imageUrlField.setStyle("-fx-border-color: transparent;");
         }
-
-        
 
         if (!isValid) {
             // Show global error alert
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Validation");
+            alert.setTitle("Validation Requise");
             alert.setHeaderText(null);
-            alert.setContentText("Veuillez corriger les erreurs avant d'enregistrer.");
+            alert.setContentText("Veuillez corriger les erreurs en rouge avant d'enregistrer.");
             alert.showAndWait();
         }
 

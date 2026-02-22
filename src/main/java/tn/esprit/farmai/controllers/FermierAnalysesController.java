@@ -15,8 +15,10 @@ import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
+import tn.esprit.farmai.models.Ferme;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
+import tn.esprit.farmai.services.FermeService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.SessionManager;
 
@@ -50,11 +52,13 @@ public class FermierAnalysesController implements Initializable {
     private Button backButton;
 
     private final AnalyseService analyseService;
+    private final FermeService fermeService;
     private ObservableList<Analyse> analysesList;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public FermierAnalysesController() {
         this.analyseService = new AnalyseService();
+        this.fermeService = new FermeService();
         this.analysesList = FXCollections.observableArrayList();
     }
 
@@ -149,22 +153,35 @@ public class FermierAnalysesController implements Initializable {
             // On récupère le current user pour avoir l'id du fermier
             User currentUser = SessionManager.getInstance().getCurrentUser();
             int farmId = 1; // Fallback pour dev
+            
             if (currentUser != null) {
-                // Gérer la liaison User <-> Ferme si elle existe, sinon utiliser son ID
-                // temporairement
-                farmId = currentUser.getIdUser();
+                // CORRECTION: Utiliser la table ferme pour récupérer l'id_ferme du fermier
+                Ferme ferme = fermeService.findByFermier(currentUser.getIdUser());
+                if (ferme != null) {
+                    farmId = ferme.getIdFerme();
+                    System.out.println("DEBUG (FermierAnalysesController) - Ferme trouvée: " + ferme.getNomFerme() + " (ID: " + farmId + ")");
+                } else {
+                    System.out.println("DEBUG (FermierAnalysesController) - Aucune ferme trouvée pour l'utilisateur ID " + currentUser.getIdUser());
+                    // Afficher un message à l'utilisateur
+                    analysesTableView.setPlaceholder(new Label("Aucune ferme associée à votre compte. Contactez l'administrateur."));
+                    return;
+                }
             }
 
             List<Analyse> analyses = analyseService.findByFerme(farmId);
 
+            System.out.println("DEBUG (FermierAnalysesController) - Analyses trouvées pour la ferme ID " + farmId
+                    + " : " + analyses.size());
+
             if (analyses.isEmpty()) {
-                // Silent fail on load or log it
+                analysesTableView.setPlaceholder(new Label("Aucune analyse disponible pour votre ferme."));
             }
             analysesList.addAll(analyses);
             analysesTableView.setItems(analysesList);
 
         } catch (SQLException e) {
             e.printStackTrace();
+            analysesTableView.setPlaceholder(new Label("Erreur de chargement: " + e.getMessage()));
         }
     }
 
