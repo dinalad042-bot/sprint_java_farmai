@@ -152,6 +152,14 @@ public class NavigationUtil {
         }
     }
 
+    public static void navigateToAgricoleDashboard(Stage stage) {
+
+        navigateTo(stage, "views/agricole-dashboard.fxml", "Tableau de Bord Agricole");
+
+    }
+
+    
+
     public static void navigateToUserList(Stage stage) {
         navigateTo(stage, "views/user-list.fxml", "Gestion des Utilisateurs");
     }

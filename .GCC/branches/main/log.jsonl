@@ -1,0 +1,12 @@
+{"ts":"2026-02-18T22:06:13.891Z","kind":"commit","id":"c_20260218T220613_cf9964a2","summary":"GCC initialized for FarmAI project"}
+{"ts":"2026-02-18T22:13:11.781Z","kind":"commit","id":"c_20260218T221311_149a404a","summary":"FarmAI Project Analysis Complete - JavaFX Agricultural Management System"}
+{"ts":"2026-02-18T22:15:39.388Z","kind":"commit","id":"c_20260218T221539_7f2ab624","summary":"Fix: Alert dialogs now use showAndWait() to prevent window closing issues"}
+{"ts":"2026-02-18T22:18:42.004Z","kind":"commit","id":"c_20260218T221842_edc6f5d0","summary":"Fix: Prevent dialog closing on validation error in AnalyseDialog"}
+{"ts":"2026-02-18T22:19:33.641Z","kind":"commit","id":"c_20260218T221933_14512d04","summary":"Bug Fix Verified: Dialog no longer closes on validation error"}
+{"ts":"2026-02-18T22:20:34.249Z","kind":"commit","id":"c_20260218T222034_f40aab1b","summary":"Git Push: Bug fix pushed to feature/expertise-is-alaeddin branch"}
+{"ts":"2026-02-18T22:59:05.154Z","kind":"commit","id":"c_20260218T225905_3d939bc0","summary":"Implémentation US9: Génération PDF binaire avec PDFBox"}
+{"ts":"2026-02-18T23:03:27.543Z","kind":"commit","id":"c_20260218T230327_1a97dfd2","summary":"Fix PDF popup dialog and add folder opening feature"}
+{"ts":"2026-02-18T23:09:53.785Z","kind":"commit","id":"c_20260218T230953_92d7e24e","summary":"Fix PDF hanging issue and image loading with timeouts"}
+{"ts":"2026-02-18T23:11:13.844Z","kind":"commit","id":"c_20260218T231113_4345e2fd","summary":"✅ PDF generation fully working - user confirmed"}
+{"ts":"2026-02-18T23:11:55.789Z","kind":"commit","id":"c_20260218T231155_c8e0ad7f","summary":"✅ Pushed PDF implementation to git branch"}
+{"ts":"2026-02-22T11:16:07.147Z","kind":"commit","id":"c_20260222T111607_38b8e906","summary":"Module 3 Technical Audit - Complete Analysis Report"}

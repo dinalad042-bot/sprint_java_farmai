@@ -234,6 +234,26 @@ public class AnalyseDialog {
             isValid = false;
         }
 
+        // Validate image URL (US6 and US11)
+
+        if (this.imageUrl == null || this.imageUrl.trim().isEmpty()) {
+
+            Alert alertUrl = new Alert(Alert.AlertType.ERROR);
+
+            alertUrl.setTitle("Erreur de Validation");
+
+            alertUrl.setHeaderText("URL de l'image invalide");
+
+            alertUrl.setContentText("L'URL de l'image ne peut pas être vide (US6/US11).");
+
+            alertUrl.showAndWait();
+
+            isValid = false;
+
+        }
+
+        
+
         if (!isValid) {
             // Show global error alert
             Alert alert = new Alert(Alert.AlertType.WARNING);

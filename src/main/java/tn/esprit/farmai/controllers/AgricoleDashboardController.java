@@ -91,10 +91,47 @@ public class AgricoleDashboardController implements Initializable {
     }
 
     /**
-     * Handle AI analysis
+     * Handle AI analysis (Consultation Fermier)
      */
     @FXML
     private void handleAIAnalysis() {
-        NavigationUtil.showSuccess("Analyse IA", "Module d'analyse IA à venir.");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.scene.Parent currentRoot = welcomeLabel.getScene().getRoot();
+
+            // Fade out
+            javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
+                    javafx.util.Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(event -> {
+                try {
+                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                            getClass().getResource("/tn/esprit/farmai/views/fermier-analyses.fxml"));
+                    javafx.scene.Parent newRoot = loader.load();
+                    javafx.scene.Scene scene = new javafx.scene.Scene(newRoot, 1200, 800);
+
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+
+                    javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
+                            javafx.util.Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                    stage.show();
+                } catch (Exception e) {
+                    NavigationUtil.showError("Erreur", "Impossible de charger la vue fermier: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
+            fadeOut.play();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
