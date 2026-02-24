@@ -30,8 +30,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FermierAnalysesController implements Initializable {
+
+    private static final Logger LOGGER = Logger.getLogger(FermierAnalysesController.class.getName());
 
     @FXML
     private TableView<Analyse> analysesTableView;
@@ -146,42 +150,62 @@ public class FermierAnalysesController implements Initializable {
         });
     }
 
+    /**
+     * Load analyses for the current fermier user.
+     * Handles edge cases: user not logged in, no farm associated, no analyses found.
+     */
     private void loadAnalysesForFermier() {
         try {
             analysesList.clear();
 
-            // On récupère le current user pour avoir l'id du fermier
+            // Step 1: Check if user is logged in
             User currentUser = SessionManager.getInstance().getCurrentUser();
-            int farmId = 1; // Fallback pour dev
-            
-            if (currentUser != null) {
-                // CORRECTION: Utiliser la table ferme pour récupérer l'id_ferme du fermier
-                Ferme ferme = fermeService.findByFermier(currentUser.getIdUser());
-                if (ferme != null) {
-                    farmId = ferme.getIdFerme();
-                    System.out.println("DEBUG (FermierAnalysesController) - Ferme trouvée: " + ferme.getNomFerme() + " (ID: " + farmId + ")");
-                } else {
-                    System.out.println("DEBUG (FermierAnalysesController) - Aucune ferme trouvée pour l'utilisateur ID " + currentUser.getIdUser());
-                    // Afficher un message à l'utilisateur
-                    analysesTableView.setPlaceholder(new Label("Aucune ferme associée à votre compte. Contactez l'administrateur."));
-                    return;
-                }
+            if (currentUser == null) {
+                LOGGER.log(Level.WARNING, "No user session found");
+                analysesTableView.setPlaceholder(new Label("Session expirée. Veuillez vous reconnecter."));
+                NavigationUtil.showError("Session expirée", "Aucune session active. Veuillez vous reconnecter.");
+                return;
             }
 
-            List<Analyse> analyses = analyseService.findByFerme(farmId);
+            LOGGER.log(Level.INFO, "Loading analyses for user: {0} (ID: {1})", 
+                    new Object[]{currentUser.getFullName(), currentUser.getIdUser()});
 
-            System.out.println("DEBUG (FermierAnalysesController) - Analyses trouvées pour la ferme ID " + farmId
-                    + " : " + analyses.size());
+            // Step 2: Find the farm associated with this fermier
+            Ferme ferme = fermeService.findByFermier(currentUser.getIdUser());
+            if (ferme == null) {
+                LOGGER.log(Level.WARNING, "No farm found for user ID: {0}", currentUser.getIdUser());
+                analysesTableView.setPlaceholder(new Label(
+                    "Aucune ferme associée à votre compte.\n" +
+                    "Veuillez contacter l'administrateur pour associer une ferme à votre profil."));
+                return;
+            }
+
+            int farmId = ferme.getIdFerme();
+            LOGGER.log(Level.INFO, "Farm found: {0} (ID: {1})", new Object[]{ferme.getNomFerme(), farmId});
+
+            // Step 3: Load analyses for this farm
+            List<Analyse> analyses = analyseService.findByFerme(farmId);
+            LOGGER.log(Level.INFO, "Found {0} analyses for farm ID: {1}", new Object[]{analyses.size(), farmId});
 
             if (analyses.isEmpty()) {
-                analysesTableView.setPlaceholder(new Label("Aucune analyse disponible pour votre ferme."));
+                analysesTableView.setPlaceholder(new Label(
+                    "Aucune analyse disponible pour votre ferme.\n" +
+                    "Les analyses effectuées par l'expert apparaîtront ici."));
+            } else {
+                analysesList.addAll(analyses);
+                analysesTableView.setItems(analysesList);
             }
-            analysesList.addAll(analyses);
-            analysesTableView.setItems(analysesList);
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            analysesTableView.setPlaceholder(new Label("Erreur de chargement: " + e.getMessage()));
+            LOGGER.log(Level.SEVERE, "Database error while loading analyses", e);
+            analysesTableView.setPlaceholder(new Label(
+                "Erreur de chargement des analyses.\n" +
+                "Détails: " + (e.getMessage() != null ? e.getMessage() : "Erreur inconnue")));
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Unexpected error while loading analyses", e);
+            analysesTableView.setPlaceholder(new Label(
+                "Erreur inattendue.\n" +
+                "Veuillez réessayer ou contacter le support."));
         }
     }
 

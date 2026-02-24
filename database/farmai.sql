@@ -35,6 +35,22 @@ CREATE TABLE IF NOT EXISTS user (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
+-- Table: ferme (Exploitations agricoles)
+-- ============================================
+CREATE TABLE IF NOT EXISTS ferme (
+    id_ferme INT(11) NOT NULL AUTO_INCREMENT,
+    nom_ferme VARCHAR(100) NOT NULL,
+    lieu VARCHAR(255) NOT NULL,
+    surface DOUBLE DEFAULT 0,
+    id_fermier INT(11) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_ferme),
+    UNIQUE KEY unique_fermier (id_fermier),
+    FOREIGN KEY (id_fermier) REFERENCES user(id_user) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- Table: analyse (Analyses techniques)
 -- ============================================
 CREATE TABLE IF NOT EXISTS analyse (
@@ -95,6 +111,29 @@ INSERT INTO user (nom, prenom, email, password, cin, role, telephone, adresse)
 VALUES 
     ('Fournisseur', 'Test', 'fournisseur@farmai.tn', 'dO6VnlGvKxY0AAAA$+Y0XqxZXqxZXqxZXqxZXqxZXqxZXqxZXqxZXqxZXqx=', '33333333', 'FOURNISSEUR', '+216 73 000 000', 'Bizerte, Tunisie')
 ON DUPLICATE KEY UPDATE email = email;
+
+-- ============================================
+-- Insertion des données de test - Fermes
+-- ============================================
+-- Ferme pour l'Admin (ID 1)
+INSERT INTO ferme (nom_ferme, lieu, surface, id_fermier)
+VALUES ('Ferme Pilote Admin', 'Tunis, Tunisie', 100.0, 1)
+ON DUPLICATE KEY UPDATE nom_ferme = VALUES(nom_ferme);
+
+-- Ferme pour l'Expert (ID 2)
+INSERT INTO ferme (nom_ferme, lieu, surface, id_fermier)
+VALUES ('Ferme Experte Sfax', 'Sfax, Tunisie', 75.0, 2)
+ON DUPLICATE KEY UPDATE nom_ferme = VALUES(nom_ferme);
+
+-- Ferme pour l'Agricole (ID 3)
+INSERT INTO ferme (nom_ferme, lieu, surface, id_fermier)
+VALUES ('Ferme Test Agricole', 'Sousse, Tunisie', 50.0, 3)
+ON DUPLICATE KEY UPDATE nom_ferme = VALUES(nom_ferme);
+
+-- Ferme pour le Fournisseur (ID 4)
+INSERT INTO ferme (nom_ferme, lieu, surface, id_fermier)
+VALUES ('Ferme Bizerte', 'Bizerte, Tunisie', 60.0, 4)
+ON DUPLICATE KEY UPDATE nom_ferme = VALUES(nom_ferme);
 
 -- ============================================
 -- Insertion des données de test - Analyses

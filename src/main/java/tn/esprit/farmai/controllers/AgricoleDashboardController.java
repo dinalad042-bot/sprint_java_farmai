@@ -13,11 +13,16 @@ import tn.esprit.farmai.utils.SessionManager;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for Agricole Dashboard.
+ * Provides navigation to analysis consultation for fermier users.
  */
 public class AgricoleDashboardController implements Initializable {
+
+    private static final Logger LOGGER = Logger.getLogger(AgricoleDashboardController.class.getName());
 
     @FXML
     private Label welcomeLabel;
@@ -92,14 +97,24 @@ public class AgricoleDashboardController implements Initializable {
 
     /**
      * Handle AI analysis (Consultation Fermier)
+     * Navigates to the fermier analyses view where the user can see expert analyses.
      */
     @FXML
     private void handleAIAnalysis() {
         try {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                LOGGER.log(Level.WARNING, "User session not found when trying to access analyses");
+                NavigationUtil.showError("Session expirée", "Veuillez vous reconnecter pour accéder aux analyses.");
+                return;
+            }
+
+            LOGGER.log(Level.INFO, "User {0} navigating to analyses view", currentUser.getFullName());
+
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             javafx.scene.Parent currentRoot = welcomeLabel.getScene().getRoot();
 
-            // Fade out
+            // Fade out animation
             javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
                     javafx.util.Duration.millis(200), currentRoot);
             fadeOut.setFromValue(1.0);
@@ -115,6 +130,7 @@ public class AgricoleDashboardController implements Initializable {
                     newRoot.setOpacity(0.0);
                     stage.setScene(scene);
 
+                    // Fade in animation
                     javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
                             javafx.util.Duration.millis(250), newRoot);
                     fadeIn.setFromValue(0.0);
@@ -122,16 +138,24 @@ public class AgricoleDashboardController implements Initializable {
                     fadeIn.play();
 
                     stage.show();
+                    LOGGER.log(Level.INFO, "Successfully navigated to analyses view");
+                } catch (java.io.IOException e) {
+                    LOGGER.log(Level.SEVERE, "Failed to load fermier-analyses.fxml", e);
+                    NavigationUtil.showError("Erreur de chargement", 
+                            "Impossible de charger la vue des analyses.\n" +
+                            "Veuillez réessayer ou contacter le support.");
                 } catch (Exception e) {
-                    NavigationUtil.showError("Erreur", "Impossible de charger la vue fermier: " + e.getMessage());
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Unexpected error loading analyses view", e);
+                    NavigationUtil.showError("Erreur", 
+                            "Une erreur inattendue s'est produite: " + e.getMessage());
                 }
             });
 
             fadeOut.play();
         } catch (Exception e) {
-            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Error during navigation to analyses", e);
+            NavigationUtil.showError("Erreur de navigation", 
+                    "Impossible de naviguer vers les analyses: " + e.getMessage());
         }
     }
 }

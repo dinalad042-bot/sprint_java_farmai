@@ -12,6 +12,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Conseil;
 import tn.esprit.farmai.models.Priorite;
@@ -63,6 +65,12 @@ public class GestionConseilsController implements Initializable {
     private Label userNameLabel;
     @FXML
     private Label userRoleLabel;
+    @FXML
+    private Circle userAvatarCircle;
+    @FXML
+    private Text defaultAvatarText;
+    @FXML
+    private Circle headerAvatarCircle;
 
     private final ConseilService conseilService;
     private final AnalyseService analyseService;

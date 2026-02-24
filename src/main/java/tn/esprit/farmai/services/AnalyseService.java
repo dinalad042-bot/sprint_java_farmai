@@ -119,22 +119,65 @@ public class AnalyseService implements CRUD<Analyse> {
             return "No observation provided. Please enter your observations.";
         }
 
+        // Validate API key configuration
+        String apiKey = Config.GROQ_API_KEY;
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            String configHint = Config.isConfigLoaded() 
+                ? "GROQ_API_KEY is missing in config.properties"
+                : "config.properties not found: " + Config.getConfigLoadError();
+            throw new IOException(
+                "AI service not configured.\n\n" +
+                "Setup Instructions:\n" +
+                "1. Get a free API key from https://console.groq.com/keys\n" +
+                "2. Add to config.properties: GROQ_API_KEY=your_key_here\n\n" +
+                "Current status: " + configHint
+            );
+        }
+
+        // Validate API key format (Groq keys start with 'gsk_')
+        if (!apiKey.startsWith("gsk_")) {
+            throw new IOException(
+                "Invalid API key format. Groq API keys should start with 'gsk_'.\n" +
+                "Please get a valid key from https://console.groq.com/keys"
+            );
+        }
+
         String systemContent = "You are an expert agricultural technician providing technical analysis for farm diagnostics. Provide concise, professional technical reports.";
         String userContent = "Analyze this agricultural observation and provide a technical diagnostic summary: " + observation;
 
         String jsonBody = buildGroqRequest(systemContent, userContent);
 
         try {
-            String response = SimpleHttpClient.postJson(Config.GROQ_API_URL, jsonBody, "Bearer " + Config.GROQ_API_KEY);
+            String response = SimpleHttpClient.postJson(Config.GROQ_API_URL, jsonBody, "Bearer " + apiKey);
             return extractContent(response);
         } catch (IOException e) {
             String msg = e.getMessage();
             if (msg == null) {
                 throw new IOException("AI service connection failed. Please check your internet connection.");
+            }
+            
+            // Parse specific error conditions
+            if (msg.contains("invalid_api_key") || msg.contains("Invalid API Key")) {
+                throw new IOException(
+                    "Invalid Groq API key. The key may have been revoked or expired.\n" +
+                    "Please get a new key from https://console.groq.com/keys"
+                );
+            } else if (msg.contains("insufficient_quota") || msg.contains("quota")) {
+                throw new IOException(
+                    "Groq API quota exceeded. Please check your usage at https://console.groq.com/usage"
+                );
+            } else if (msg.contains("model_not_found") || msg.contains("does not exist")) {
+                throw new IOException(
+                    "AI model '" + Config.GROQ_MODEL + "' not available.\n" +
+                    "Please check available models at https://console.groq.com/docs/models"
+                );
             } else if (msg.contains("image") || msg.contains("does not support")) {
                 throw new IOException("This AI model does not support image input. Please provide text-based observations only.");
             } else if (msg.contains("401") || msg.contains("Unauthorized")) {
-                throw new IOException("AI service authentication failed. Please contact administrator.");
+                throw new IOException(
+                    "AI service authentication failed. Your API key may be invalid.\n" +
+                    "Please verify at https://console.groq.com/keys"
+                );
             } else if (msg.contains("429") || msg.contains("rate limit")) {
                 throw new IOException("AI service rate limit reached. Please wait a moment and try again.");
             } else if (msg.contains("500") || msg.contains("502") || msg.contains("503")) {
@@ -439,71 +482,123 @@ public class AnalyseService implements CRUD<Analyse> {
     
     /**
      * Helper method to draw image from URL in PDF
+     * 
+     * Supports multiple image sources:
+     * 1. Local file paths (absolute or relative)
+     * 2. HTTP/HTTPS URLs
+     * 
+     * Supported formats: JPEG, PNG, GIF, BMP
+     * 
      * Railway Track: Images are loaded from URLs (String) stored in database
      * Uses timeout to prevent hanging on network issues
      */
     private float drawImageFromUrl(PDDocument document, PDPageContentStream contentStream, String imageUrl, float x, float y, float maxWidth) throws IOException {
         BufferedImage bufferedImage = null;
+        String imageSource = "unknown";
         
         try {
-            // Check if it's a file path first (local file)
+            // Step 1: Try to load image from various sources
             File imageFile = new File(imageUrl);
+            
             if (imageFile.exists() && imageFile.isFile()) {
+                // Case 1: Local file path
+                imageSource = "local file";
                 bufferedImage = ImageIO.read(imageFile);
-            } else {
-                // Try as URL with timeout to prevent hanging
+                
+                if (bufferedImage == null) {
+                    // ImageIO couldn't read the file format
+                    throw new IOException("Unsupported image format for file: " + imageFile.getName());
+                }
+            } else if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+                // Case 2: HTTP/HTTPS URL
+                imageSource = "URL";
                 URL url = new URL(imageUrl);
                 java.net.URLConnection connection = url.openConnection();
-                connection.setConnectTimeout(3000); // 3 seconds timeout
-                connection.setReadTimeout(5000);    // 5 seconds read timeout
+                connection.setConnectTimeout(5000);  // 5 seconds timeout
+                connection.setReadTimeout(10000);    // 10 seconds read timeout
+                
+                // Set user agent to avoid 403 errors from some servers
+                connection.setRequestProperty("User-Agent", "Mozilla/5.0");
                 
                 try (InputStream is = connection.getInputStream()) {
                     bufferedImage = ImageIO.read(is);
+                    
+                    if (bufferedImage == null) {
+                        throw new IOException("Unsupported image format from URL");
+                    }
                 }
+            } else {
+                // Case 3: Invalid path - try to give helpful error message
+                throw new IOException("Image path is not a valid file or URL: " + truncateString(imageUrl, 50));
             }
             
-            if (bufferedImage != null) {
-                // Create temporary file for PDFBox
-                File tempFile = File.createTempFile("pdf_img_", ".jpg");
+            // Step 2: Ensure image was loaded
+            if (bufferedImage == null) {
+                throw new IOException("Failed to load image from " + imageSource);
+            }
+            
+            // Step 3: Convert to compatible format for PDF (JPEG/PNG)
+            // PDFBox works best with RGB images
+            BufferedImage rgbImage = bufferedImage;
+            if (bufferedImage.getType() != BufferedImage.TYPE_INT_RGB && 
+                bufferedImage.getType() != BufferedImage.TYPE_INT_ARGB) {
+                // Convert to RGB
+                rgbImage = new BufferedImage(
+                    bufferedImage.getWidth(), 
+                    bufferedImage.getHeight(), 
+                    BufferedImage.TYPE_INT_RGB
+                );
+                rgbImage.createGraphics().drawImage(bufferedImage, 0, 0, null);
+            }
+            
+            // Step 4: Create temporary file with proper extension
+            String format = "JPEG";  // Use JPEG for smaller PDF size
+            File tempFile = File.createTempFile("pdf_img_", "." + format.toLowerCase());
+            tempFile.deleteOnExit();
+            
+            boolean written = ImageIO.write(rgbImage, format, tempFile);
+            if (!written) {
+                // Try PNG if JPEG fails
+                format = "PNG";
+                tempFile = File.createTempFile("pdf_img_", "." + format.toLowerCase());
                 tempFile.deleteOnExit();
-                
-                // Write as JPEG for smaller size
-                ImageIO.write(bufferedImage, "JPEG", tempFile);
-                
-                // Load into PDF
-                PDImageXObject pdImage = PDImageXObject.createFromFileByContent(tempFile, document);
-                
-                // Calculate scaling
-                float imageWidth = pdImage.getWidth();
-                float imageHeight = pdImage.getHeight();
-                float maxHeight = 150; // Reduced max height
-                float scale = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
-                
-                float scaledWidth = imageWidth * scale;
-                float scaledHeight = imageHeight * scale;
-                
-                // Ensure we have space on page
-                if (y - scaledHeight < 100) {
-                    // Not enough space, draw message instead
-                    contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(x, y);
-                    contentStream.showText("[Image available but too large for remaining space]");
-                    contentStream.endText();
-                    return y - 15;
-                }
-                
-                // Draw image
-                contentStream.drawImage(pdImage, x, y - scaledHeight, scaledWidth, scaledHeight);
-                return y - scaledHeight - 15;
-            } else {
+                written = ImageIO.write(rgbImage, format, tempFile);
+            }
+            
+            if (!written) {
+                throw new IOException("Could not write image in any supported format");
+            }
+            
+            // Step 5: Load into PDF
+            PDImageXObject pdImage = PDImageXObject.createFromFileByContent(tempFile, document);
+            
+            // Step 6: Calculate scaling (max 200px height, fit to page width)
+            float imageWidth = pdImage.getWidth();
+            float imageHeight = pdImage.getHeight();
+            float maxHeight = 200;  // Max height in points
+            float scale = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+            
+            float scaledWidth = imageWidth * scale;
+            float scaledHeight = imageHeight * scale;
+            
+            // Step 7: Check if we need a new page
+            if (y - scaledHeight < 100) {
                 contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
                 contentStream.beginText();
                 contentStream.newLineAtOffset(x, y);
-                contentStream.showText("[Image not loadable: " + truncateString(imageUrl, 40) + "]");
+                contentStream.showText("[Image requires more space - " + (int)imageWidth + "x" + (int)imageHeight + " pixels]");
                 contentStream.endText();
                 return y - 15;
             }
+            
+            // Step 8: Draw the image
+            contentStream.drawImage(pdImage, x, y - scaledHeight, scaledWidth, scaledHeight);
+            
+            // Log success for debugging
+            System.out.println("PDF Image loaded successfully: " + imageSource + " (" + (int)imageWidth + "x" + (int)imageHeight + " -> " + (int)scaledWidth + "x" + (int)scaledHeight + ")");
+            
+            return y - scaledHeight - 15;
+            
         } catch (java.net.SocketTimeoutException e) {
             contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
             contentStream.beginText();
@@ -511,12 +606,22 @@ public class AnalyseService implements CRUD<Analyse> {
             contentStream.showText("[Image timeout - network too slow]");
             contentStream.endText();
             return y - 15;
+        } catch (javax.imageio.IIOException e) {
+            // ImageIO specific errors (corrupt image, wrong format, etc.)
+            contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+            contentStream.beginText();
+            contentStream.newLineAtOffset(x, y);
+            contentStream.showText("[Invalid image format: " + truncateString(e.getMessage(), 30) + "]");
+            contentStream.endText();
+            System.err.println("PDF Image Error (ImageIO): " + e.getMessage());
+            return y - 15;
         } catch (Exception e) {
             contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
             contentStream.beginText();
             contentStream.newLineAtOffset(x, y);
             contentStream.showText("[Image error: " + truncateString(e.getMessage(), 35) + "]");
             contentStream.endText();
+            System.err.println("PDF Image Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             return y - 15;
         }
     }

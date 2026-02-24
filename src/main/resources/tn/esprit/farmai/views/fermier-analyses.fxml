@@ -12,7 +12,6 @@
     <!-- Stylesheets -->
     <stylesheets>
         <URL value="@../styles/dashboard.css" />
-        <URL value="@../styles/styles.css" />
     </stylesheets>
 
     <!-- Sidebar / Topbar ? Pour rester simple, un topbar avec bouton retour -->

@@ -714,7 +714,8 @@ public class GestionAnalysesController implements Initializable {
             List<Analyse> analyses = analyseService.selectAll();
             
             if (analyses.isEmpty()) {
-                showInfo("No Data", "No analyses found in the database.");
+                // Defer dialog to avoid showing during animation
+                Platform.runLater(() -> showInfo("No Data", "No analyses found in the database."));
             }
             analysesList.addAll(analyses);
             
@@ -726,7 +727,8 @@ public class GestionAnalysesController implements Initializable {
             populateTechnicienFilter();
             
         } catch (SQLException e) {
-            showError("Database Error", "Failed to load analyses: " + e.getMessage());
+            // Defer dialog to avoid showing during animation
+            Platform.runLater(() -> showError("Database Error", "Failed to load analyses: " + e.getMessage()));
             e.printStackTrace();
             
             // Keep UI functional even with database errors
@@ -734,7 +736,8 @@ public class GestionAnalysesController implements Initializable {
             analysesTableView.setItems(analysesList);
             totalAnalysesLabel.setText("Total: 0 analyses (Database error)");
         } catch (Exception e) {
-            showError("Unexpected Error", "An error occurred while loading data: " + e.getMessage());
+            // Defer dialog to avoid showing during animation
+            Platform.runLater(() -> showError("Unexpected Error", "An error occurred while loading data: " + e.getMessage()));
             e.printStackTrace();
             
             // Keep UI functional even with unexpected errors
