@@ -147,4 +147,22 @@ public class AdminDashboardController implements Initializable {
     private void handleProfile() {
         handleProfileEdit();
     }
+
+    /**
+     * Handle statistics navigation
+     */
+    @FXML
+    private void handleStatistics() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateToStatistics(stage);
+    }
+
+    /**
+     * Handle user logs/audit navigation
+     */
+    @FXML
+    private void handleUserLogs() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.showSuccess("Logs Audit", "Module de logs d'audit à venir.");
+    }
 }

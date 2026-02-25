@@ -54,6 +54,18 @@ public class FermierAnalysesController implements Initializable {
 
     @FXML
     private Button backButton;
+    @FXML
+    private TextField searchField;
+    
+    // Sidebar elements
+    @FXML
+    private Circle sidebarAvatar;
+    @FXML
+    private Text sidebarAvatarText;
+    @FXML
+    private Label userNameLabel;
+    @FXML
+    private Label userRoleLabel;
 
     private final AnalyseService analyseService;
     private final FermeService fermeService;
@@ -68,8 +80,51 @@ public class FermierAnalysesController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Set user info in sidebar
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            if (userNameLabel != null) userNameLabel.setText(currentUser.getFullName());
+            if (userRoleLabel != null) userRoleLabel.setText(currentUser.getRole().getDisplayName());
+        }
+        
         setupTableView();
+        setupSearch();
         loadAnalysesForFermier();
+    }
+    
+    /**
+     * Setup search functionality
+     */
+    private void setupSearch() {
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                filterAnalyses(newVal);
+            });
+        }
+    }
+    
+    /**
+     * Filter analyses based on search text
+     */
+    private void filterAnalyses(String searchText) {
+        if (searchText == null || searchText.trim().isEmpty()) {
+            analysesTableView.setItems(analysesList);
+            return;
+        }
+        
+        String search = searchText.toLowerCase().trim();
+        ObservableList<Analyse> filteredList = FXCollections.observableArrayList();
+        
+        for (Analyse analyse : analysesList) {
+            String resultat = analyse.getResultatTechnique();
+            if (resultat != null && resultat.toLowerCase().contains(search)) {
+                filteredList.add(analyse);
+            } else if (String.valueOf(analyse.getIdAnalyse()).contains(search)) {
+                filteredList.add(analyse);
+            }
+        }
+        
+        analysesTableView.setItems(filteredList);
     }
 
     private void setupTableView() {
@@ -224,4 +279,12 @@ public class FermierAnalysesController implements Initializable {
         NavigationUtil.navigateToAgricoleDashboard((Stage) backButton.getScene().getWindow());
     }
 
+    /**
+     * Handle logout
+     */
+    @FXML
+    private void handleLogout() {
+        Stage stage = (Stage) analysesTableView.getScene().getWindow();
+        NavigationUtil.logout(stage);
+    }
 }

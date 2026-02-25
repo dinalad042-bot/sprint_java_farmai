@@ -7,11 +7,15 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.User;
+import tn.esprit.farmai.services.AnalyseService;
+import tn.esprit.farmai.services.ConseilService;
+import tn.esprit.farmai.services.FermeService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +23,7 @@ import java.util.logging.Logger;
 /**
  * Controller for Agricole Dashboard.
  * Provides navigation to analysis consultation for fermier users.
+ * Loads dynamic statistics from Ferme, Analyse and Conseil services.
  */
 public class AgricoleDashboardController implements Initializable {
 
@@ -39,6 +44,26 @@ public class AgricoleDashboardController implements Initializable {
     @FXML
     private Text sidebarAvatarText;
 
+    // Dynamic statistics labels
+    @FXML
+    private Label totalFermesLabel;
+
+    @FXML
+    private Label totalAnalysesLabel;
+
+    @FXML
+    private Label totalConseilsLabel;
+
+    private final FermeService fermeService;
+    private final AnalyseService analyseService;
+    private final ConseilService conseilService;
+
+    public AgricoleDashboardController() {
+        this.fermeService = new FermeService();
+        this.analyseService = new AnalyseService();
+        this.conseilService = new ConseilService();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         User currentUser = SessionManager.getInstance().getCurrentUser();
@@ -47,6 +72,56 @@ public class AgricoleDashboardController implements Initializable {
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
+        }
+        
+        // Load dynamic statistics
+        loadStatistics();
+    }
+
+    /**
+     * Load real statistics from database for the agricole user
+     */
+    private void loadStatistics() {
+        try {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            int userId = currentUser != null ? currentUser.getIdUser() : 0;
+
+            // Total fermes for this user
+            int totalFermes = 0;
+            try {
+                totalFermes = fermeService.selectAll().stream()
+                        .filter(f -> f.getIdFermier() == userId)
+                        .toList()
+                        .size();
+            } catch (Exception e) {
+                // If filtering fails, show total count
+                totalFermes = fermeService.selectAll().size();
+            }
+            if (totalFermesLabel != null) {
+                totalFermesLabel.setText(String.valueOf(totalFermes));
+            }
+
+            // Total analyses
+            int totalAnalyses = analyseService.selectAll().size();
+            if (totalAnalysesLabel != null) {
+                totalAnalysesLabel.setText(String.valueOf(totalAnalyses));
+            }
+
+            // Total conseils
+            int totalConseils = conseilService.selectAll().size();
+            if (totalConseilsLabel != null) {
+                totalConseilsLabel.setText(String.valueOf(totalConseils));
+            }
+
+            LOGGER.log(Level.INFO, "Agricole Statistics loaded: {0} fermes, {1} analyses, {2} conseils", 
+                    new Object[]{totalFermes, totalAnalyses, totalConseils});
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error loading agricole statistics", e);
+            // Set default values on error
+            if (totalFermesLabel != null) totalFermesLabel.setText("-");
+            if (totalAnalysesLabel != null) totalAnalysesLabel.setText("-");
+            if (totalConseilsLabel != null) totalConseilsLabel.setText("-");
         }
     }
 

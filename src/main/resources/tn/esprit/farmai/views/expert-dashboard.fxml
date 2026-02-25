@@ -38,11 +38,10 @@
             
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="📋  Consultations" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
-                <Button text="💡  Recommandations" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
+                <Button text="📋  Analyses" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
+                <Button text="💡  Conseils" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
                 <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
-                <Button text="📚  Base Connaissances" styleClass="nav-button" maxWidth="Infinity"/>
-                <Button text="⚙️  Paramètres" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="⚙️  Paramètres" styleClass="nav-button" onAction="#handleProfile" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
@@ -87,25 +86,25 @@
                 <HBox spacing="20" alignment="CENTER_LEFT">
                     
                     <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="12" styleClass="stat-value"/>
-                        <Label text="Consultations" styleClass="stat-label"/>
-                        <Label text="En attente" styleClass="stat-desc"/>
+                        <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Analyses" styleClass="stat-label"/>
+                        <Label text="Total" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.4" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
                     <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="45" styleClass="stat-value"/>
-                        <Label text="Recommandations" styleClass="stat-label"/>
-                        <Label text="Validées" styleClass="stat-desc"/>
+                        <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Conseils" styleClass="stat-label"/>
+                        <Label text="Recommandations" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.8" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
                      <VBox styleClass="stat-card-tall, card-grey" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="28" styleClass="stat-value"/>
-                        <Label text="Agriculteurs" styleClass="stat-label"/>
-                        <Label text="Suivis actifs" styleClass="stat-desc"/>
+                        <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Fermes" styleClass="stat-label"/>
+                        <Label text="Suivies" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.6" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>

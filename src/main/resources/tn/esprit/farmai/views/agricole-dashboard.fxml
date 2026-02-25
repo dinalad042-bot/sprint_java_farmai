@@ -86,7 +86,7 @@
                 <HBox spacing="20" alignment="CENTER_LEFT">
                     
                     <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="3" styleClass="stat-value"/>
+                        <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
                         <Label text="Exploitations" styleClass="stat-label"/>
                         <Label text="Actives" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
@@ -94,17 +94,17 @@
                     </VBox>
                     
                     <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="15" styleClass="stat-value"/>
-                        <Label text="Cultures" styleClass="stat-label"/>
-                        <Label text="En croissance" styleClass="stat-desc"/>
+                        <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Analyses" styleClass="stat-label"/>
+                        <Label text="Effectuées" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.6" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
                      <VBox styleClass="stat-card-tall, card-grey" HBox.hgrow="ALWAYS" spacing="10">
-                        <Label text="8" styleClass="stat-value"/>
-                        <Label text="Commandes" styleClass="stat-label"/>
-                        <Label text="En livraison" styleClass="stat-desc"/>
+                        <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Conseils" styleClass="stat-label"/>
+                        <Label text="Reçus" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.3" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>

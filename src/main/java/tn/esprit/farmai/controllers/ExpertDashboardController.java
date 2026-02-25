@@ -11,17 +11,26 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.farmai.models.User;
+import tn.esprit.farmai.services.AnalyseService;
+import tn.esprit.farmai.services.ConseilService;
+import tn.esprit.farmai.services.FermeService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for Expert Dashboard.
+ * Loads dynamic statistics from Analyse and Conseil services.
  */
 public class ExpertDashboardController implements Initializable {
+
+    private static final Logger LOGGER = Logger.getLogger(ExpertDashboardController.class.getName());
 
     @FXML
     private Label welcomeLabel;
@@ -38,6 +47,26 @@ public class ExpertDashboardController implements Initializable {
     @FXML
     private Text sidebarAvatarText;
 
+    // Dynamic statistics labels
+    @FXML
+    private Label totalAnalysesLabel;
+
+    @FXML
+    private Label totalConseilsLabel;
+
+    @FXML
+    private Label totalFermesLabel;
+
+    private final AnalyseService analyseService;
+    private final ConseilService conseilService;
+    private final FermeService fermeService;
+
+    public ExpertDashboardController() {
+        this.analyseService = new AnalyseService();
+        this.conseilService = new ConseilService();
+        this.fermeService = new FermeService();
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         User currentUser = SessionManager.getInstance().getCurrentUser();
@@ -46,6 +75,44 @@ public class ExpertDashboardController implements Initializable {
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
+        }
+        
+        // Load dynamic statistics
+        loadStatistics();
+    }
+
+    /**
+     * Load real statistics from database
+     */
+    private void loadStatistics() {
+        try {
+            // Total analyses
+            int totalAnalyses = analyseService.selectAll().size();
+            if (totalAnalysesLabel != null) {
+                totalAnalysesLabel.setText(String.valueOf(totalAnalyses));
+            }
+
+            // Total conseils
+            int totalConseils = conseilService.selectAll().size();
+            if (totalConseilsLabel != null) {
+                totalConseilsLabel.setText(String.valueOf(totalConseils));
+            }
+
+            // Total fermes
+            int totalFermes = fermeService.selectAll().size();
+            if (totalFermesLabel != null) {
+                totalFermesLabel.setText(String.valueOf(totalFermes));
+            }
+
+            LOGGER.log(Level.INFO, "Statistics loaded: {0} analyses, {1} conseils, {2} fermes", 
+                    new Object[]{totalAnalyses, totalConseils, totalFermes});
+
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, "Error loading statistics", e);
+            // Set default values on error
+            if (totalAnalysesLabel != null) totalAnalysesLabel.setText("-");
+            if (totalConseilsLabel != null) totalConseilsLabel.setText("-");
+            if (totalFermesLabel != null) totalFermesLabel.setText("-");
         }
     }
 
