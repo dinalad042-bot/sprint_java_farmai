@@ -1,8 +1,10 @@
 package tn.esprit.farmai.utils;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -12,13 +14,17 @@ import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.Ferme;
+import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.FermeService;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +32,10 @@ import java.util.Optional;
  * Dialog for adding and editing Analyse.
  * Implements US11 validation and uses PreparedStatement.
  * Updated: ComboBox for Ferme selection instead of manual ID input.
+ * 
+ * Advanced Features:
+ * - US8: AI-Assisted Diagnostic Suggestions
+ * - Weather API Integration for diagnostic enrichment
  */
 public class AnalyseDialog {
 
@@ -33,12 +43,17 @@ public class AnalyseDialog {
     private boolean isEditMode;
     private String imageUrl = "";
     private FermeService fermeService;
+    private AnalyseService analyseService;
     private ObservableList<Ferme> fermesList;
+    
+    // Weather enrichment state
+    private boolean includeWeather = true;
 
     public AnalyseDialog() {
         this.analyse = new Analyse();
         this.isEditMode = false;
         this.fermeService = new FermeService();
+        this.analyseService = new AnalyseService();
         this.fermesList = FXCollections.observableArrayList();
     }
 
@@ -47,6 +62,7 @@ public class AnalyseDialog {
         this.isEditMode = true;
         this.imageUrl = analyse.getImageUrl() != null ? analyse.getImageUrl() : "";
         this.fermeService = new FermeService();
+        this.analyseService = new AnalyseService();
         this.fermesList = FXCollections.observableArrayList();
     }
 
@@ -117,6 +133,160 @@ public class AnalyseDialog {
         HBox imageBox = new HBox(10, imageUrlField, browseButton);
         imageBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
+        // ===== US8: AI Suggestion Button =====
+        Button aiSuggestButton = new Button("🤖 Suggérer via IA");
+        aiSuggestButton.setStyle("-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-weight: bold;");
+        aiSuggestButton.setTooltip(new Tooltip("Générer une suggestion de diagnostic via IA (US8)"));
+        
+        TextArea observationArea = new TextArea();
+        observationArea.setPromptText("Entrez vos observations pour l'IA (données capteurs, notes visuelles...)");
+        observationArea.setPrefRowCount(3);
+        observationArea.setPrefWidth(300);
+        observationArea.setWrapText(true);
+        
+        // AI suggestion handler
+        aiSuggestButton.setOnAction(e -> {
+            String observation = observationArea.getText().trim();
+            if (observation.isEmpty()) {
+                AlertUtils.showWarning("Observation Requise", 
+                    "Veuillez entrer vos observations pour générer une suggestion IA.");
+                return;
+            }
+            
+            // Disable button during processing
+            aiSuggestButton.setDisable(true);
+            aiSuggestButton.setText("⏳ Génération...");
+            
+            // Run AI generation in background thread
+            new Thread(() -> {
+                try {
+                    String aiResult = analyseService.generateAIDiagnostic(observation);
+                    
+                    Platform.runLater(() -> {
+                        resultatField.setText(aiResult);
+                        aiSuggestButton.setDisable(false);
+                        aiSuggestButton.setText("🤖 Suggérer via IA");
+                        AlertUtils.showSuccess("Suggestion IA", 
+                            "Le diagnostic a été généré avec succès. Vous pouvez le modifier si nécessaire.");
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        aiSuggestButton.setDisable(false);
+                        aiSuggestButton.setText("🤖 Suggérer via IA");
+                        AlertUtils.showError("Erreur IA", ex.getMessage());
+                    });
+                }
+            }).start();
+        });
+        
+        HBox aiBox = new HBox(10, observationArea, aiSuggestButton);
+        aiBox.setAlignment(Pos.CENTER_LEFT);
+        aiBox.setStyle("-fx-padding: 5; -fx-background-color: #F3E5F5; -fx-background-radius: 5;");
+        
+        // ===== Weather Integration with Preview =====
+        CheckBox weatherCheckBox = new CheckBox("Inclure données météo");
+        weatherCheckBox.setSelected(includeWeather);
+        weatherCheckBox.setTooltip(new Tooltip("Enrichir le diagnostic avec les conditions météo de la ferme"));
+        weatherCheckBox.setStyle("-fx-text-fill: #1565C0;");
+        
+        // Weather status label with detailed info
+        Label weatherStatusLabel = new Label("🌍 Météo: Sélectionnez une ferme");
+        weatherStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #1565C0; -fx-font-weight: bold;");
+        weatherStatusLabel.setWrapText(true);
+        
+        // Weather details area (shows temperature, humidity, conditions)
+        TextArea weatherDetailsArea = new TextArea();
+        weatherDetailsArea.setPrefRowCount(3);
+        weatherDetailsArea.setEditable(false);
+        weatherDetailsArea.setWrapText(true);
+        weatherDetailsArea.setStyle("-fx-background-color: #E3F2FD; -fx-border-color: #90CAF9;");
+        weatherDetailsArea.setVisible(false);
+        weatherDetailsArea.setManaged(false);
+        
+        // "Voir météo" button to fetch and display weather
+        Button fetchWeatherBtn = new Button("🌍 Voir météo");
+        fetchWeatherBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 11px;");
+        fetchWeatherBtn.setTooltip(new Tooltip("Cliquez pour voir les conditions météo actuelles de la ferme"));
+        
+        // Store fetched weather data for later use
+        final WeatherUtils.WeatherData[] fetchedWeather = new WeatherUtils.WeatherData[1];
+        
+        // Update weather flag when checkbox changes
+        weatherCheckBox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            includeWeather = newVal;
+        });
+        
+        // Fetch weather button handler
+        fetchWeatherBtn.setOnAction(e -> {
+            Ferme selectedFerme = fermeComboBox.getValue();
+            if (selectedFerme == null) {
+                AlertUtils.showWarning("Sélection requise", "Veuillez sélectionner une ferme d'abord.");
+                return;
+            }
+            
+            String lieu = selectedFerme.getLieu();
+            fetchWeatherBtn.setDisable(true);
+            fetchWeatherBtn.setText("⏳ Chargement...");
+            weatherStatusLabel.setText("🌍 Récupération météo pour: " + lieu);
+            
+            // Fetch weather asynchronously
+            new Thread(() -> {
+                try {
+                    WeatherUtils.WeatherData weather = WeatherUtils.fetchWeather(lieu);
+                    fetchedWeather[0] = weather;
+                    
+                    Platform.runLater(() -> {
+                        fetchWeatherBtn.setDisable(false);
+                        fetchWeatherBtn.setText("🔄 Actualiser météo");
+                        
+                        if (weather.success()) {
+                            // Show detailed weather info
+                            weatherDetailsArea.setVisible(true);
+                            weatherDetailsArea.setManaged(true);
+                            weatherDetailsArea.setText(
+                                "📍 Lieu: " + weather.location() + "\n" +
+                                "🌡️ Température: " + String.format("%.1f", weather.temperature()) + "°C\n" +
+                                "💧 Humidité: " + weather.humidity() + "%\n" +
+                                "☁️ Conditions: " + weather.getWeatherDescription()
+                            );
+                            weatherStatusLabel.setText("✅ Météo récupérée: " + weather.formatForDiagnostic());
+                            weatherStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #2E7D32; -fx-font-weight: bold;");
+                            weatherCheckBox.setSelected(true);
+                        } else {
+                            weatherDetailsArea.setVisible(false);
+                            weatherDetailsArea.setManaged(false);
+                            weatherStatusLabel.setText("❌ Erreur: " + weather.errorMessage());
+                            weatherStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #D32F2F; -fx-font-weight: bold;");
+                        }
+                    });
+                } catch (Exception ex) {
+                    Platform.runLater(() -> {
+                        fetchWeatherBtn.setDisable(false);
+                        fetchWeatherBtn.setText("🌍 Voir météo");
+                        weatherStatusLabel.setText("❌ Erreur: " + ex.getMessage());
+                        weatherStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #D32F2F;");
+                    });
+                }
+            }).start();
+        });
+        
+        // Update weather preview when farm is selected
+        fermeComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                weatherStatusLabel.setText("🌍 Météo: " + newVal.getLieu() + " (cliquez 'Voir météo')");
+                weatherStatusLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #1565C0;");
+                // Reset weather details
+                weatherDetailsArea.setVisible(false);
+                weatherDetailsArea.setManaged(false);
+                fetchWeatherBtn.setText("🌍 Voir météo");
+                fetchedWeather[0] = null;
+            } else {
+                weatherStatusLabel.setText("🌍 Météo: Sélectionnez une ferme");
+                weatherDetailsArea.setVisible(false);
+                weatherDetailsArea.setManaged(false);
+            }
+        });
+
         // Error labels
         Label dateErrorLabel = createErrorLabel("Veuillez sélectionner une date");
         Label resultatErrorLabel = createErrorLabel("Le résultat est requis (min 5 caractères)");
@@ -131,6 +301,11 @@ public class AnalyseDialog {
         grid.add(dateErrorLabel, 1, row + 1);
         row += 2;
 
+        // AI Suggestion section (US8)
+        grid.add(new Label("Suggestions IA (US8)"), 0, row);
+        grid.add(aiBox, 1, row);
+        row += 2;
+
         grid.add(new Label("Résultat technique *"), 0, row);
         grid.add(resultatField, 1, row);
         grid.add(resultatErrorLabel, 1, row + 1);
@@ -142,7 +317,8 @@ public class AnalyseDialog {
         row += 2;
 
         grid.add(new Label("Ferme de destination *"), 0, row);
-        grid.add(fermeComboBox, 1, row);
+        VBox fermeBox = new VBox(5, fermeComboBox, fetchWeatherBtn, weatherDetailsArea, weatherStatusLabel, weatherCheckBox);
+        grid.add(fermeBox, 1, row);
         grid.add(fermeErrorLabel, 1, row + 1);
         row += 2;
 
@@ -222,6 +398,62 @@ public class AnalyseDialog {
     }
 
     /**
+     * Date format constants for validation (Séance 7 compliance)
+     */
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final String DATE_REGEX = "^([0-2][0-9]|3[0-1])/(0[1-9]|1[0-2])/([0-9]{4})$";
+
+    /**
+     * Validate date with multiple checks (US11 - Séance 7)
+     * - Null check
+     * - Future date check
+     * - Format validation (if manual input)
+     * - Reasonable past date check (not before 2000)
+     */
+    private boolean validateDate(DatePicker datePicker, Label dateErrorLabel) {
+        // Check null
+        if (datePicker.getValue() == null) {
+            dateErrorLabel.setText("Veuillez sélectionner une date");
+            showError(dateErrorLabel);
+            return false;
+        }
+        
+        LocalDate selectedDate = datePicker.getValue();
+        LocalDate today = LocalDate.now();
+        
+        // Check future date
+        if (selectedDate.isAfter(today)) {
+            dateErrorLabel.setText("La date ne peut pas être dans le futur");
+            showError(dateErrorLabel);
+            return false;
+        }
+        
+        // Check reasonable past (not before year 2000)
+        if (selectedDate.getYear() < 2000) {
+            dateErrorLabel.setText("La date doit être après le 01/01/2000");
+            showError(dateErrorLabel);
+            return false;
+        }
+        
+        // Validate date is parseable (additional safety check)
+        try {
+            String formattedDate = selectedDate.format(DATE_FORMATTER);
+            if (!formattedDate.matches(DATE_REGEX)) {
+                dateErrorLabel.setText("Format de date invalide (dd/MM/yyyy)");
+                showError(dateErrorLabel);
+                return false;
+            }
+        } catch (DateTimeParseException e) {
+            dateErrorLabel.setText("Erreur de format de date");
+            showError(dateErrorLabel);
+            return false;
+        }
+        
+        hideError(dateErrorLabel);
+        return true;
+    }
+
+    /**
      * Validate all fields (US11)
      */
     private boolean validateFields(DatePicker datePicker, TextField resultatField,
@@ -232,16 +464,9 @@ public class AnalyseDialog {
             Label imageErrorLabel) {
         boolean isValid = true;
 
-        // Validate date
-        if (datePicker.getValue() == null) {
-            showError(dateErrorLabel);
+        // Validate date (enhanced with DateTimeFormatter and regex - Séance 7)
+        if (!validateDate(datePicker, dateErrorLabel)) {
             isValid = false;
-        } else if (datePicker.getValue().isAfter(LocalDate.now())) {
-            dateErrorLabel.setText("La date ne peut pas être dans le futur");
-            showError(dateErrorLabel);
-            isValid = false;
-        } else {
-            hideError(dateErrorLabel);
         }
 
         // Validate resultat (min 5 characters)

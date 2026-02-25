@@ -66,7 +66,7 @@ public class Config {
     
     public static final String GROQ_API_KEY = loadApiKey();
     public static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-    public static final String GROQ_MODEL = "openai/gpt-oss-120b";  // Updated to available model
+    public static final String GROQ_MODEL = "llama-3.3-70b-versatile";  // Correct Groq model name
     
     // PDF Generation Configuration - US9 Implementation
     public static final String PDF_AUTHOR = "FarmAI System";

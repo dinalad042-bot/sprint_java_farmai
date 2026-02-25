@@ -19,7 +19,9 @@ import tn.esprit.farmai.models.Conseil;
 import tn.esprit.farmai.models.Priorite;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.ConseilService;
+import tn.esprit.farmai.utils.AlertUtils;
 import tn.esprit.farmai.utils.NavigationUtil;
+import tn.esprit.farmai.utils.SpeechUtils;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -177,11 +179,12 @@ public class GestionConseilsController implements Initializable {
             }
         });
 
-        // Actions Column (Edit/Delete)
+        // Actions Column (Edit/Delete/Read Aloud - TTS)
         colActions.setCellFactory(param -> new TableCell<Conseil, Void>() {
             private final Button editBtn = new Button("✎");
             private final Button deleteBtn = new Button("🗑");
-            private final HBox pane = new HBox(5, editBtn, deleteBtn);
+            private final Button ttsBtn = new Button("🔊");
+            private final HBox pane = new HBox(5, ttsBtn, editBtn, deleteBtn);
 
             {
                 pane.setAlignment(Pos.CENTER);
@@ -189,6 +192,8 @@ public class GestionConseilsController implements Initializable {
                 deleteBtn.getStyleClass().add("danger-btn");
                 editBtn.setStyle("-fx-background-color: #1976D2; -fx-text-fill: white; -fx-padding: 5px 10px;");
                 deleteBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                ttsBtn.setTooltip(new Tooltip("Lire à voix haute (TTS)"));
 
                 editBtn.setOnAction(event -> {
                     Conseil conseil = getTableView().getItems().get(getIndex());
@@ -198,6 +203,12 @@ public class GestionConseilsController implements Initializable {
                 deleteBtn.setOnAction(event -> {
                     Conseil conseil = getTableView().getItems().get(getIndex());
                     handleDeleteConseil(conseil);
+                });
+                
+                // TTS: Read conseil aloud
+                ttsBtn.setOnAction(event -> {
+                    Conseil conseil = getTableView().getItems().get(getIndex());
+                    handleReadAloud(conseil, ttsBtn);
                 });
             }
 
@@ -447,5 +458,56 @@ public class GestionConseilsController implements Initializable {
             totalConseilsLabel.setText(
                 "Total: " + conseilsTableView.getItems().size() + " conseil(s)");
         }
+    }
+    
+    /**
+     * Handle TTS: Read conseil description aloud.
+     * Uses SpeechUtils for async text-to-speech.
+     * SRP: SpeechUtils handles TTS, this method handles UI state.
+     * 
+     * @param conseil The conseil to read aloud
+     * @param ttsBtn The button to update during playback
+     */
+    private void handleReadAloud(Conseil conseil, Button ttsBtn) {
+        if (conseil == null || conseil.getDescriptionConseil() == null) {
+            AlertUtils.showWarning("Aucun contenu", "Ce conseil n'a pas de description à lire.");
+            return;
+        }
+        
+        String description = conseil.getDescriptionConseil();
+        
+        // Check if TTS is already playing
+        if (SpeechUtils.isPlaying()) {
+            SpeechUtils.stop();
+            ttsBtn.setText("🔊");
+            ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+            return;
+        }
+        
+        // Update button state
+        ttsBtn.setText("⏹");
+        ttsBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-padding: 5px 10px;");
+        
+        // Run TTS asynchronously to avoid UI freeze
+        SpeechUtils.speakAsync(description)
+            .thenRun(() -> {
+                // Reset button state when done
+                javafx.application.Platform.runLater(() -> {
+                    ttsBtn.setText("🔊");
+                    ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                });
+            })
+            .exceptionally(ex -> {
+                // Handle TTS errors gracefully
+                javafx.application.Platform.runLater(() -> {
+                    ttsBtn.setText("🔊");
+                    ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                    AlertUtils.showError("Erreur TTS", "Impossible de lire le conseil: " + ex.getMessage());
+                });
+                return null;
+            });
+        
+        // Show feedback to user
+        AlertUtils.showToast("Lecture en cours...", 2000);
     }
 }

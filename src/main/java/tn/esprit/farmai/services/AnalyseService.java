@@ -3,9 +3,11 @@ package tn.esprit.farmai.services;
 import tn.esprit.farmai.interfaces.CRUD;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.Conseil;
+import tn.esprit.farmai.models.Ferme;
 import tn.esprit.farmai.utils.Config;
 import tn.esprit.farmai.utils.MyDBConnexion;
 import tn.esprit.farmai.utils.SimpleHttpClient;
+import tn.esprit.farmai.utils.WeatherUtils;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -217,6 +219,12 @@ public class AnalyseService implements CRUD<Analyse> {
             throw new IOException("Empty response from AI service");
         }
         
+        // Debug: Log raw response for troubleshooting
+        System.out.println("=== Groq API Raw Response ===");
+        System.out.println(response.length() > 500 ? response.substring(0, 500) + "..." : response);
+        System.out.println("=============================");
+        
+        // Check for error response
         if (response.contains("\"error\"")) {
             String errorMsg = "AI service error";
             
@@ -225,7 +233,7 @@ public class AnalyseService implements CRUD<Analyse> {
                 int start = response.indexOf("\"", msgIdx + 10);
                 if (start != -1) {
                     int end = response.indexOf("\"", start + 1);
-                    while (end > start && response.charAt(end - 1) == '\\') {
+                    while (end > start && end > 0 && response.charAt(end - 1) == '\\') {
                         end = response.indexOf("\"", end + 1);
                     }
                     if (end > start) {
@@ -244,39 +252,121 @@ public class AnalyseService implements CRUD<Analyse> {
         }
         
         try {
-            int contentIndex = response.indexOf("\"content\":");
-            if (contentIndex != -1) {
-                int startQuote = response.indexOf("\"", contentIndex + 11);
-                if (startQuote != -1) {
-                    int endQuote = startQuote + 1;
-                    while (endQuote < response.length()) {
-                        char c = response.charAt(endQuote);
-                        if (c == '"' && response.charAt(endQuote - 1) != '\\') {
-                            break;
-                        }
-                        endQuote++;
-                    }
-                    if (endQuote < response.length()) {
-                        String content = response.substring(startQuote + 1, endQuote);
-                        String result = content
-                            .replace("\\n", "\n")
-                            .replace("\\r", "\r")
-                            .replace("\\t", "\t")
-                            .replace("\\\"", "\"")
-                            .replace("\\\\", "\\");
-                        
-                        if (result.trim().isEmpty()) {
-                            return "AI analysis completed. The result was empty - please try with different observations.";
-                        }
-                        return result;
-                    }
-                }
+            // Parse OpenAI/Groq response format: choices[0].message.content
+            // The response structure is: {"choices":[{"message":{"role":"assistant","content":"..."}}]}
+            
+            // Find the choices array
+            int choicesIndex = response.indexOf("\"choices\"");
+            if (choicesIndex == -1) {
+                // Fallback: Try legacy format (direct content field)
+                return extractContentFallback(response);
             }
+            
+            // Find the first message object within choices
+            int messageIndex = response.indexOf("\"message\"", choicesIndex);
+            if (messageIndex == -1) {
+                // Some responses may have content directly in choice
+                int contentIndex = response.indexOf("\"content\"", choicesIndex);
+                if (contentIndex != -1) {
+                    return extractContentValue(response, contentIndex);
+                }
+                throw new IOException("No message found in API response");
+            }
+            
+            // Find content within the message object
+            int contentIndex = response.indexOf("\"content\"", messageIndex);
+            if (contentIndex == -1) {
+                throw new IOException("No content field found in message");
+            }
+            
+            return extractContentValue(response, contentIndex);
+            
+        } catch (IOException e) {
+            throw e; // Re-throw IOException as-is
         } catch (Exception e) {
+            System.err.println("JSON parsing error: " + e.getMessage());
             throw new IOException("Failed to parse AI response: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Extract content value from a JSON string starting from the content field index
+     */
+    private String extractContentValue(String response, int contentIndex) throws IOException {
+        // Find the colon after "content"
+        int colonIndex = response.indexOf(":", contentIndex);
+        if (colonIndex == -1) {
+            throw new IOException("Invalid content field format");
+        }
         
-        throw new IOException("Unexpected AI response format. Please try again.");
+        // Find the opening quote of the content value
+        int startQuote = response.indexOf("\"", colonIndex);
+        if (startQuote == -1) {
+            // Content might be null or a different type
+            String afterColon = response.substring(colonIndex + 1, Math.min(colonIndex + 20, response.length())).trim();
+            if (afterColon.startsWith("null")) {
+                return "AI analysis returned empty result. Please try with different observations.";
+            }
+            throw new IOException("Content value is not a string: " + afterColon);
+        }
+        
+        // Find the closing quote (handle escaped quotes)
+        int endQuote = startQuote + 1;
+        while (endQuote < response.length()) {
+            char c = response.charAt(endQuote);
+            if (c == '"') {
+                // Check if this quote is escaped
+                int backslashCount = 0;
+                int checkIndex = endQuote - 1;
+                while (checkIndex > startQuote && response.charAt(checkIndex) == '\\') {
+                    backslashCount++;
+                    checkIndex--;
+                }
+                // If even number of backslashes, the quote is not escaped
+                if (backslashCount % 2 == 0) {
+                    break;
+                }
+            }
+            endQuote++;
+        }
+        
+        if (endQuote >= response.length()) {
+            throw new IOException("Could not find end of content string");
+        }
+        
+        // Extract and unescape the content
+        String content = response.substring(startQuote + 1, endQuote);
+        String result = content
+            .replace("\\n", "\n")
+            .replace("\\r", "\r")
+            .replace("\\t", "\t")
+            .replace("\\\"", "\"")
+            .replace("\\\\", "\\");
+        
+        if (result.trim().isEmpty()) {
+            return "AI analysis completed. The result was empty - please try with different observations.";
+        }
+        
+        System.out.println("=== Extracted Content ===");
+        System.out.println(result.length() > 200 ? result.substring(0, 200) + "..." : result);
+        System.out.println("=========================");
+        
+        return result;
+    }
+    
+    /**
+     * Fallback method for legacy/different response formats
+     */
+    private String extractContentFallback(String response) throws IOException {
+        // Try to find content field anywhere in the response
+        int contentIndex = response.indexOf("\"content\":");
+        if (contentIndex != -1) {
+            return extractContentValue(response, contentIndex);
+        }
+        
+        // If no content field found, the response format is unexpected
+        throw new IOException("Unexpected AI response format. Response: " + 
+            (response.length() > 200 ? response.substring(0, 200) + "..." : response));
     }
 
     /**
@@ -847,6 +937,97 @@ public class AnalyseService implements CRUD<Analyse> {
             }
         }
         return analyses;
+    }
+
+    /**
+     * Weather API Integration - Enrich diagnostic with weather data.
+     * Uses Ferme.lieu to fetch current weather conditions.
+     * KISS principle: Concatenates to resultat_technique, no schema changes.
+     * 
+     * @param analyse The analysis to enrich
+     * @param fermeLieu The farm location (e.g., "Tunis, Tunisie")
+     * @return The enriched technical result, or original if weather fetch fails
+     * 
+     * Railway Track: Ferme.lieu -> WeatherUtils -> Analyse.resultat_technique
+     */
+    public String enrichWithWeather(Analyse analyse, String fermeLieu) {
+        if (fermeLieu == null || fermeLieu.trim().isEmpty()) {
+            System.out.println("Weather enrichment skipped: No farm location provided");
+            return analyse.getResultatTechnique();
+        }
+        
+        try {
+            // Fetch weather data asynchronously-safe
+            WeatherUtils.WeatherData weather = WeatherUtils.fetchWeather(fermeLieu);
+            
+            if (weather.success()) {
+                String currentResult = analyse.getResultatTechnique();
+                if (currentResult == null) {
+                    currentResult = "";
+                }
+                
+                // Append weather data to diagnostic (KISS - no schema change)
+                String weatherInfo = weather.formatForDiagnostic();
+                String enrichedResult;
+                
+                if (currentResult.isEmpty()) {
+                    enrichedResult = weatherInfo;
+                } else {
+                    enrichedResult = currentResult + " | " + weatherInfo;
+                }
+                
+                System.out.println("Weather enrichment successful: " + weatherInfo);
+                return enrichedResult;
+            } else {
+                // Graceful degradation - log warning but don't fail
+                System.out.println("Weather enrichment skipped: " + weather.errorMessage());
+                return analyse.getResultatTechnique();
+            }
+        } catch (Exception e) {
+            // Edge case: Weather API failure shouldn't break analysis creation
+            System.err.println("Weather enrichment error: " + e.getMessage());
+            return analyse.getResultatTechnique();
+        }
+    }
+
+    /**
+     * Insert analysis with weather enrichment.
+     * Convenience method that combines insert with weather data.
+     * 
+     * @param analyse The analysis to insert
+     * @param fermeLieu The farm location for weather lookup
+     * @throws SQLException if database operation fails
+     */
+    public void insertOneWithWeather(Analyse analyse, String fermeLieu) throws SQLException {
+        // Enrich with weather before insert
+        String enrichedResult = enrichWithWeather(analyse, fermeLieu);
+        analyse.setResultatTechnique(enrichedResult);
+        
+        // Perform standard insert
+        insertOne(analyse);
+    }
+
+    /**
+     * Get farm location (lieu) by farm ID.
+     * Helper method for weather enrichment.
+     * 
+     * @param idFerme The farm ID
+     * @return The farm location string, or null if not found
+     */
+    public String getFermeLieu(int idFerme) {
+        String query = "SELECT lieu FROM ferme WHERE id_ferme = ?";
+        
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, idFerme);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("lieu");
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to get farm location: " + e.getMessage());
+        }
+        return null;
     }
 
     /**
