@@ -249,13 +249,25 @@ public class WeatherUtils {
     }
 
     /**
-     * Extract double value from JSON string by key.
-     * Simple parser to avoid external dependencies.
+     * Extract double value from JSON string by key, searching within "current" section.
+     * Fixed: API response has duplicate keys in "current_units" and "current" sections.
      */
     private static double extractDoubleValue(String json, String key) {
         try {
+            // Find the "current":{ section first (skip "current_units")
+            int currentStart = json.indexOf("\"current\":");
+            if (currentStart == -1) {
+                // Fallback: search from beginning if no "current" section
+                currentStart = 0;
+            } else {
+                // Move past "current": to the opening brace
+                currentStart = json.indexOf("{", currentStart);
+                if (currentStart == -1) currentStart = 0;
+            }
+            
+            // Find the key within the "current" section
             String searchKey = "\"" + key + "\":";
-            int startIndex = json.indexOf(searchKey);
+            int startIndex = json.indexOf(searchKey, currentStart);
             if (startIndex == -1) return Double.NaN;
             
             startIndex += searchKey.length();
@@ -278,7 +290,7 @@ public class WeatherUtils {
     }
 
     /**
-     * Extract integer value from JSON string by key.
+     * Extract integer value from JSON string by key (within "current" section).
      */
     private static int extractIntValue(String json, String key) {
         double value = extractDoubleValue(json, key);
