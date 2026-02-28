@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.NotificationsController"
+            style="-fx-background-color: white;"
+            stylesheets="@../styles/dashboard.css"
+            prefWidth="450" prefHeight="550">
+
+    <!-- Header -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 15; -fx-background-color: #263238;">
+            <Text text="🔔" fill="white" style="-fx-font-size: 20px;"/>
+            <Label text="Notifications" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="countLabel" text="0 nouvelles" style="-fx-text-fill: #B0BEC5; -fx-font-size: 12px;"/>
+        </HBox>
+    </top>
+
+    <!-- Content -->
+    <center>
+        <VBox spacing="10" style="-fx-padding: 15; -fx-background-color: #F8F9FA;">
+            <ListView fx:id="notificationListView" VBox.vgrow="ALWAYS" styleClass="notification-list" style="-fx-background-color: transparent; -fx-border-color: transparent;">
+                 <placeholder>
+                     <VBox alignment="CENTER" spacing="10">
+                         <Text text="🔕" fill="#CFD8DC" style="-fx-font-size: 40px;"/>
+                         <Label text="Aucune notification" style="-fx-text-fill: #90A4AE; -fx-font-size: 14px;"/>
+                     </VBox>
+                 </placeholder>
+            </ListView>
+        </VBox>
+    </center>
+
+    <!-- Footer -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" style="-fx-padding: 10 15; -fx-background-color: white; -fx-border-color: #ECEFF1; -fx-border-width: 1 0 0 0;">
+            <Button text="Tout effacer" onAction="#handleClearAll" style="-fx-background-color: transparent; -fx-text-fill: #F44336; -fx-cursor: hand;"/>
+            <Button text="Fermer" onAction="#handleClose" styleClass="secondary-btn"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

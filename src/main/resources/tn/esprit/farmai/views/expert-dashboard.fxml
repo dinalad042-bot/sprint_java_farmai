@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.esprit.farmai.controllers.ExpertDashboardController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+            
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="sidebarAvatarText" text="🔬" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Expert User" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Expert" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            
+            <Region prefHeight="30"/>
+            
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📋  Analyses" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
+                <Button text="💡  Conseils" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
+                <Button text="⚙️  Paramètres" styleClass="nav-button" onAction="#handleProfile" maxWidth="Infinity"/>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox styleClass="main-content" spacing="20">
+                
+                <!-- Top Header -->
+                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
+                    <Label text="Espace Expert" style="-fx-font-size: 18px; -fx-text-fill: #90A4AE; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    
+                    <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                        <Text text="🔍" fill="#9E9E9E"/>
+                        <TextField promptText="Recherche dossiers..." styleClass="header-search-field"/>
+                    </HBox>
+                    
+                    <StackPane styleClass="icon-button">
+                        <Text text="🔔" style="-fx-font-size: 18px;" fill="#546E7A"/>
+                    </StackPane>
+                    
+                    <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
+                        <Circle radius="18" fill="#E3F2FD" stroke="#2196F3"/>
+                        <Text text="🔬" fill="#1565C0"/>
+                    </StackPane>
+                </HBox>
+                
+                <!-- Welcome Section -->
+                <VBox styleClass="welcome-section" spacing="5">
+                    <Label fx:id="welcomeLabel" text="Bienvenue, Expert !" styleClass="welcome-title"/>
+                    <Label text="Vos expertises sauvent des récoltes." styleClass="welcome-subtitle"/>
+                </VBox>
+                
+                <Label text="Aperçu Aujourd'hui" styleClass="section-title"/>
+                
+                <!-- Stats Cards Row -->
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    
+                    <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Analyses" styleClass="stat-label"/>
+                        <Label text="Total" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="0.4" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                    
+                    <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Conseils" styleClass="stat-label"/>
+                        <Label text="Recommandations" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="0.8" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                    
+                     <VBox styleClass="stat-card-tall, card-grey" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Fermes" styleClass="stat-label"/>
+                        <Label text="Suivies" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="0.6" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                    
+                </HBox>
+                
+                <!-- Content Section -->
+                <HBox spacing="20">
+                     <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15">
+                        <Label text="Consultations Récentes" styleClass="card-title"/>
+                        <VBox spacing="10">
+                            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
+                                <Text text="🌾" styleClass="list-item-icon"/>
+                                <VBox>
+                                    <Label text="Analyse Blé Dur" styleClass="list-item-text"/>
+                                    <Label text="Ahmed - Il y a 2h" styleClass="stat-desc"/>
+                                </VBox>
+                            </HBox>
+                             <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
+                                <Text text="🐛" styleClass="list-item-icon"/>
+                                <VBox>
+                                    <Label text="Risque Nuisibles" styleClass="list-item-text"/>
+                                    <Label text="Ferme B - Hier" styleClass="stat-desc"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                     </VBox>
+                </HBox>
+                
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

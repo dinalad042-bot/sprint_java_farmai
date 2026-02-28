@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+<?import javafx.scene.image.ImageView?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.AdminMapController"
+            style="-fx-background-color: #f4f4f4;">
+
+    <top>
+        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #1b5e20; -fx-padding: 12;">
+            <Button text="⬅ Retour" onAction="#handleBack"
+                    style="-fx-background-color: white; -fx-text-fill: #1b5e20; -fx-font-weight: bold; -fx-cursor: hand;"/>
+            <Label text="FarmAI - Géolocalisation &amp; Traçabilité"
+                   style="-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane>
+            <WebView fx:id="mapWebView" />
+
+            <AnchorPane fx:id="paneDetails" visible="false" managed="false" StackPane.alignment="CENTER_RIGHT"
+                        maxWidth="320" style="-fx-background-color: white; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);">
+                <VBox spacing="15" AnchorPane.topAnchor="0" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" style="-fx-padding: 20;">
+
+                    <HBox alignment="CENTER_LEFT">
+                        <Label fx:id="lblNomFerme" text="Détails" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2e7d32;"/>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button text="✕" onAction="#closeDetails" style="-fx-background-color: transparent; -fx-cursor: hand;"/>
+                    </HBox>
+
+                    <Separator />
+
+                    <VBox alignment="CENTER" spacing="5" style="-fx-background-color: #f9f9f9; -fx-padding: 10; -fx-background-radius: 10;">
+                        <Label text="SCAN TRAÇABILITÉ" style="-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #666;"/>
+                        <ImageView fx:id="ivQRCode" fitHeight="150" fitWidth="150" pickOnBounds="true" preserveRatio="true" />
+                    </VBox>
+
+                    <VBox spacing="8" VBox.vgrow="ALWAYS">
+                        <Label text="🐄 Bétail :" style="-fx-font-weight: bold;"/>
+                        <ListView fx:id="lvAnimaux" VBox.vgrow="ALWAYS" />
+
+                        <Label text="🌱 Cultures :" style="-fx-font-weight: bold;"/>
+                        <ListView fx:id="lvPlantes" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <Button text="Fermer" onAction="#closeDetails" maxWidth="Infinity"
+                            style="-fx-background-color: #e8f5e9; -fx-text-fill: #2e7d32; -fx-font-weight: bold;"/>
+                </VBox>
+            </AnchorPane>
+        </StackPane>
+    </center>
+</BorderPane>

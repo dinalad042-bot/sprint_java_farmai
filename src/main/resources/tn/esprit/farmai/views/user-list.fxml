@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.esprit.farmai.controllers.UserListController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+    
+    <!-- Sidebar (Same as Admin Dashboard) -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+            
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
+                        <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="welcomeLabel" text="User" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Role" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            
+            <Region prefHeight="30"/>
+            
+            <!-- Navigation Menu -->
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleBackToDashboard" maxWidth="Infinity"/>
+                <Button text="👥  Utilisateurs" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="🌾  Cultures" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="📦  Produits" styleClass="nav-button" maxWidth="Infinity"/>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="0" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <!-- Top Header (Visual consistency) -->
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
+                <Label text="Gestion des Utilisateurs" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                     <Text text="🔍" fill="#9E9E9E"/>
+                     <TextField promptText="Recherche globale..." styleClass="header-search-field"/>
+                </HBox>
+                
+                <!-- Notifications -->
+                <StackPane onMouseClicked="#handleNotifications" style="-fx-cursor: hand;">
+                    <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+                    <Text text="🔔" style="-fx-font-size: 22px;" fill="#546E7A"/>
+                    <Label fx:id="notificationBadge" text="0" styleClass="notification-badge" visible="false" StackPane.alignment="TOP_RIGHT" style="-fx-translate-x: 5; -fx-translate-y: -5;"/>
+                </StackPane>
+                
+                <!-- Header User Avatar -->
+                <HBox spacing="10" alignment="CENTER" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                    <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+                </HBox>
+            </HBox>
+            
+            <!-- Action Toolbar -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                 <Label fx:id="totalUsersLabel" text="Total: 0" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
+                 <Region HBox.hgrow="ALWAYS"/>
+                 <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#loadUsers"/>
+                 <Button fx:id="addUserButton" text="+ Ajouter Utilisateur" styleClass="primary-btn" onAction="#handleAddUser"/>
+            </HBox>
+            
+            <!-- Table Card -->
+            <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="15">
+                
+                <!-- Filters inside Card -->
+                <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10px 0;">
+                    <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" style="-fx-background-color: #F5F5F5; -fx-background-radius: 8px; -fx-padding: 5px 10px;">
+                        <Text text="🔍" fill="#90A4AE"/>
+                        <TextField fx:id="searchField" 
+                                   promptText="Filtrer la liste..." 
+                                   style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+                    
+                    <ComboBox fx:id="roleFilterComboBox" styleClass="filter-combo" prefWidth="180" promptText="Tous les rôles"/>
+                </HBox>
+                
+                <ListView fx:id="userListView" VBox.vgrow="ALWAYS" styleClass="user-list-view">
+                    <placeholder>
+                        <Label text="Aucun utilisateur trouvé" styleClass="table-placeholder"/>
+                    </placeholder>
+                </ListView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

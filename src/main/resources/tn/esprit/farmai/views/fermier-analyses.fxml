@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Text?>
+<?import java.net.URL?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.esprit.farmai.controllers.FermierAnalysesController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+            
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="sidebarAvatarText" text="👨‍🌾" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Agriculteur" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Agricole" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            
+            <Region prefHeight="30"/>
+            
+            <!-- Navigation Menu -->
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleBack" maxWidth="Infinity"/>
+                <Button text="📋  Mes Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="0" right="40" bottom="40" left="40"/>
+            </padding>
+            
+            <!-- Top Header -->
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
+                <Label text="Mes Analyses" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                    <Text text="🔍" fill="#9E9E9E"/>
+                    <TextField fx:id="searchField" promptText="Rechercher..." styleClass="header-search-field"/>
+                </HBox>
+            </HBox>
+            
+            <!-- Info Card -->
+            <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #E8F5E9; -fx-background-radius: 8px; -fx-padding: 12px;">
+                <Text text="ℹ️" style="-fx-font-size: 18px;"/>
+                <Label text="Consultez les analyses effectuées par les experts sur vos exploitations." 
+                       style="-fx-text-fill: #2E7D32; -fx-font-size: 13px;" wrapText="true"/>
+            </HBox>
+            
+            <!-- Table Card -->
+            <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="15">
+                <TableView fx:id="analysesTableView" VBox.vgrow="ALWAYS" styleClass="analyses-table">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colDate" text="Date Analyse" prefWidth="150"/>
+                        <TableColumn fx:id="colResultat" text="Résultat Technique" prefWidth="300"/>
+                        <TableColumn fx:id="colTechnicien" text="Technicien" prefWidth="100"/>
+                        <TableColumn fx:id="colImage" text="Image" prefWidth="100"/>
+                        <TableColumn fx:id="colActions" text="Détails" prefWidth="100"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="Aucune analyse disponible" styleClass="table-placeholder"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

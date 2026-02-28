@@ -50,6 +50,11 @@ public class HelloApplication extends Application {
     }
 
     public static void main(String[] args) {
+        // Initialize database before starting the application
+        System.out.println("🔄 Initializing FarmAI database...");
+        DatabaseInitializer.main(args);
+        
+        // Start the JavaFX application
         launch();
     }
 }

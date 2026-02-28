@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.GestionConseilsController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
+                        <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="welcomeLabel" text="Expert" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Agronome" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+
+            <Region prefHeight="30"/>
+
+            <!-- Navigation Menu -->
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🔬  Analyses" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="💡  Conseils" styleClass="nav-button active" maxWidth="Infinity"/>
+
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="0" right="40" bottom="40" left="40"/>
+            </padding>
+
+            <!-- Top Header -->
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
+                <Label text="Gestion des Conseils" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                    <Text text="🔍" fill="#9E9E9E"/>
+                    <TextField promptText="Recherche..." styleClass="header-search-field"/>
+                </HBox>
+
+                <!-- Notifications -->
+                <StackPane style="-fx-cursor: hand;">
+                    <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+                    <Text text="🔔" style="-fx-font-size: 22px;" fill="#546E7A"/>
+                    <Label text="0" styleClass="notification-badge" visible="false" StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
+
+                <!-- Header User Avatar -->
+                <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+            </HBox>
+
+            <!-- Action Toolbar -->
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="backButton" text="← Retour" styleClass="secondary-btn" onAction="#handleBack"/>
+                <Label fx:id="totalConseilsLabel" text="Total: 0 conseils" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
+                <Button fx:id="addConseilButton" text="+ Nouveau Conseil" styleClass="primary-btn" onAction="#handleAddConseil"/>
+            </HBox>
+
+            <!-- Table Card -->
+            <VBox styleClass="content-card" VBox.vgrow="ALWAYS" spacing="15">
+
+                <!-- Filters -->
+                <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10px 0;">
+                    <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" style="-fx-background-color: #F5F5F5; -fx-background-radius: 8px; -fx-padding: 5px 10px;">
+                        <Text text="🔍" fill="#90A4AE"/>
+                        <TextField fx:id="searchField"
+                                   promptText="Rechercher un conseil..."
+                                   style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS"/>
+                    </HBox>
+
+                    <ComboBox fx:id="prioriteFilterComboBox" styleClass="filter-combo" prefWidth="180" promptText="Toutes les priorités"/>
+                </HBox>
+
+                <!-- TableView -->
+                <TableView fx:id="conseilsTableView" VBox.vgrow="ALWAYS" styleClass="conseils-table">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="colDescription" text="Description du conseil" prefWidth="400"/>
+                        <TableColumn fx:id="colPriorite" text="Priorité" prefWidth="120"/>
+                        <TableColumn fx:id="colAnalyseId" text="Analyse ID" prefWidth="100"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="120"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="Aucun conseil trouvé" styleClass="table-placeholder"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>
