@@ -3,12 +3,17 @@ package tn.esprit.farmai.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -87,7 +92,26 @@ public class ExpertDashboardController implements Initializable {
 
     @FXML
     private void handleFaceRecognition() {
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        NavigationUtil.navigateTo(stage, "views/face-recognition-view.fxml", "Reconnaissance Faciale");
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            Parent root = loader.load();
+            FaceRecognitionController ctrl = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("FarmAi — Reconnaissance Faciale");
+            stage.setScene(new Scene(root));
+
+            // Optionnel (behya barcha)
+            stage.initOwner(welcomeLabel.getScene().getWindow());
+            stage.initModality(Modality.WINDOW_MODAL);
+
+            stage.setOnCloseRequest(e -> ctrl.cleanup());
+            stage.show();
+
+        } catch (IOException e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale.");
+            e.printStackTrace();
+        }
     }
 }
