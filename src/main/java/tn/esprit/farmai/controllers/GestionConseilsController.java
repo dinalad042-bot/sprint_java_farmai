@@ -376,6 +376,33 @@ public class GestionConseilsController implements Initializable {
     }
 
     /**
+     * Handle dashboard navigation from sidebar
+     */
+    @FXML
+    private void handleDashboard() {
+        navigateWithFade("/tn/esprit/farmai/views/expert-dashboard.fxml",
+                        "FarmAI - Tableau de Bord Expert");
+    }
+
+    /**
+     * Handle analyses navigation from sidebar
+     */
+    @FXML
+    private void handleAnalyses() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-analyses.fxml",
+                        "FarmAI - Gestion des Analyses");
+    }
+
+    /**
+     * Handle logout from sidebar
+     */
+    @FXML
+    private void handleLogout() {
+        Stage stage = (Stage) conseilsTableView.getScene().getWindow();
+        NavigationUtil.logout(stage);
+    }
+
+    /**
      * Navigate to a view with smooth fade transition
      */
     private void navigateWithFade(String fxmlPath, String title) {

@@ -6,5 +6,7 @@ package tn.esprit.farmai.models;
 public enum UserLogAction {
     CREATE,
     UPDATE,
-    DELETE
+    DELETE,
+    LOGIN,
+    LOGOUT
 }

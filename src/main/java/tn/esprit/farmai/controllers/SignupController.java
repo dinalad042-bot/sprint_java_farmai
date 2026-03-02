@@ -10,6 +10,10 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.farmai.models.Role;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.UserService;
 import tn.esprit.farmai.utils.NavigationUtil;
@@ -76,9 +80,12 @@ public class SignupController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialize role combo box
+        // Initialize role combo box - filter out ADMIN role (admin should not self-register)
         if (roleComboBox != null) {
-            roleComboBox.setItems(FXCollections.observableArrayList(Role.values()));
+            List<Role> allowedRoles = Arrays.stream(Role.values())
+                    .filter(role -> role != Role.ADMIN)
+                    .collect(Collectors.toList());
+            roleComboBox.setItems(FXCollections.observableArrayList(allowedRoles));
             roleComboBox.setValue(Role.AGRICOLE); // Default role
 
             // Custom cell factory for display names

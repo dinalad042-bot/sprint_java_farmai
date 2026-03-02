@@ -9,6 +9,8 @@ import tn.esprit.farmai.utils.MyDBConnexion;
 import tn.esprit.farmai.utils.SimpleHttpClient;
 import tn.esprit.farmai.utils.WeatherUtils;
 
+import org.json.JSONObject;
+import org.json.JSONArray;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -190,18 +192,21 @@ public class AnalyseService implements CRUD<Analyse> {
     }
 
     private String buildGroqRequest(String systemContent, String userContent) {
-        String escapedSystem = escapeJson(systemContent);
-        String escapedUser = escapeJson(userContent);
+        JSONObject request = new JSONObject();
+        request.put("model", Config.GROQ_MODEL);
+        request.put("temperature", 0.7);
+        request.put("max_tokens", 500);
         
-        return "{" +
-            "\"model\":\"" + Config.GROQ_MODEL + "\"," +
-            "\"messages\":[" +
-                "{\"role\":\"system\",\"content\":\"" + escapedSystem + "\"}," +
-                "{\"role\":\"user\",\"content\":\"" + escapedUser + "\"}" +
-            "]," +
-            "\"temperature\":0.7," +
-            "\"max_tokens\":500" +
-        "}";
+        JSONArray messages = new JSONArray();
+        messages.put(new JSONObject()
+            .put("role", "system")
+            .put("content", systemContent));
+        messages.put(new JSONObject()
+            .put("role", "user")
+            .put("content", userContent));
+        request.put("messages", messages);
+        
+        return request.toString();
     }
 
     private String escapeJson(String input) {
