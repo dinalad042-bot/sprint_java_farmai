@@ -1,15 +1,21 @@
 package tn.esprit.farmai.utils;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.UserService;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -33,7 +39,7 @@ public class ProfileManager {
 
         Dialog<User> dialog = new Dialog<>();
         dialog.setTitle("Modifier mon profil");
-        dialog.setHeaderText("Mettez à jour vos informations peronnelles");
+        dialog.setHeaderText("Mettez à jour vos informations personnelles");
         dialog.initOwner(owner);
 
         // Apply CSS if available
@@ -47,6 +53,52 @@ public class ProfileManager {
         // Set button types
         ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+
+        // ===== IMAGE UPLOAD SECTION =====
+        // Image preview
+        ImageView imagePreview = new ImageView();
+        imagePreview.setFitWidth(100);
+        imagePreview.setFitHeight(100);
+        imagePreview.setPreserveRatio(true);
+        
+        // Load current user image if exists
+        StringBuilder selectedImagePath = new StringBuilder(
+                currentUser.getImageUrl() != null ? currentUser.getImageUrl() : "");
+        if (!selectedImagePath.toString().isEmpty()) {
+            try {
+                String path = selectedImagePath.toString();
+                if (!path.startsWith("http") && !path.startsWith("file:")) {
+                    File file = new File(path);
+                    if (file.exists()) {
+                        path = file.toURI().toString();
+                    }
+                }
+                imagePreview.setImage(new Image(path, true));
+            } catch (Exception e) {
+                // Image failed to load, use fallback
+            }
+        }
+        
+        // Image upload button
+        Button uploadImageBtn = new Button("📷 Choisir Photo");
+        uploadImageBtn.getStyleClass().add("secondary-btn");
+        uploadImageBtn.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Choisir une photo de profil");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg", "*.gif"));
+            File selectedFile = fileChooser.showOpenDialog(dialog.getOwner());
+            if (selectedFile != null) {
+                selectedImagePath.setLength(0);
+                selectedImagePath.append(selectedFile.getAbsolutePath());
+                imagePreview.setImage(new Image(selectedFile.toURI().toString()));
+            }
+        });
+        
+        VBox imageBox = new VBox(10, imagePreview, uploadImageBtn);
+        imageBox.setAlignment(Pos.CENTER);
+        imageBox.setPadding(new Insets(0, 0, 10, 0));
+        // ===== END IMAGE UPLOAD SECTION =====
 
         // Create form fields
         TextField nomField = new TextField(currentUser.getNom());
@@ -75,22 +127,25 @@ public class ProfileManager {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setPadding(new Insets(20, 20, 10, 20));
 
-        grid.add(new Label("Nom:"), 0, 0);
-        grid.add(nomField, 1, 0);
-        grid.add(new Label("Prénom:"), 0, 1);
-        grid.add(prenomField, 1, 1);
-        grid.add(new Label("Email:"), 0, 2);
-        grid.add(emailField, 1, 2);
-        grid.add(new Label("CIN:"), 0, 3);
-        grid.add(cinField, 1, 3);
-        grid.add(new Label("Téléphone:"), 0, 4);
-        grid.add(telephoneField, 1, 4);
-        grid.add(new Label("Adresse:"), 0, 5);
-        grid.add(adresseField, 1, 5);
-        grid.add(new Label("Mot de passe:"), 0, 6);
-        grid.add(passwordField, 1, 6);
+        // Add image upload section spanning 2 columns at top
+        grid.add(imageBox, 0, 0, 2, 1);
+        
+        grid.add(new Label("Nom:"), 0, 1);
+        grid.add(nomField, 1, 1);
+        grid.add(new Label("Prénom:"), 0, 2);
+        grid.add(prenomField, 1, 2);
+        grid.add(new Label("Email:"), 0, 3);
+        grid.add(emailField, 1, 3);
+        grid.add(new Label("CIN:"), 0, 4);
+        grid.add(cinField, 1, 4);
+        grid.add(new Label("Téléphone:"), 0, 5);
+        grid.add(telephoneField, 1, 5);
+        grid.add(new Label("Adresse:"), 0, 6);
+        grid.add(adresseField, 1, 6);
+        grid.add(new Label("Mot de passe:"), 0, 7);
+        grid.add(passwordField, 1, 7);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -106,6 +161,11 @@ public class ProfileManager {
                 currentUser.setCin(cinField.getText().trim());
                 currentUser.setTelephone(telephoneField.getText().trim());
                 currentUser.setAdresse(adresseField.getText().trim());
+                
+                // Update image URL if changed
+                if (selectedImagePath.length() > 0) {
+                    currentUser.setImageUrl(selectedImagePath.toString());
+                }
 
                 // Only return user if we plan to save
                 return currentUser;

@@ -158,11 +158,42 @@ public class AdminDashboardController implements Initializable {
     }
 
     /**
-     * Handle user logs/audit navigation
+     * Handle cultures navigation - Open admin map view with farm locations
+     */
+    @FXML
+    private void handleCultures() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/tn/esprit/farmai/views/admin_map.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Carte des Cultures");
+            stage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la carte des cultures: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handle user logs navigation - Open user log view to see audit logs
      */
     @FXML
     private void handleUserLogs() {
-        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-        NavigationUtil.showSuccess("Logs Audit", "Module de logs d'audit à venir.");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Logs Audit");
+            stage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les logs audit: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

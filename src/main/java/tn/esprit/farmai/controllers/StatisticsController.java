@@ -281,6 +281,11 @@ public class StatisticsController implements Initializable {
 
     // Navigation handlers
     @FXML
+    private void handleBack() {
+        NavigationUtil.navigateToDashboard(getCurrentStage());
+    }
+
+    @FXML
     private void handleDashboard() {
         NavigationUtil.navigateToDashboard(getCurrentStage());
     }

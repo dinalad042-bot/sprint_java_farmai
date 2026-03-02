@@ -40,6 +40,7 @@
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleBackToDashboard" maxWidth="Infinity"/>
                 <Button text="👥  Utilisateurs" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📋  Logs Audit" styleClass="nav-button" onAction="#handleUserLogs" maxWidth="Infinity"/>
                 <Button text="🌾  Cultures" styleClass="nav-button" maxWidth="Infinity"/>
                 <Button text="📦  Produits" styleClass="nav-button" maxWidth="Infinity"/>
                 

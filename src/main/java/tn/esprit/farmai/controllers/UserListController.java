@@ -22,6 +22,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Role;
 import tn.esprit.farmai.models.User;
+import tn.esprit.farmai.models.UserLog;
+import tn.esprit.farmai.models.UserLogAction;
+import tn.esprit.farmai.services.UserLogService;
 import tn.esprit.farmai.services.UserService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.NotificationManager;
@@ -70,10 +73,12 @@ public class UserListController implements Initializable {
     private Label notificationBadge;
 
     private final UserService userService;
+    private final UserLogService userLogService;
     private ObservableList<User> userList;
 
     public UserListController() {
         this.userService = new UserService();
+        this.userLogService = new UserLogService();
         this.userList = FXCollections.observableArrayList();
     }
 
@@ -351,6 +356,17 @@ public class UserListController implements Initializable {
                 "Êtes-vous sûr de vouloir supprimer l'utilisateur " + user.getFullName() + "?");
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
+                User currentUser = SessionManager.getInstance().getCurrentUser();
+                String performedBy = currentUser != null ? currentUser.getEmail() : "System";
+                
+                // Log user deletion before deleting
+                UserLog log = new UserLog();
+                log.setUserId(user.getIdUser());
+                log.setActionType(UserLogAction.DELETE);
+                log.setPerformedBy(performedBy);
+                log.setDescription("Utilisateur supprimé: " + user.getFullName() + " (" + user.getRole().getDisplayName() + ")");
+                userLogService.insertOne(log);
+                
                 userService.deleteOne(user);
                 NotificationManager.addNotification("Utilisateur supprimé: " + user.getFullName());
                 loadUsers();
@@ -470,6 +486,9 @@ public class UserListController implements Initializable {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(resultUser -> {
             try {
+                User currentUser = SessionManager.getInstance().getCurrentUser();
+                String performedBy = currentUser != null ? currentUser.getEmail() : "System";
+                
                 if (user == null) {
                     if (resultUser.getPassword() == null || resultUser.getPassword().isEmpty()) {
                         NavigationUtil.showError("Erreur", "Mot de passe requis.");
@@ -477,6 +496,15 @@ public class UserListController implements Initializable {
                     }
                     userService.insertOne(resultUser);
                     NotificationManager.addNotification("Nouvel utilisateur ajouté: " + resultUser.getFullName());
+                    
+                    // Log user creation
+                    UserLog log = new UserLog();
+                    log.setUserId(resultUser.getIdUser());
+                    log.setActionType(UserLogAction.CREATE);
+                    log.setPerformedBy(performedBy);
+                    log.setDescription("Utilisateur créé: " + resultUser.getFullName() + " (" + resultUser.getRole().getDisplayName() + ")");
+                    userLogService.insertOne(log);
+                    
                     NavigationUtil.showSuccess("Succès", "Utilisateur ajouté.");
                 } else {
                     userService.updateOne(resultUser);
@@ -484,6 +512,15 @@ public class UserListController implements Initializable {
                         userService.updatePassword(resultUser.getIdUser(), resultUser.getPassword());
                     }
                     NotificationManager.addNotification("Utilisateur modifié: " + resultUser.getFullName());
+                    
+                    // Log user update
+                    UserLog log = new UserLog();
+                    log.setUserId(resultUser.getIdUser());
+                    log.setActionType(UserLogAction.UPDATE);
+                    log.setPerformedBy(performedBy);
+                    log.setDescription("Utilisateur modifié: " + resultUser.getFullName() + " (" + resultUser.getRole().getDisplayName() + ")");
+                    userLogService.insertOne(log);
+                    
                     NavigationUtil.showSuccess("Succès", "Utilisateur modifié.");
                     if (SessionManager.getInstance().getCurrentUser().getIdUser() == resultUser.getIdUser()) {
                         SessionManager.getInstance().setCurrentUser(resultUser);
@@ -512,6 +549,30 @@ public class UserListController implements Initializable {
     private void handleBackToDashboard() {
         Stage stage = (Stage) userListView.getScene().getWindow();
         NavigationUtil.navigateToDashboard(stage);
+    }
+
+    /**
+     * Navigate to user logs view
+     */
+    @FXML
+    private void handleUserLogs() {
+        try {
+            Stage stage = (Stage) userListView.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Logs Audit");
+            stage.show();
+        } catch (Exception e) {
+            String errorDetails = e.getMessage();
+            if (e.getCause() != null) {
+                errorDetails += "\nCaused by: " + e.getCause().getMessage();
+            }
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les logs audit:\n" + errorDetails);
+            e.printStackTrace();
+        }
     }
 
     // --- Notification Logic ---

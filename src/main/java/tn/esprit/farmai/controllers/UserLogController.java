@@ -54,9 +54,17 @@ public class UserLogController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        setupListView();
-        updateUserSessionUI();
-        loadLogs();
+        try {
+            setupListView();
+            updateUserSessionUI();
+            loadLogs();
+        } catch (Exception e) {
+            System.err.println("Error initializing UserLogController: " + e.getMessage());
+            e.printStackTrace();
+            // Show error but don't crash the UI
+            NavigationUtil.showError("Erreur d'initialisation", 
+                "Erreur lors du chargement des logs: " + e.getMessage());
+        }
     }
 
     private void setupListView() {
@@ -144,7 +152,17 @@ public class UserLogController implements Initializable {
             logListView.setItems(logList);
         } catch (SQLException e) {
             e.printStackTrace();
-            NavigationUtil.showError("Erreur", "Impossible de charger les logs d'audit.");
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && errorMsg.contains("user_log")) {
+                NavigationUtil.showError("Erreur Base de Données", 
+                    "La table des logs n'existe pas encore.\n" +
+                    "Veuillez exécuter le script SQL pour créer la table user_log.\n\n" +
+                    "Détails: " + errorMsg);
+            } else {
+                NavigationUtil.showError("Erreur", 
+                    "Impossible de charger les logs d'audit.\n" +
+                    "Détails: " + (errorMsg != null ? errorMsg : "Erreur inconnue"));
+            }
         }
     }
 

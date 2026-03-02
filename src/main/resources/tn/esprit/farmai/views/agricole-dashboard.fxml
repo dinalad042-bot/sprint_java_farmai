@@ -38,10 +38,10 @@
             
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="📊  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="🏡  Mes Exploitations" styleClass="nav-button" onAction="#handleMyFarms" maxWidth="Infinity"/>
                 <Button text="🌱  Mes Cultures" styleClass="nav-button" onAction="#handleMyCrops" maxWidth="Infinity"/>
-                <Button text="🐑  Mes Animaux" styleClass="nav-button" onAction="#handleMyAnimals" maxWidth="Infinity"/>
                 <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
+                <Button text="📊  Analyses Expert" styleClass="nav-button" onAction="#handleExpertAnalyses" maxWidth="Infinity"/>
+                <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
@@ -66,6 +66,16 @@
                     
                     <StackPane styleClass="icon-button">
                          <Text text="🌤️" style="-fx-font-size: 18px;" fill="#FBC02D"/>
+                    </StackPane>
+                    
+                    <!-- Notification Bell with Badge -->
+                    <StackPane styleClass="icon-button" onMouseClicked="#handleNotifications" style="-fx-cursor: hand;">
+                        <Text text="🔔" style="-fx-font-size: 20px;"/>
+                        <StackPane StackPane.alignment="TOP_RIGHT" translateX="8" translateY="-8">
+                            <Circle fx:id="notificationBadge" radius="8" fill="#F44336" visible="false"/>
+                            <Label fx:id="notificationCountLabel" text="0" visible="false" 
+                                   style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                        </StackPane>
                     </StackPane>
                     
                     <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">

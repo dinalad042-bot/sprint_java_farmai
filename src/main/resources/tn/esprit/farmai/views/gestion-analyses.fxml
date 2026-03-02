@@ -38,12 +38,12 @@
 
             <!-- Navigation Menu -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
-                <Button text="Tableau de bord" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Tableau de bord" styleClass="nav-button" maxWidth="Infinity" onAction="#handleDashboard"/>
                 <Button text="Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="Conseils" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Conseils" styleClass="nav-button" maxWidth="Infinity" onAction="#handleConseils"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <Button text="Deconnexion" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="Deconnexion" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout"/>
             </VBox>
         </VBox>
     </left>
@@ -83,6 +83,7 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button fx:id="refreshButton" text="Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
                 <Button fx:id="aiDiagnosticButton" text="AI Diagnostic" styleClass="info-btn" onAction="#handleAIDiagnostic"/>
+                <Button fx:id="visualDiagnoseButton" text="🔍 Diagnostic Visuel" styleClass="info-btn" onAction="#handleVisualDiagnosis"/>
                 <Button fx:id="exportPdfButton" text="Export PDF" styleClass="warning-btn" onAction="#handleExportPDF"/>
                 <Button fx:id="addAnalyseButton" text="+ Nouvelle Analyse" styleClass="primary-btn" onAction="#handleAddAnalyse"/>
             </HBox>

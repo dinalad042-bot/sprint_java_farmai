@@ -2,17 +2,23 @@ package tn.esprit.farmai.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.VBox;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.ConseilService;
 import tn.esprit.farmai.services.FermeService;
+import tn.esprit.farmai.services.NotificationService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
+import javafx.application.Platform;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -54,6 +60,12 @@ public class AgricoleDashboardController implements Initializable {
     @FXML
     private Label totalConseilsLabel;
 
+    // Notification badge elements
+    @FXML
+    private Circle notificationBadge;
+    @FXML
+    private Label notificationCountLabel;
+
     private final FermeService fermeService;
     private final AnalyseService analyseService;
     private final ConseilService conseilService;
@@ -76,6 +88,80 @@ public class AgricoleDashboardController implements Initializable {
         
         // Load dynamic statistics
         loadStatistics();
+        
+        // Check for unread notifications
+        checkNotifications();
+    }
+    
+    /**
+     * Check for unread notifications and update badge + show alert
+     */
+    private void checkNotifications() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+        
+        try {
+            NotificationService notificationService = new NotificationService();
+            int unreadCount = notificationService.countUnreadByUser(currentUser.getIdUser());
+            
+            // Update notification badge
+            final int count = unreadCount;
+            Platform.runLater(() -> {
+                if (count > 0) {
+                    notificationBadge.setVisible(true);
+                    notificationCountLabel.setVisible(true);
+                    notificationCountLabel.setText(String.valueOf(count));
+                } else {
+                    notificationBadge.setVisible(false);
+                    notificationCountLabel.setVisible(false);
+                }
+            });
+            
+            if (unreadCount > 0) {
+                LOGGER.log(Level.INFO, "User {0} has {1} unread notifications", 
+                        new Object[]{currentUser.getFullName(), unreadCount});
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Failed to check notifications for user " + currentUser.getIdUser(), e);
+        }
+    }
+    
+    /**
+     * Handle notification bell click - show notifications popup
+     */
+    @FXML
+    private void handleNotifications() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+        
+        try {
+            NotificationService notificationService = new NotificationService();
+            int unreadCount = notificationService.countUnreadByUser(currentUser.getIdUser());
+            
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Notifications");
+            alert.setHeaderText("📬 Vos Notifications");
+            
+            if (unreadCount == 0) {
+                alert.setContentText("Aucune nouvelle notification.");
+            } else if (unreadCount == 1) {
+                alert.setContentText("Vous avez 1 notification non lue.\n\n" +
+                        "Rendez-vous dans 'Analyse IA' pour consulter vos nouvelles analyses.");
+            } else {
+                alert.setContentText("Vous avez " + unreadCount + " notifications non lues.\n\n" +
+                        "Rendez-vous dans 'Analyse IA' pour consulter vos nouvelles analyses.");
+            }
+            
+            alert.showAndWait();
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Failed to load notifications", e);
+        }
     }
 
     /**
@@ -168,22 +254,29 @@ public class AgricoleDashboardController implements Initializable {
     }
 
     /**
-     * Handle my crops - Navigate to plant management
+     * Handle my crops - Navigate to Mes Cultures hub with 3 buttons
      */
     @FXML
     private void handleMyCrops() {
         try {
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                    getClass().getResource("/tn/esprit/farmai/views/gestion-plantes.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/mes-cultures.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+            
             stage.setScene(scene);
             stage.setTitle("FarmAI - Mes Cultures");
             stage.show();
-            LOGGER.log(Level.INFO, "Navigated to plant management");
+            LOGGER.log(Level.INFO, "Navigated to mes cultures hub");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to navigate to plant management", e);
+            LOGGER.log(Level.SEVERE, "Failed to navigate to mes cultures hub", e);
             NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des cultures.");
         }
     }
@@ -278,6 +371,70 @@ public class AgricoleDashboardController implements Initializable {
             LOGGER.log(Level.SEVERE, "Error during navigation to analyses", e);
             NavigationUtil.showError("Erreur de navigation", 
                     "Impossible de naviguer vers les analyses: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle expert analyses - Navigate to agricole statistics view (read-only)
+     * This shows statistics without expert editing capabilities
+     */
+    @FXML
+    private void handleExpertAnalyses() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/agricole-statistics.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+            
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Statistiques");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to agricole statistics view");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to statistics", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les statistiques.");
+        }
+    }
+
+    /**
+     * Handle add face - Open Face Recognition view for face enrollment
+     */
+    @FXML
+    private void handleAddFace() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            javafx.scene.Parent root = loader.load();
+            
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 800, 600);
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+            
+            Stage faceStage = new Stage();
+            faceStage.initOwner(stage);
+            faceStage.setTitle("FarmAI - Enregistrement Visage");
+            faceStage.setScene(scene);
+            
+            // Cleanup camera when window closes
+            FaceRecognitionController controller = loader.getController();
+            faceStage.setOnCloseRequest(e -> controller.cleanup());
+            
+            faceStage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

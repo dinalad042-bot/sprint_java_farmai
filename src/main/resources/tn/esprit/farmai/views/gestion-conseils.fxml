@@ -38,12 +38,12 @@
 
             <!-- Navigation Menu -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
-                <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity"/>
-                <Button text="🔬  Analyses" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity" onAction="#handleDashboard"/>
+                <Button text="🔬  Analyses" styleClass="nav-button" maxWidth="Infinity" onAction="#handleAnalyses"/>
                 <Button text="💡  Conseils" styleClass="nav-button active" maxWidth="Infinity"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout"/>
             </VBox>
         </VBox>
     </left>

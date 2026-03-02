@@ -1,149 +1,69 @@
 # Research Area: Branch Overview
 
-## Status: 🟢 Complete
+## Status: 🟡 In Progress
 
 ## What I Need To Learn
-- What files does each branch modify/add?
-- What is the scope of changes in each branch?
-- Which files overlap between branches?
+1. What features exist in each of the 3 branches
+2. Which files were modified in each branch
+3. Current state of integration-final branch
+4. What features from securite-aymen need to be pulled (captcha, excel export)
 
-## Files Examined
-- [x] `git diff --name-status main..origin/feature/expertise-is-alaeddin` — 69 files changed
-- [x] `git diff --name-status main..origin/feature/securite-aymen` — 40 files changed
-- [x] `git diff --name-status main..origin/feature/ferme-amen` — 40 files changed
+## Branches Identified
 
-## Findings
+| Branch | Purpose | Status |
+|--------|---------|--------|
+| feature/securite-aymen | Security features: captcha, excel export | Remote only |
+| feature/expertise-is-alaeddin | Expert module features | Remote only |
+| feature/ferme-amen | Farm management features | Remote only |
+| integration-final | Target integration branch | Remote only |
+| integration | Current local branch | Local |
 
-### Branch 1: feature/expertise-is-alaeddin (69 files)
-**Purpose**: Expert dashboard, Analysis management, Conseil (advice) system
+## Files To Examine
 
-**Key Features**:
-- Expert dashboard with statistics
-- Analysis (Analyse) CRUD management
-- Advice (Conseil) system linked to analyses
-- PDF report generation
-- Weather integration
-- Groq AI API integration for expert chatbot
+### Per Branch
+- [ ] `feature/securite-aymen` — Find captcha and excel export implementations
+- [ ] `feature/expertise-is-alaeddin` — Identify expert-related changes
+- [ ] `feature/ferme-amen` — Identify farm-related changes
+- [ ] `integration-final` — Check current state
 
-**Files Added**:
-- Models: `Analyse.java`, `Conseil.java`, `Ferme.java`, `Priorite.java`, `UserLog.java`, `UserLogAction.java`
-- Controllers: `ExpertDashboardController.java`, `GestionAnalysesController.java`, `GestionConseilsController.java`, `FermierAnalysesController.java`, `AjoutConseilController.java`, `StatisticsController.java`
-- Services: `AnalyseService.java`, `ConseilService.java`, `FermeService.java`, `PDFReportService.java`, `UserLogService.java`, `UserService.java`
-- Utils: `WeatherUtils.java`, `SpeechUtils.java`, `SimpleHttpClient.java`, `NotificationManager.java`, `SessionManager.java`, `PasswordUtil.java`, `NavigationUtil.java`, `ProfileManager.java`, `Config.java`, `AnalyseDialog.java`, `AlertUtils.java`
-- Views: `expert-dashboard.fxml`, `gestion-analyses.fxml`, `gestion-conseils.fxml`, `fermier-analyses.fxml`, `ajout-conseil.fxml`, `statistics.fxml`
+## Investigation Commands Used
 
-### Branch 2: feature/securite-aymen (40 files)
-**Purpose**: Security features, Face recognition login, OTP verification, Email integration
+```bash
+# List all branches
+git --no-pager branch -a
 
-**Key Features**:
-- Face recognition login using JavaCV/OpenCV
-- OTP (One-Time Password) verification
-- Email service for password reset
-- Face enrollment service
-- User logging system
+# Result:
+# * integration (current)
+#   main
+#   remotes/origin/feature/expertise-is-alaeddin
+#   remotes/origin/feature/ferme-amen
+#   remotes/origin/feature/reporting-leila
+#   remotes/origin/feature/securite-aymen  <-- CAPTCHA + EXCEL EXPORT
+#   remotes/origin/integration-final
+#   remotes/origin/integration/all-features-comprehensive
+#   remotes/origin/main
+```
 
-**Files Added**:
-- Controllers: `FaceLoginController.java`, `FaceRecognitionController.java`, `VerificationController.java`
-- Services: `FaceEnrollmentService.java`, `OTPService.java`, `UserService.java`, `UserLogService.java`
-- Utils: `MailingService.java`, `SessionManager.java`, `PasswordUtil.java`, `NavigationUtil.java`, `NotificationManager.java`, `ProfileManager.java`
-- Views: `face-login-view.fxml`, `face-recognition-view.fxml`, `verification.fxml`
-- Resources: `cascade/haarcascade_frontalface_default.xml`
-- SQL: `database/face_data_migration.sql`
+## Key Finding
+The `feature/securite-aymen` branch exists on origin and should contain:
+- **Captcha feature** - likely in login/verification
+- **Excel export feature** - likely in reports or data export
 
-### Branch 3: feature/ferme-amen (40 files)
-**Purpose**: Farm management, Animals, Plants, Irrigation AI, Weather integration
-
-**Key Features**:
-- Farm (Ferme) CRUD management
-- Animals (Animaux) management
-- Plants (Plantes) management
-- Irrigation AI service
-- Expert voice service
-- Weather service
-- Market service
-- PDF generation for reports
-
-**Files Added**:
-- Models: `Ferme.java`, `Animaux.java`, `Plantes.java`
-- Controllers: `FermeController.java`, `AnimauxController.java`, `PlantesController.java`, `AdminController.java`, `AdminMapController.java`, `AgricoIrrigationController.java`
-- Services: `ServiceFerme.java`, `ServiceAnimaux.java`, `ServicePlantes.java`, `IrrigationAI.java`, `WeatherService.java`, `MarketService.java`, `PdfGenerator.java`, `ExpertChatbotService.java`, `ExpertVoiceService.java`
-- Views: `gestion-fermes.fxml`, `gestion-animaux.fxml`, `gestion-plantes.fxml`, `admin.fxml`, `admin_map.fxml`
-
-## Overlapping Files (CONFLICTS)
-
-### Models
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `Ferme.java` | expertise + ferme | **Different structure** - expertise has `idFermier` FK |
-| `User.java` | main + ferme | ferme branch DELETES User.java, Role.java |
-
-### Controllers
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `LoginController.java` | expertise + security | **Different implementations** - security has face login |
-| `AdminDashboardController.java` | expertise + security | Both modify |
-| `AgricoleDashboardController.java` | expertise + security | Both modify |
-| `ExpertDashboardController.java` | expertise + security | Both modify |
-| `FournisseurDashboardController.java` | expertise + security | Both modify |
-| `UserListController.java` | expertise + security | Both modify |
-| `NotificationsController.java` | expertise + security | Both modify |
-| `SignupController.java` | expertise + security | Both modify |
-
-### Services
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `UserService.java` | expertise + security | security has UserLogService integration |
-| `UserLogService.java` | expertise + security | Both add |
-
-### Utils
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `NavigationUtil.java` | expertise + security | Both add |
-| `NotificationManager.java` | expertise + security | Both add |
-| `PasswordUtil.java` | expertise + security | Same implementation |
-| `ProfileManager.java` | expertise + security | Same implementation |
-| `SessionManager.java` | expertise + security | Same implementation |
-
-### Views (FXML)
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `login.fxml` | expertise + security | security has face login button |
-| `admin-dashboard.fxml` | expertise + security | Both modify |
-| `agricole-dashboard.fxml` | expertise + security + ferme | All three modify |
-| `expert-dashboard.fxml` | expertise + security | Both modify |
-| `fournisseur-dashboard.fxml` | expertise + security | Both modify |
-| `user-list.fxml` | expertise + security | Both modify |
-| `notifications.fxml` | expertise + security | Both modify |
-| `signup.fxml` | expertise + security | Both modify |
-
-### Configuration
-| File | Branches | Conflict Type |
-|------|----------|---------------|
-| `pom.xml` | all three | **Different dependencies** |
-| `module-info.java` | all three | **Different requires** |
-
-## Code Patterns Observed
-- All branches use JavaFX for UI
-- All branches use MySQL for database
-- All branches follow MVC pattern (models, controllers, services)
-- All branches use MyDBConnexion singleton for database connection
-
-## Relevance to Implementation
-This overview identifies ALL files that will conflict during merge. The integration strategy must:
-1. Merge pom.xml dependencies from all three branches
-2. Merge module-info.java requires from all three branches
-3. Resolve Ferme.java model conflict (use expertise version with idFermier)
-4. Merge LoginController to include both face login AND standard login
-5. Merge UserService to include UserLogService integration
-6. Combine all unique controllers, services, and views from each branch
+## Next Steps
+1. Fetch and examine feature/securite-aymen branch files
+2. Identify specific files for captcha implementation
+3. Identify specific files for excel export implementation
+4. Check integration-final to see what's already merged
 
 ## New Questions Generated
-- Which Ferme model version should be the base? → sent to questions.md
-- How to merge LoginController? → sent to questions.md
-- Which UserService version to use? → sent to questions.md
+- Where exactly is the captcha implemented? (login, signup, verification?)
+- Where exactly is the excel export? (which controllers/services?)
+- What dependencies do these features require?
+- Is integration-final up to date with main?
 
 ## Status Update
-- [x] Initial investigation of all three branches
-- [x] Identify file changes in each branch
-- [x] Identify overlapping files
-- [x] Categorize conflict types
+- [x] Identified all available branches
+- [x] Located feature/securite-aymen branch
+- [ ] Examine securite-aymen branch contents
+- [ ] Examine other branches
+- [ ] Check integration-final state

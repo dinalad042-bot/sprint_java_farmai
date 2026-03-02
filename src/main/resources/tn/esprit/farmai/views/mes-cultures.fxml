@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.MesCulturesController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="sidebarAvatarText" text="👨‍🌾" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Agriculteur" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Agricole" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+
+            <Region prefHeight="30"/>
+
+            <!-- Navigation Menu -->
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleBack" maxWidth="Infinity"/>
+                <Button text="🌱  Mes Cultures" styleClass="nav-button active" maxWidth="Infinity"/>
+
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox styleClass="main-content" spacing="20">
+
+                <!-- Top Header -->
+                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
+                    <Button text="← Retour" styleClass="secondary-btn" onAction="#handleBack"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label text="🌾 Mes Cultures" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
+                        <Circle radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
+                        <Text text="👨‍🌾" fill="#2E7D32"/>
+                    </StackPane>
+                </HBox>
+
+                <!-- Welcome Section -->
+                <VBox styleClass="welcome-section" spacing="5">
+                    <Label fx:id="welcomeLabel" text="Bienvenue !" styleClass="welcome-title"/>
+                    <Label text="Gérez vos exploitations agricoles" styleClass="welcome-subtitle"/>
+                </VBox>
+
+                <Label text="Sélectionnez une catégorie" styleClass="section-title"/>
+
+                <!-- Three Button Cards Grid -->
+                <HBox spacing="20" alignment="CENTER">
+
+                    <!-- Card 1: Animaux -->
+                    <VBox styleClass="stat-card-tall, card-green" prefWidth="300" minWidth="280" spacing="15"
+                          style="-fx-cursor: hand; -fx-background-color: #E8F5E9;"
+                          onMouseClicked="#handleAnimaux">
+                        <padding>
+                            <Insets top="30" right="20" bottom="30" left="20"/>
+                        </padding>
+                        <VBox alignment="CENTER" spacing="10">
+                            <Text text="🐑" style="-fx-font-size: 64px;"/>
+                            <Label text="Mes Animaux" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;"/>
+                            <Label text="Gérez votre bétail" wrapText="true" alignment="CENTER"
+                                   style="-fx-text-fill: #558B2F; -fx-font-size: 14px;"/>
+                        </VBox>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <Button text="Accéder →" maxWidth="Infinity" disable="true"
+                                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- Card 2: Plantes -->
+                    <VBox styleClass="stat-card-tall, card-white" prefWidth="300" minWidth="280" spacing="15"
+                          style="-fx-cursor: hand; -fx-background-color: white;"
+                          onMouseClicked="#handlePlantes">
+                        <padding>
+                            <Insets top="30" right="20" bottom="30" left="20"/>
+                        </padding>
+                        <VBox alignment="CENTER" spacing="10">
+                            <Text text="🌱" style="-fx-font-size: 64px;"/>
+                            <Label text="Mes Plantes" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
+                            <Label text="Gérez vos cultures" wrapText="true" alignment="CENTER"
+                                   style="-fx-text-fill: #546E7A; -fx-font-size: 14px;"/>
+                        </VBox>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <Button text="Accéder →" maxWidth="Infinity" disable="true"
+                                style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                    <!-- Card 3: Fermes -->
+                    <VBox styleClass="stat-card-tall, card-grey" prefWidth="300" minWidth="280" spacing="15"
+                          style="-fx-cursor: hand; -fx-background-color: #F5F5F5;"
+                          onMouseClicked="#handleFermes">
+                        <padding>
+                            <Insets top="30" right="20" bottom="30" left="20"/>
+                        </padding>
+                        <VBox alignment="CENTER" spacing="10">
+                            <Text text="🏡" style="-fx-font-size: 64px;"/>
+                            <Label text="Mes Fermes" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #424242;"/>
+                            <Label text="Gérez vos exploitations" wrapText="true" alignment="CENTER"
+                                   style="-fx-text-fill: #616161; -fx-font-size: 14px;"/>
+                        </VBox>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <Button text="Accéder →" maxWidth="Infinity" disable="true"
+                                style="-fx-background-color: #616161; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    </VBox>
+
+                </HBox>
+
+                <!-- Info Card -->
+                <HBox spacing="20">
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15"
+                          style="-fx-background-color: #FFF8E1;">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Text text="💡" style="-fx-font-size: 24px;"/>
+                            <Label text="Astuce" styleClass="card-title"/>
+                        </HBox>
+                        <Label text="Cliquez sur une carte pour accéder à la gestion correspondante. \
+Vous pouvez également utiliser le bouton 'Retour' pour revenir au tableau de bord."
+                               wrapText="true" style="-fx-text-fill: #F57C00;"/>
+                    </VBox>
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

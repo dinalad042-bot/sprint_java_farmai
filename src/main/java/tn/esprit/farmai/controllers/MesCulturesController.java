@@ -1,0 +1,159 @@
+package tn.esprit.farmai.controllers;
+
+import javafx.animation.FadeTransition;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+import javafx.util.Duration;
+import tn.esprit.farmai.models.User;
+import tn.esprit.farmai.utils.NavigationUtil;
+import tn.esprit.farmai.utils.ProfileManager;
+import tn.esprit.farmai.utils.SessionManager;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Controller for Mes Cultures hub view.
+ * Provides navigation to Animaux, Plantes, and Fermes management.
+ */
+public class MesCulturesController implements Initializable {
+
+    private static final Logger LOGGER = Logger.getLogger(MesCulturesController.class.getName());
+
+    @FXML
+    private Label welcomeLabel;
+
+    @FXML
+    private Label userNameLabel;
+
+    @FXML
+    private Label userRoleLabel;
+
+    @FXML
+    private Circle sidebarAvatar;
+
+    @FXML
+    private Text sidebarAvatarText;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            if (userRoleLabel != null) {
+                userRoleLabel.setText(currentUser.getRole().getDisplayName());
+            }
+        }
+    }
+
+    /**
+     * Navigate to Animaux (Animals) management
+     */
+    @FXML
+    private void handleAnimaux() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-animaux.fxml", "FarmAI - Mes Animaux");
+    }
+
+    /**
+     * Navigate to Plantes (Plants) management
+     */
+    @FXML
+    private void handlePlantes() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-plantes.fxml", "FarmAI - Mes Plantes");
+    }
+
+    /**
+     * Navigate to Fermes (Farms) management
+     */
+    @FXML
+    private void handleFermes() {
+        navigateWithFade("/tn/esprit/farmai/views/gestion-fermes.fxml", "FarmAI - Mes Fermes");
+    }
+
+    /**
+     * Handle back button - return to Agricole Dashboard
+     */
+    @FXML
+    private void handleBack() {
+        navigateWithFade("/tn/esprit/farmai/views/agricole-dashboard.fxml", "FarmAI - Tableau de Bord");
+    }
+
+    /**
+     * Handle profile click
+     */
+    @FXML
+    private void handleProfile() {
+        boolean updated = ProfileManager.showProfileEditDialog(welcomeLabel.getScene().getWindow());
+        if (updated) {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+        }
+    }
+
+    /**
+     * Handle logout
+     */
+    @FXML
+    private void handleLogout() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.logout(stage);
+    }
+
+    /**
+     * Navigate to a view with smooth fade transition
+     */
+    private void navigateWithFade(String fxmlPath, String title) {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            Parent currentRoot = welcomeLabel.getScene().getRoot();
+
+            // Fade out
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(event -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+                    Parent newRoot = loader.load();
+                    Scene scene = new Scene(newRoot, 1200, 800);
+
+                    // Apply CSS
+                    java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+                    if (cssUrl != null) {
+                        scene.getStylesheets().add(cssUrl.toExternalForm());
+                    }
+
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+                    stage.setTitle(title);
+
+                    // Fade in
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                    stage.show();
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed to load view: " + fxmlPath, e);
+                    NavigationUtil.showError("Erreur", "Impossible de charger la vue: " + e.getMessage());
+                }
+            });
+
+            fadeOut.play();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Navigation error", e);
+            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
+        }
+    }
+}

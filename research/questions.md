@@ -1,88 +1,68 @@
 # Open Questions
 
-## Answerable by Code (Need More Research - Area 8)
+## Answerable by Code (Need More Research)
 
-### Q10: Why do agricole users see 0 farms?
-- [ ] **IN PROGRESS** — Investigating session and filtering
-- **Question**: Database has farms assigned to agricole users, but dashboard shows 0
-- **Likely in**: `AgricoleDashboardController.java:84-99`, `SessionManager.java`
-- **Assigned to**: Area 08-agricole-integration.md
+### Q1: Where is captcha implemented in securite-aymen?
+- [ ] **PENDING** — Need to examine branch diff
+- **Question**: In which controller/view is captcha located?
+- **Likely locations**: LoginController, SignupController, VerificationController
+- **Assigned to**: Area 02 - Captcha Feature
 
-### Q11: Is SessionManager properly storing current user?
-- [ ] **IN PROGRESS** — Need to verify session initialization
-- **Question**: Is the user session properly set during login and retrieved in dashboard?
-- **Likely in**: `LoginController.java`, `SessionManager.java`
-- **Assigned to**: Area 08-agricole-integration.md
+### Q2: What type of captcha is used?
+- [ ] **PENDING** — Need to examine implementation
+- **Options**: Image captcha, Google reCAPTCHA, math captcha, simple text
+- **Assigned to**: Area 02 - Captcha Feature
 
-### Q12: Is farm filtering logic working?
-- [ ] **IN PROGRESS** — Need to test stream filter
-- **Question**: Is the stream filter correctly matching farms to current user ID?
-- **Likely in**: `AgricoleDashboardController.java:92-95`
-- **Assigned to**: Area 08-agricole-integration.md
+### Q3: Where is excel export implemented?
+- [ ] **PENDING** — Need to examine branch diff
+- **Question**: Which controllers have excel export functionality?
+- **Assigned to**: Area 03 - Excel Export Feature
+
+### Q4: What library is used for excel export?
+- [ ] **PENDING** — Need to check pom.xml
+- **Likely**: Apache POI
+- **Assigned to**: Area 03 - Excel Export Feature
+
+### Q5: What is current state of integration-final?
+- [ ] **PENDING** — Need to examine branch
+- **Question**: What's already merged? What's missing?
+- **Assigned to**: Area 01 - Branch Overview
 
 ## Need Human Input
 
-### Q13: Should we add debug logging?
-- [ ] **PENDING** — Need user decision
-- **Question**: Should we add temporary debug logging to trace the issue?
-- **Options**: 
-  - Add System.out.println statements
-  - Use Java logging framework
-  - Skip debug logging and fix directly
+### Q6: Which features from other branches are needed?
+- [ ] **PENDING** — Need user confirmation
+- **Question**: Besides captcha and excel export, what else from securite-aymen?
+- **Question**: What from expertise-is-alaeddin and ferme-amen?
 
-### Q1: Which Ferme model version should be used?
-- [x] **RESOLVED** — Use Expertise branch version
-- **Reason**: Expertise version has proper `idFermier` FK to User, follows Java naming conventions, matches database schema
-- **Found in**: `feature/expertise-is-alaeddin:models/Ferme.java`
-- **Area**: 03-model-conflicts.md
+### Q7: Integration approach preference?
+- [ ] **PENDING** — Need user preference
+- **Options**:
+  - Merge entire securite-aymen branch
+  - Cherry-pick only captcha and excel commits
+  - Manual copy of specific files
+- **Assigned to**: Area 05 - Integration Strategy
 
-### Q2: Which LoginController should be used?
-- [x] **RESOLVED** — Use Security branch version
-- **Reason**: Security version has all Expertise features PLUS face login and OTP verification
-- **Found in**: `feature/securite-aymen:controllers/LoginController.java`
-- **Area**: 04-controller-conflicts.md
-
-### Q3: Which UserService should be used?
-- [x] **RESOLVED** — Use Security branch version
-- **Reason**: Security version has UserLogService integration for audit logging
-- **Found in**: `feature/securite-aymen:services/UserService.java`
-- **Area**: 04-controller-conflicts.md
-
-### Q4: How to handle Animaux/Plantes naming conventions?
-- [x] **RESOLVED** — Rename fields to camelCase
-- **Reason**: Java naming convention, consistency with other models
-- **Changes**: 
-  - `id_animal` → `idAnimal`
-  - `id_ferme` → `idFerme`
-  - `nom_espece` → `nomEspece`
-  - `cycle_vie` → `cycleVie`
-- **Area**: 03-model-conflicts.md
-
-### Q5: Which ExpertDashboardController to use?
-- [x] **RESOLVED** — Use Expertise branch version
-- **Reason**: Expertise version has statistics integration (AnalyseService, ConseilService, FermeService)
-- **Found in**: `feature/expertise-is-alaeddin:controllers/ExpertDashboardController.java`
-- **Area**: 04-controller-conflicts.md
-
-### Q6: How to merge module-info.java?
-- [x] **RESOLVED** — Combine all requires statements
-- **Details**: Merge all `requires` from all three branches
-- **Area**: 02-dependencies.md
+### Q8: **CRITICAL** - Captcha and Excel Export Location
+- [ ] **PENDING** — Need user clarification
+- **Finding**: After thorough search of all branches:
+  - `feature/securite-aymen`: Contains Face Recognition, OTP, User Logs, Notifications — **NO captcha or excel**
+  - `feature/expertise-is-alaeddin`: Contains Expert analyses, conseils — **NO captcha or excel**
+  - `feature/ferme-amen`: Contains Farm management, irrigation — **NO captcha or excel**
+  - `integration-final`: Contains merged features — **NO captcha or excel**
+  - Current `integration` branch: **NO captcha or excel**
+- **Question**: Are captcha and excel export features:
+  1. **To be created** (new implementation)?
+  2. In a **different branch** not yet pushed to origin?
+  3. In **Aymen's local repository** only?
+  4. Already **implemented elsewhere** I should look?
+- **Assigned to**: Area 02 & 03 - Feature Research
 
 ## Resolved
-
-- [x] Q1: Ferme model version — Answer: Use Expertise version with idFermier
-- [x] Q2: LoginController version — Answer: Use Security version with face login
-- [x] Q3: UserService version — Answer: Use Security version with UserLogService
-- [x] Q4: Animaux/Plantes naming — Answer: Rename to camelCase
-- [x] Q5: ExpertDashboardController — Answer: Use Expertise version with statistics
-- [x] Q6: module-info.java merge — Answer: Combine all requires
-- [x] Q7: Trefle API key — Answer: Move to Config.java for consistency
-- [x] Q8: unique_fermier constraint — Answer: Remove constraint to allow multiple farms per user
-- [x] Q9: Email SMTP configuration — Answer: Use environment variables (SMTP_HOST, SMTP_USER, SMTP_PASS)
+*None yet*
 
 ## Summary
-- **Total Questions**: 9
-- **Resolved by Research**: 6
-- **Resolved by Human Input**: 3
-- **All Questions Resolved**: ✅
+- **Total Questions**: 8
+- **Resolved by Research**: 0
+- **Pending Human Input**: 3
+- **Pending Code Research**: 5

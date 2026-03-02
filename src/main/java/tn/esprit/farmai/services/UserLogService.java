@@ -26,10 +26,10 @@ public class UserLogService implements CRUD<UserLog> {
      */
     private void createTableIfNotExists() {
         String query = "CREATE TABLE IF NOT EXISTS user_log (" +
-                "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                "id_log INT AUTO_INCREMENT PRIMARY KEY, " +
                 "user_id INT NOT NULL, " +
-                "action_type VARCHAR(20) NOT NULL, " +
-                "performed_by VARCHAR(255) NOT NULL, " +
+                "action ENUM('CREATE','UPDATE','DELETE','LOGIN','LOGOUT') NOT NULL, " +
+                "performed_by VARCHAR(150) NOT NULL, " +
                 "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
                 "description TEXT, " +
                 "FOREIGN KEY (user_id) REFERENCES user(id_user) ON DELETE CASCADE" +
@@ -43,7 +43,7 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void insertOne(UserLog log) throws SQLException {
-        String query = "INSERT INTO user_log (user_id, action_type, performed_by, timestamp, description) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO user_log (user_id, action, performed_by, timestamp, description) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, log.getUserId());
             ps.setString(2, log.getActionType().name());
@@ -62,7 +62,7 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void updateOne(UserLog log) throws SQLException {
-        String query = "UPDATE user_log SET user_id = ?, action_type = ?, performed_by = ?, description = ? WHERE id = ?";
+        String query = "UPDATE user_log SET user_id = ?, action = ?, performed_by = ?, description = ? WHERE id_log = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, log.getUserId());
             ps.setString(2, log.getActionType().name());
@@ -75,7 +75,7 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void deleteOne(UserLog log) throws SQLException {
-        String query = "DELETE FROM user_log WHERE id = ?";
+        String query = "DELETE FROM user_log WHERE id_log = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setLong(1, log.getId());
             ps.executeUpdate();
@@ -113,9 +113,9 @@ public class UserLogService implements CRUD<UserLog> {
 
     private UserLog mapResultSetToUserLog(ResultSet rs) throws SQLException {
         UserLog log = new UserLog();
-        log.setId(rs.getLong("id"));
+        log.setId(rs.getLong("id_log"));
         log.setUserId(rs.getInt("user_id"));
-        log.setActionType(UserLogAction.valueOf(rs.getString("action_type")));
+        log.setActionType(UserLogAction.valueOf(rs.getString("action")));
         log.setPerformedBy(rs.getString("performed_by"));
         log.setTimestamp(rs.getTimestamp("timestamp").toLocalDateTime());
         log.setDescription(rs.getString("description"));

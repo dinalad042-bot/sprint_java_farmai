@@ -18,9 +18,11 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.Ferme;
+import tn.esprit.farmai.models.Notification;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.FermeService;
+import tn.esprit.farmai.services.NotificationService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.SessionManager;
 
@@ -92,6 +94,64 @@ public class FermierAnalysesController implements Initializable {
         setupTableView();
         setupSearch();
         loadAnalysesForFermier();
+        
+        // Check for and display notifications for new analyses
+        checkAndShowNotifications();
+    }
+    
+    /**
+     * Check for unread notifications and show them to the user.
+     * Also marks ANALYSE notifications as read since the user is now viewing the analyses page.
+     */
+    private void checkAndShowNotifications() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            return;
+        }
+        
+        try {
+            NotificationService notificationService = new NotificationService();
+            
+            // Get unread notifications for this user
+            List<Notification> unreadNotifications = notificationService.findUnreadByUser(currentUser.getIdUser());
+            
+            if (!unreadNotifications.isEmpty()) {
+                // Count analysis notifications
+                long analysisNotifications = unreadNotifications.stream()
+                    .filter(n -> "ANALYSE".equals(n.getType()))
+                    .count();
+                
+                if (analysisNotifications > 0) {
+                    // Show a summary notification
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Nouvelles Analyses");
+                        alert.setHeaderText(null);
+                        
+                        if (analysisNotifications == 1) {
+                            alert.setContentText("📊 Une nouvelle analyse est disponible pour votre ferme.");
+                        } else {
+                            alert.setContentText("📊 " + analysisNotifications + " nouvelles analyses sont disponibles pour votre ferme.");
+                        }
+                        
+                        alert.showAndWait();
+                    });
+                    
+                    LOGGER.log(Level.INFO, "User {0} has {1} unread analysis notifications", 
+                            new Object[]{currentUser.getFullName(), analysisNotifications});
+                }
+                
+                // Mark ANALYSE notifications as read since user is now viewing the analyses page
+                for (Notification notification : unreadNotifications) {
+                    if ("ANALYSE".equals(notification.getType())) {
+                        notificationService.markAsRead(notification.getIdNotification());
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Failed to check notifications for user " + currentUser.getIdUser(), e);
+        }
     }
     
     /**
@@ -278,7 +338,7 @@ public class FermierAnalysesController implements Initializable {
 
     @FXML
     private void handleBack() {
-        NavigationUtil.navigateToAgricoleDashboard((Stage) backButton.getScene().getWindow());
+        NavigationUtil.navigateToAgricoleDashboard((Stage) analysesTableView.getScene().getWindow());
     }
 
     /**
