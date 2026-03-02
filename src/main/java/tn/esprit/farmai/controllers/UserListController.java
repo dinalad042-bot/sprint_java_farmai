@@ -18,12 +18,17 @@ import javafx.scene.layout.Priority;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.poi.ss.usermodel.Cell;
 import tn.esprit.farmai.models.Role;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.UserService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.NotificationManager;
 import tn.esprit.farmai.utils.SessionManager;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +53,8 @@ public class UserListController implements Initializable {
     private Button addUserButton;
     @FXML
     private Button refreshButton;
+    @FXML
+    private Button exportButton;
     @FXML
     private Button auditButton;
     @FXML
@@ -419,6 +426,70 @@ public class UserListController implements Initializable {
     private void handleBackToDashboard() {
         Stage stage = (Stage) userListView.getScene().getWindow();
         NavigationUtil.navigateToDashboard(stage);
+    }
+
+    @FXML
+    private void handleExportExcel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer la liste des utilisateurs");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        fileChooser.setInitialFileName("Liste_Utilisateurs.xlsx");
+
+        File file = fileChooser.showSaveDialog(userListView.getScene().getWindow());
+
+        if (file != null) {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Utilisateurs");
+
+                // Create header row
+                Row headerRow = sheet.createRow(0);
+                String[] columns = { "ID", "Nom", "Prénom", "Email", "CIN", "Téléphone", "Rôle", "Adresse" };
+
+                CellStyle headerCellStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerCellStyle.setFont(headerFont);
+
+                for (int i = 0; i < columns.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(columns[i]);
+                    cell.setCellStyle(headerCellStyle);
+                }
+
+                // Fill data
+                int rowNum = 1;
+                for (User user : userList) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(user.getIdUser());
+                    row.createCell(1).setCellValue(user.getNom());
+                    row.createCell(2).setCellValue(user.getPrenom());
+                    row.createCell(3).setCellValue(user.getEmail());
+                    row.createCell(4).setCellValue(user.getCin());
+                    row.createCell(5).setCellValue(user.getTelephone());
+                    row.createCell(6).setCellValue(user.getRole() != null ? user.getRole().getDisplayName() : "");
+                    row.createCell(7).setCellValue(user.getAdresse());
+                }
+
+                // Auto-size columns
+                for (int i = 0; i < columns.length; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                // Write to file
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                }
+
+                NavigationUtil.showSuccess("Export réussi",
+                        "La liste des utilisateurs a été exportée avec succès vers Excel.");
+                NotificationManager.addNotification("Utilisateurs exportés vers " + file.getName());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                NavigationUtil.showError("Erreur d'export",
+                        "Une erreur est survenue lors de la création du fichier Excel.");
+            }
+        }
     }
 
     @FXML

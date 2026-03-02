@@ -84,6 +84,7 @@
                  <Label fx:id="totalUsersLabel" text="Total: 0" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
                  <Region HBox.hgrow="ALWAYS"/>
                  <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#loadUsers"/>
+                 <Button fx:id="exportButton" text="📊 Exporter Excel" styleClass="secondary-btn" onAction="#handleExportExcel"/>
                  <Button fx:id="auditButton" text="📜 Audit" styleClass="secondary-btn" onAction="#handleAudit"/>
                  <Button fx:id="addUserButton" text="+ Ajouter Utilisateur" styleClass="primary-btn" onAction="#handleAddUser"/>
             </HBox>
