@@ -54,6 +54,8 @@ module tn.esprit.farmai {
     // Utils package
     exports tn.esprit.farmai.utils;
 
+    opens tn.esprit.farmai.utils to javafx.fxml;
+
     // Interfaces package
     exports tn.esprit.farmai.interfaces;
 }

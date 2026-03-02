@@ -10,7 +10,9 @@ import tn.esprit.farmai.utils.PasswordUtil;
 import tn.esprit.farmai.utils.SessionManager;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -314,6 +316,26 @@ public class UserService implements CRUD<User> {
             }
         }
         return 0;
+    }
+
+    /**
+     * Get user counts grouped by role.
+     */
+    public Map<Role, Integer> getUsersCountByRole() throws SQLException {
+        Map<Role, Integer> stats = new HashMap<>();
+        String query = "SELECT role, COUNT(*) as count FROM user GROUP BY role";
+        try (Statement st = cnx.createStatement(); ResultSet rs = st.executeQuery(query)) {
+            while (rs.next()) {
+                String roleStr = rs.getString("role");
+                int count = rs.getInt("count");
+                try {
+                    stats.put(Role.valueOf(roleStr), count);
+                } catch (IllegalArgumentException e) {
+                    // Skip invalid roles if any
+                }
+            }
+        }
+        return stats;
     }
 
     /**
