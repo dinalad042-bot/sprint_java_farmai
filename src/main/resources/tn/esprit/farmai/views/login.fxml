@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
 
 <HBox xmlns:fx="http://javafx.com/fxml" 
       fx:controller="tn.esprit.farmai.controllers.LoginController"
@@ -77,10 +78,22 @@
                                    styleClass="auth-input"/>
                 </VBox>
                 
-                <!-- Remember Me -->
-                <HBox alignment="CENTER_LEFT">
-                    <CheckBox fx:id="rememberMeCheckbox" text="Se souvenir de moi" styleClass="remember-checkbox"/>
-                </HBox>
+                <!-- CAPTCHA Section -->
+                <VBox spacing="10" alignment="CENTER" maxWidth="320">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Vérification CAPTCHA" styleClass="input-label" HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="refreshCaptchaButton" text="🔄" onAction="#handleRefreshCaptcha"
+                                style="-fx-background-color: transparent; -fx-text-fill: #4ecca3; -fx-cursor: hand; -fx-font-size: 14px;"/>
+                    </HBox>
+                    <HBox spacing="15" alignment="CENTER">
+                        <StackPane style="-fx-border-color: #4ecca3; -fx-border-radius: 5; -fx-padding: 2;">
+                            <ImageView fx:id="captchaImageView" fitWidth="160" fitHeight="50" preserveRatio="true"/>
+                        </StackPane>
+                        <TextField fx:id="captchaInputField" promptText="Entrez le code" 
+                                   styleClass="auth-input" HBox.hgrow="ALWAYS"
+                                   style="-fx-font-size: 14px;"/>
+                    </HBox>
+                </VBox>
                 
                 <!-- Loading Indicator -->
                 <ProgressIndicator fx:id="loadingIndicator" visible="false" prefWidth="35" prefHeight="35"/>

@@ -3,6 +3,7 @@ module tn.esprit.farmai {
     requires javafx.fxml;
     requires javafx.web;
     requires javafx.graphics;
+    requires javafx.swing;
     requires jakarta.mail;
     requires jakarta.activation;
     requires org.controlsfx.controls;
@@ -23,7 +24,7 @@ module tn.esprit.farmai {
     // Face Recognition Dependencies
     requires org.bytedeco.javacv;
     requires org.bytedeco.opencv;
-    requires java.desktop; // For BufferedImage/Java2D
+    requires transitive java.desktop; // For BufferedImage/Java2D
 
     // Main package
     opens tn.esprit.farmai to javafx.fxml;
