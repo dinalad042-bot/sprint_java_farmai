@@ -5,6 +5,7 @@ module tn.esprit.farmai {
     requires javafx.web;
     requires javafx.graphics;
     requires javafx.media;
+    requires javafx.swing;
 
     // UI Components
     requires org.controlsfx.controls;
@@ -20,7 +21,7 @@ module tn.esprit.farmai {
     // Security (Face Recognition)
     requires org.bytedeco.javacv;
     requires org.bytedeco.opencv;
-    requires java.desktop;
+    requires transitive java.desktop; // For BufferedImage/Java2D
 
     // Email
     requires jakarta.mail;
@@ -40,10 +41,10 @@ module tn.esprit.farmai {
     // JavaScript (for WebView)
     requires jdk.jsobject;
 
-// HTTP
-requires java.net.http;
+    // HTTP
+    requires java.net.http;
 
-// Main package
+    // Main package
     opens tn.esprit.farmai to javafx.fxml;
     exports tn.esprit.farmai;
 
@@ -61,10 +62,10 @@ requires java.net.http;
     // Utils package
     exports tn.esprit.farmai.utils;
 
-// Interfaces package
-exports tn.esprit.farmai.interfaces;
+    // Interfaces package
+    exports tn.esprit.farmai.interfaces;
 
-// Test package (JUnit requires removed - test scope)
-opens tn.esprit.farmai.test to javafx.fxml, javafx.graphics;
-exports tn.esprit.farmai.test;
+    // Test package (JUnit requires removed - test scope)
+    opens tn.esprit.farmai.test to javafx.fxml, javafx.graphics;
+    exports tn.esprit.farmai.test;
 }

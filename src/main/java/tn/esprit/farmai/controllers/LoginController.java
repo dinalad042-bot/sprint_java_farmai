@@ -2,17 +2,20 @@ package tn.esprit.farmai.controllers;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.UserService;
+import tn.esprit.farmai.utils.CaptchaUtil;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.SessionManager;
 
@@ -46,13 +49,21 @@ public class LoginController implements Initializable {
     private Label errorLabel;
 
     @FXML
-    private CheckBox rememberMeCheckbox;
-
-    @FXML
     private VBox loginContainer;
 
     @FXML
     private ProgressIndicator loadingIndicator;
+
+    @FXML
+    private ImageView captchaImageView;
+
+    @FXML
+    private TextField captchaInputField;
+
+    @FXML
+    private Button refreshCaptchaButton;
+
+    private String currentCaptcha;
 
     private final UserService userService;
 
@@ -86,6 +97,37 @@ public class LoginController implements Initializable {
         if (loginButton != null) {
             setupButtonEffects();
         }
+
+        // Add enter key handler for captcha field
+        if (captchaInputField != null) {
+            captchaInputField.setOnAction(event -> handleLogin());
+        }
+
+        // Initialize CAPTCHA
+        generateNewCaptcha();
+    }
+
+    /**
+     * Generates a new CAPTCHA and updates the UI.
+     */
+    private void generateNewCaptcha() {
+        currentCaptcha = CaptchaUtil.generateCaptchaText();
+        if (captchaImageView != null) {
+            java.awt.image.BufferedImage bufferedImage = CaptchaUtil.createCaptchaImage(currentCaptcha);
+            javafx.scene.image.Image fxImage = SwingFXUtils.toFXImage(bufferedImage, null);
+            captchaImageView.setImage(fxImage);
+        }
+    }
+
+    /**
+     * Handle CAPTCHA refresh button click
+     */
+    @FXML
+    private void handleRefreshCaptcha() {
+        generateNewCaptcha();
+        if (captchaInputField != null) {
+            captchaInputField.clear();
+        }
     }
 
     /**
@@ -106,6 +148,13 @@ public class LoginController implements Initializable {
 
         if (!isValidEmail(email)) {
             showError("Veuillez entrer un email valide.");
+            return;
+        }
+
+        // CAPTCHA Validation
+        String userInput = captchaInputField.getText();
+        if (userInput == null || !userInput.trim().equalsIgnoreCase(currentCaptcha)) {
+            showError("CAPTCHA incorrect. Veuillez réessayer.");
             return;
         }
 
