@@ -60,6 +60,24 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private javafx.scene.text.Text sidebarAvatarText;
 
+    @FXML
+    private void handleViewStatistics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/user-statistics.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = new Stage();
+            stage.setTitle("FarmAi — Statistiques Utilisateurs");
+            stage.setScene(new Scene(root));
+            stage.initOwner(welcomeLabel.getScene().getWindow());
+            stage.show();
+        } catch (IOException e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les statistiques.");
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Set user info

@@ -155,7 +155,7 @@
                         
                         <HBox spacing="15">
                              <Button text="+ Nouvel Utilisateur" styleClass="primary-btn" onAction="#handleManageUsers"/>
-                             <Button text="Voir Statistiques" styleClass="secondary-btn"/>
+                             <Button text="Voir Statistiques" styleClass="secondary-btn" onAction="#handleViewStatistics"/>
                         </HBox>
                         
                         <Label text="Dernières Activités" style="-fx-font-weight: bold; -fx-padding: 10px 0 0 0;"/>
