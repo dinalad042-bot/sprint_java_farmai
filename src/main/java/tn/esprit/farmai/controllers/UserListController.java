@@ -15,20 +15,20 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.poi.ss.usermodel.Cell;
 import tn.esprit.farmai.models.Role;
 import tn.esprit.farmai.models.User;
-import tn.esprit.farmai.models.UserLog;
-import tn.esprit.farmai.models.UserLogAction;
-import tn.esprit.farmai.services.UserLogService;
 import tn.esprit.farmai.services.UserService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.NotificationManager;
 import tn.esprit.farmai.utils.SessionManager;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,31 +54,31 @@ public class UserListController implements Initializable {
     @FXML
     private Button refreshButton;
     @FXML
+    private Button exportButton;
+    @FXML
+    private Button auditButton;
+    @FXML
     private Label totalUsersLabel;
 
     // Sidebar Elements
     @FXML
     private Label welcomeLabel;
     @FXML
-    private Circle userAvatarCircle;
-    @FXML
-    private Text defaultAvatarText;
+    private ImageView profileImageView;
     @FXML
     private Label userRoleLabel;
 
     // Header Elements
     @FXML
-    private Circle headerAvatarCircle;
+    private ImageView headerAvatarImageView;
     @FXML
     private Label notificationBadge;
 
     private final UserService userService;
-    private final UserLogService userLogService;
     private ObservableList<User> userList;
 
     public UserListController() {
         this.userService = new UserService();
-        this.userLogService = new UserLogService();
         this.userList = FXCollections.observableArrayList();
     }
 
@@ -104,82 +104,13 @@ public class UserListController implements Initializable {
             if (userRoleLabel != null)
                 userRoleLabel.setText(currentUser.getRole().getDisplayName()); // Assuming Role has logic or plain text
 
-            // Update both sidebar and header avatars with robust fallback
-            updateSidebarProfileImage(currentUser);
-            updateHeaderAvatar(currentUser);
+            // Update both sidebar and header avatars using ProfileManager
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(profileImageView, currentUser);
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(headerAvatarImageView, currentUser);
         }
     }
 
-    private void updateSidebarProfileImage(User user) {
-        if (userAvatarCircle == null)
-            return;
-        boolean success = loadUserImageIntoCircle(userAvatarCircle, user);
-
-        if (defaultAvatarText != null) {
-            defaultAvatarText.setVisible(!success);
-        }
-    }
-
-    private void updateHeaderAvatar(User user) {
-        if (headerAvatarCircle == null)
-            return;
-        loadUserImageIntoCircle(headerAvatarCircle, user);
-    }
-
-    // Robust image loading helper
-    private boolean loadUserImageIntoCircle(Circle circle, User user) {
-        if (circle == null || user == null)
-            return false;
-        boolean imageLoaded = false;
-        String imgUrl = user.getImageUrl();
-
-        // 1. Try User Image from Path/URL
-        if (imgUrl != null && !imgUrl.isEmpty()) {
-            try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                    File file = new File(imgUrl);
-                    if (file.exists()) {
-                        pathToLoad = file.toURI().toString();
-                    } else {
-                        // File not found locally, might be relative or broken
-                        // Proceed to fallback
-                    }
-                }
-                Image img = new Image(pathToLoad, false); // false = synchronous to check error? true is better for UI.
-                if (!img.isError()) {
-                    circle.setFill(new ImagePattern(img));
-                    imageLoaded = true;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to load user image: " + e.getMessage());
-            }
-        }
-
-        // 2. Fallback: UI Avatars (Online)
-        if (!imageLoaded) {
-            try {
-                String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                        + (user.getPrenom() != null ? user.getPrenom() : "User");
-                String fallbackUrl = "https://ui-avatars.com/api/?name=" + name
-                        + "&background=random&color=fff&size=128";
-                circle.setFill(new ImagePattern(new Image(fallbackUrl, true)));
-                imageLoaded = true;
-            } catch (Exception e) {
-                // 3. Final Fallback: Simple Color
-                circle.setFill(javafx.scene.paint.Color.web("#90A4AE"));
-                imageLoaded = false; // Still return false to show default text if available
-            }
-        }
-        return imageLoaded;
-    }
-
-    // Kept for backward compat but redirected
-    private void setCircleImage(Circle circle, Text fallbackText, User user) {
-        boolean success = loadUserImageIntoCircle(circle, user);
-        if (fallbackText != null)
-            fallbackText.setVisible(!success);
-    }
+    // Unified profile image loading via ProfileManager
 
     private void setupListView() {
         userListView.setCellFactory(param -> new ListCell<User>() {
@@ -190,39 +121,18 @@ public class UserListController implements Initializable {
                 if (empty || user == null) {
                     setText(null);
                     setGraphic(null);
-                    setStyle("-fx-background-color: transparent; -fx-padding: 5px;");
                 } else {
                     HBox card = new HBox(15);
                     card.setAlignment(Pos.CENTER_LEFT);
-                    card.setStyle(
-                            "-fx-background-color: white; -fx-background-radius: 12px; -fx-padding: 15px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);");
+                    card.getStyleClass().add("content-card"); // Reuse card styling
+                    card.setStyle("-fx-padding: 15px; -fx-background-radius: 12px;");
 
                     ImageView avatar = new ImageView();
                     avatar.setFitWidth(50);
                     avatar.setFitHeight(50);
-                    avatar.setClip(new Circle(25, 25, 25));
 
-                    try {
-                        String imgUrl = user.getImageUrl();
-                        boolean loaded = false;
-                        if (imgUrl != null && !imgUrl.isEmpty()) {
-                            if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                                File file = new File(imgUrl);
-                                if (file.exists())
-                                    imgUrl = file.toURI().toString();
-                            }
-                            avatar.setImage(new Image(imgUrl, true));
-                            loaded = true;
-                        }
-
-                        if (!loaded) {
-                            String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                                    + (user.getPrenom() != null ? user.getPrenom() : "User");
-                            avatar.setImage(
-                                    new Image("https://ui-avatars.com/api/?name=" + name + "&background=random", true));
-                        }
-                    } catch (Exception e) {
-                    }
+                    // Use ProfileManager for consistent image loading
+                    tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(avatar, user);
 
                     VBox infoBox = new VBox(5);
                     Label nameLabel = new Label(user.getFullName());
@@ -244,17 +154,22 @@ public class UserListController implements Initializable {
 
                     HBox actionsBox = new HBox(8);
                     actionsBox.setAlignment(Pos.CENTER_RIGHT);
-                    Button editBtn = new Button("✎");
+
+                    // Improved icons using Unicode symbols that are widely supported
+                    Button editBtn = new Button("\u270E"); // ✎ Lower Right Pencil
                     editBtn.getStyleClass().add("action-btn");
+                    editBtn.setTooltip(new Tooltip("Modifier l'utilisateur"));
                     editBtn.setOnAction(e -> handleEditUser(user));
-                    Button deleteBtn = new Button("🗑");
+
+                    Button deleteBtn = new Button("\uD83D\uDDD1"); // 🗑 Wastebasket
                     deleteBtn.getStyleClass().add("danger-btn");
+                    deleteBtn.setTooltip(new Tooltip("Supprimer l'utilisateur"));
                     deleteBtn.setOnAction(e -> handleDeleteUser(user));
+
                     actionsBox.getChildren().addAll(editBtn, deleteBtn);
 
                     card.getChildren().addAll(avatar, infoBox, detailsBox, actionsBox);
                     setGraphic(card);
-                    setStyle("-fx-background-color: transparent; -fx-padding: 5px 0;");
                 }
             }
         });
@@ -356,17 +271,6 @@ public class UserListController implements Initializable {
                 "Êtes-vous sûr de vouloir supprimer l'utilisateur " + user.getFullName() + "?");
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                User currentUser = SessionManager.getInstance().getCurrentUser();
-                String performedBy = currentUser != null ? currentUser.getEmail() : "System";
-                
-                // Log user deletion before deleting
-                UserLog log = new UserLog();
-                log.setUserId(user.getIdUser());
-                log.setActionType(UserLogAction.DELETE);
-                log.setPerformedBy(performedBy);
-                log.setDescription("Utilisateur supprimé: " + user.getFullName() + " (" + user.getRole().getDisplayName() + ")");
-                userLogService.insertOne(log);
-                
                 userService.deleteOne(user);
                 NotificationManager.addNotification("Utilisateur supprimé: " + user.getFullName());
                 loadUsers();
@@ -412,14 +316,8 @@ public class UserListController implements Initializable {
         imagePreview.setFitWidth(80);
         imagePreview.setFitHeight(80);
         imagePreview.setPreserveRatio(true);
-        if (user != null && user.getImageUrl() != null && !user.getImageUrl().isEmpty()) {
-            try {
-                String path = user.getImageUrl();
-                if (!path.startsWith("http") && !path.startsWith("file:"))
-                    path = new File(path).toURI().toString();
-                imagePreview.setImage(new Image(path));
-            } catch (Exception e) {
-            }
+        if (user != null) {
+            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(imagePreview, user);
         }
 
         Button uploadImageBtn = new Button("Choisir Photo");
@@ -486,9 +384,6 @@ public class UserListController implements Initializable {
         Optional<User> result = dialog.showAndWait();
         result.ifPresent(resultUser -> {
             try {
-                User currentUser = SessionManager.getInstance().getCurrentUser();
-                String performedBy = currentUser != null ? currentUser.getEmail() : "System";
-                
                 if (user == null) {
                     if (resultUser.getPassword() == null || resultUser.getPassword().isEmpty()) {
                         NavigationUtil.showError("Erreur", "Mot de passe requis.");
@@ -496,15 +391,6 @@ public class UserListController implements Initializable {
                     }
                     userService.insertOne(resultUser);
                     NotificationManager.addNotification("Nouvel utilisateur ajouté: " + resultUser.getFullName());
-                    
-                    // Log user creation
-                    UserLog log = new UserLog();
-                    log.setUserId(resultUser.getIdUser());
-                    log.setActionType(UserLogAction.CREATE);
-                    log.setPerformedBy(performedBy);
-                    log.setDescription("Utilisateur créé: " + resultUser.getFullName() + " (" + resultUser.getRole().getDisplayName() + ")");
-                    userLogService.insertOne(log);
-                    
                     NavigationUtil.showSuccess("Succès", "Utilisateur ajouté.");
                 } else {
                     userService.updateOne(resultUser);
@@ -512,15 +398,6 @@ public class UserListController implements Initializable {
                         userService.updatePassword(resultUser.getIdUser(), resultUser.getPassword());
                     }
                     NotificationManager.addNotification("Utilisateur modifié: " + resultUser.getFullName());
-                    
-                    // Log user update
-                    UserLog log = new UserLog();
-                    log.setUserId(resultUser.getIdUser());
-                    log.setActionType(UserLogAction.UPDATE);
-                    log.setPerformedBy(performedBy);
-                    log.setDescription("Utilisateur modifié: " + resultUser.getFullName() + " (" + resultUser.getRole().getDisplayName() + ")");
-                    userLogService.insertOne(log);
-                    
                     NavigationUtil.showSuccess("Succès", "Utilisateur modifié.");
                     if (SessionManager.getInstance().getCurrentUser().getIdUser() == resultUser.getIdUser()) {
                         SessionManager.getInstance().setCurrentUser(resultUser);
@@ -551,28 +428,74 @@ public class UserListController implements Initializable {
         NavigationUtil.navigateToDashboard(stage);
     }
 
-    /**
-     * Navigate to user logs view
-     */
     @FXML
-    private void handleUserLogs() {
-        try {
-            Stage stage = (Stage) userListView.getScene().getWindow();
-            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
-            javafx.scene.Parent root = loader.load();
-            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
-            stage.setScene(scene);
-            stage.setTitle("FarmAI - Logs Audit");
-            stage.show();
-        } catch (Exception e) {
-            String errorDetails = e.getMessage();
-            if (e.getCause() != null) {
-                errorDetails += "\nCaused by: " + e.getCause().getMessage();
+    private void handleExportExcel() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Enregistrer la liste des utilisateurs");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+        fileChooser.setInitialFileName("Liste_Utilisateurs.xlsx");
+
+        File file = fileChooser.showSaveDialog(userListView.getScene().getWindow());
+
+        if (file != null) {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet sheet = workbook.createSheet("Utilisateurs");
+
+                // Create header row
+                Row headerRow = sheet.createRow(0);
+                String[] columns = { "ID", "Nom", "Prénom", "Email", "CIN", "Téléphone", "Rôle", "Adresse" };
+
+                CellStyle headerCellStyle = workbook.createCellStyle();
+                Font headerFont = workbook.createFont();
+                headerFont.setBold(true);
+                headerCellStyle.setFont(headerFont);
+
+                for (int i = 0; i < columns.length; i++) {
+                    Cell cell = headerRow.createCell(i);
+                    cell.setCellValue(columns[i]);
+                    cell.setCellStyle(headerCellStyle);
+                }
+
+                // Fill data
+                int rowNum = 1;
+                for (User user : userList) {
+                    Row row = sheet.createRow(rowNum++);
+                    row.createCell(0).setCellValue(user.getIdUser());
+                    row.createCell(1).setCellValue(user.getNom());
+                    row.createCell(2).setCellValue(user.getPrenom());
+                    row.createCell(3).setCellValue(user.getEmail());
+                    row.createCell(4).setCellValue(user.getCin());
+                    row.createCell(5).setCellValue(user.getTelephone());
+                    row.createCell(6).setCellValue(user.getRole() != null ? user.getRole().getDisplayName() : "");
+                    row.createCell(7).setCellValue(user.getAdresse());
+                }
+
+                // Auto-size columns
+                for (int i = 0; i < columns.length; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                // Write to file
+                try (FileOutputStream fileOut = new FileOutputStream(file)) {
+                    workbook.write(fileOut);
+                }
+
+                NavigationUtil.showSuccess("Export réussi",
+                        "La liste des utilisateurs a été exportée avec succès vers Excel.");
+                NotificationManager.addNotification("Utilisateurs exportés vers " + file.getName());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                NavigationUtil.showError("Erreur d'export",
+                        "Une erreur est survenue lors de la création du fichier Excel.");
             }
-            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les logs audit:\n" + errorDetails);
-            e.printStackTrace();
         }
+    }
+
+    @FXML
+    private void handleAudit() {
+        Stage stage = (Stage) userListView.getScene().getWindow();
+        NavigationUtil.navigateToAudit(stage);
     }
 
     // --- Notification Logic ---

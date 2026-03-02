@@ -22,6 +22,8 @@ module tn.esprit.farmai {
     requires org.bytedeco.javacv;
     requires org.bytedeco.opencv;
     requires transitive java.desktop; // For BufferedImage/Java2D
+    requires org.apache.poi.poi;
+    requires org.apache.poi.ooxml;
 
     // Email
     requires jakarta.mail;
