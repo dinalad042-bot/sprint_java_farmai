@@ -494,8 +494,19 @@ public class UserListController implements Initializable {
 
     @FXML
     private void handleAudit() {
-        Stage stage = (Stage) userListView.getScene().getWindow();
-        NavigationUtil.navigateToAudit(stage);
+        try {
+            Stage stage = (Stage) userListView.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Logs Audit");
+            stage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les logs audit: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // --- Notification Logic ---

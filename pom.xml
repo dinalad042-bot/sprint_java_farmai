@@ -96,6 +96,18 @@
             <version>2.0.1</version>
         </dependency>
 
+        <!-- Apache POI for Excel Export -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.5</version>
+        </dependency>
+
         <!-- HTTP Client (Expertise) - for Groq API -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>

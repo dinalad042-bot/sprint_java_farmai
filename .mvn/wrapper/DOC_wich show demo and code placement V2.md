@@ -11,6 +11,15 @@
 | Navigation | `FXMLLoader.load(...)` | `ExpertDashboardController.java:95` |
 | Alerts | `Alert(AlertType.INFORMATION)` | `GestionAnalysesController.java:320` |
 
+
+| Role | Email | Password | Features |
+|------|-------|----------|----------|
+| **Admin** | admin@farmai.tn | password123 | All features |
+| **Expert** | expert@farmai.tn | password123 | Analysis, Conseils, Statistics |
+| **Agricole** | agricole@farmai.tn | password123 | Farm management, Animals, Plants |
+| **Fournisseur** | fournisseur@farmai.tn | password123 | Supplier dashboard |
+
+
 ## ✅ Presentation-JDBC
 
 | Contrainte | Pourquoi ? | Fichier |
