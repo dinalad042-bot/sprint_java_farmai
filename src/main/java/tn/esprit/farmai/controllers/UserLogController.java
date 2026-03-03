@@ -38,11 +38,80 @@ public class UserLogController implements Initializable {
     @FXML
     private Label welcomeLabel;
     @FXML
-    private ImageView profileImageView;
+    private javafx.scene.shape.Circle profileImageView;
     @FXML
     private Label userRoleLabel;
     @FXML
-    private ImageView headerAvatarImageView;
+    private javafx.scene.shape.Circle headerAvatarImageView;
+    @FXML
+    private javafx.scene.text.Text defaultAvatarText;
+
+    @FXML
+    private void handleCultures() {
+        try {
+            Stage stage = (Stage) logListView.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/admin_map.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Carte des Cultures");
+            stage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la carte des cultures: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleStatistics() {
+        try {
+            Stage stage = (Stage) logListView.getScene().getWindow();
+            NavigationUtil.navigateToStatistics(stage);
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleProfile() {
+        boolean updated = tn.esprit.farmai.utils.ProfileManager
+                .showProfileEditDialog(logListView.getScene().getWindow());
+        if (updated) {
+            updateUserSessionUI();
+        }
+    }
+
+    @FXML
+    private void handleFaceRecognition() {
+        try {
+            Stage stage = (Stage) logListView.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 800, 600);
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/main.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/main.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+
+            Stage faceStage = new Stage();
+            faceStage.initOwner(stage);
+            faceStage.setTitle("FarmAI - Reconnaissance Faciale");
+            faceStage.setScene(scene);
+
+            FaceRecognitionController controller = loader.getController();
+            faceStage.setOnCloseRequest(e -> controller.cleanup());
+
+            faceStage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
     private final UserLogService userLogService;
     private final ObservableList<UserLog> logList;
@@ -57,13 +126,23 @@ public class UserLogController implements Initializable {
         try {
             setupListView();
             updateUserSessionUI();
+
+            // Auto-refresh sidebar when user profile changes
+            SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+                if (newUser != null) {
+                    javafx.application.Platform.runLater(() -> {
+                        userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(newUser));
+                    });
+                }
+            });
+
             loadLogs();
         } catch (Exception e) {
             System.err.println("Error initializing UserLogController: " + e.getMessage());
             e.printStackTrace();
             // Show error but don't crash the UI
-            NavigationUtil.showError("Erreur d'initialisation", 
-                "Erreur lors du chargement des logs: " + e.getMessage());
+            NavigationUtil.showError("Erreur d'initialisation",
+                    "Erreur lors du chargement des logs: " + e.getMessage());
         }
     }
 
@@ -139,9 +218,14 @@ public class UserLogController implements Initializable {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             welcomeLabel.setText(currentUser.getFullName());
-            userRoleLabel.setText(currentUser.getRole().getDisplayName());
-            ProfileManager.loadUserImageIntoImageView(profileImageView, currentUser);
-            ProfileManager.loadUserImageIntoImageView(headerAvatarImageView, currentUser);
+            userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(currentUser));
+            ProfileManager.loadUserImageIntoCircle(profileImageView, currentUser);
+            ProfileManager.loadUserImageIntoCircle(headerAvatarImageView, currentUser);
+            // Show default avatar text if no image loaded
+            if (defaultAvatarText != null) {
+                boolean hasImage = currentUser.getImageUrl() != null && !currentUser.getImageUrl().isEmpty();
+                defaultAvatarText.setVisible(!hasImage);
+            }
         }
     }
 
@@ -154,14 +238,14 @@ public class UserLogController implements Initializable {
             e.printStackTrace();
             String errorMsg = e.getMessage();
             if (errorMsg != null && errorMsg.contains("user_log")) {
-                NavigationUtil.showError("Erreur Base de Données", 
-                    "La table des logs n'existe pas encore.\n" +
-                    "Veuillez exécuter le script SQL pour créer la table user_log.\n\n" +
-                    "Détails: " + errorMsg);
+                NavigationUtil.showError("Erreur Base de Données",
+                        "La table des logs n'existe pas encore.\n" +
+                                "Veuillez exécuter le script SQL pour créer la table user_log.\n\n" +
+                                "Détails: " + errorMsg);
             } else {
-                NavigationUtil.showError("Erreur", 
-                    "Impossible de charger les logs d'audit.\n" +
-                    "Détails: " + (errorMsg != null ? errorMsg : "Erreur inconnue"));
+                NavigationUtil.showError("Erreur",
+                        "Impossible de charger les logs d'audit.\n" +
+                                "Détails: " + (errorMsg != null ? errorMsg : "Erreur inconnue"));
             }
         }
     }
@@ -189,3 +273,4 @@ public class UserLogController implements Initializable {
         loadLogs();
     }
 }
+

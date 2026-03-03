@@ -191,8 +191,8 @@ public class ExpertDashboardController implements Initializable {
             javafx.scene.Parent root = loader.load();
 
             Scene scene = new Scene(root, 800, 600);
-            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
-                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/main.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/main.css").toExternalForm()
                     : null;
             if (cssPath != null) {
                 scene.getStylesheets().add(cssPath);
@@ -418,9 +418,9 @@ public class ExpertDashboardController implements Initializable {
                     // Create scene with new root
                     Scene scene = new Scene(newRoot, 1200, 800);
 
-                    // Apply CSS
-                    String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
-                            ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                    // Apply unified main.css
+                    String cssPath = getClass().getResource("/tn/esprit/farmai/styles/main.css") != null
+                            ? getClass().getResource("/tn/esprit/farmai/styles/main.css").toExternalForm()
                             : null;
                     if (cssPath != null) {
                         scene.getStylesheets().add(cssPath);

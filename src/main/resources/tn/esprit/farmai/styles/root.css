@@ -1,0 +1,416 @@
+/* ============================================
+   FarmAI - Global CSS Variables
+   Unified Design System - Single Source of Truth
+   ============================================
+   
+   This file defines all brand colors and spacing constants
+   used across both Authentication and Dashboard modules.
+   
+   Usage: Import this file at the top of auth.css and dashboard.css
+   to ensure consistent theming throughout the application.
+   ============================================ */
+
+/* === Global Color Palette === */
+:root {
+    /* Brand Colors - Primary Green */
+    --primary-green: #2E7D32;
+    --primary-green-hover: #388E3C;
+    --primary-green-light: #4CAF50;
+    --primary-green-lighter: #66BB6A;
+    --primary-green-dark: #1B5E20;
+    
+    /* Background Colors */
+    --bg-light: #F4F6F8;
+    --bg-dark: #263238;
+    --bg-darker: #1C313A;
+    --bg-card: #37474F;
+    --bg-form: #424242;
+    
+    /* Sidebar & Navigation */
+    --sidebar-dark: #263238;
+    --sidebar-active: #2E7D32;
+    --nav-text: #B0BEC5;
+    --nav-text-hover: white;
+    
+    /* Text Colors */
+    --text-primary: #212529;
+    --text-secondary: #546E7A;
+    --text-muted: #78909C;
+    --text-light: white;
+    --text-dark: #263238;
+    
+    /* Border & Input Colors */
+    --border-default: #546E7A;
+    --border-focused: #4CAF50;
+    --border-light: #E0E0E0;
+    
+    /* Semantic Colors */
+    --success: #2E7D32;
+    --success-bg: #E8F5E9;
+    --warning: #FF9800;
+    --warning-bg: #FFF3E0;
+    --error: #D32F2F;
+    --error-bg: #FFEBEE;
+    --info: #1976D2;
+    --info-bg: #E3F2FD;
+    
+    /* Priority Colors */
+    --priority-low: #4CAF50;
+    --priority-medium: #FF9800;
+    --priority-high: #F44336;
+    
+    /* Spacing - 8px Grid System */
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    
+    /* Form Grid Standards */
+    --grid-hgap: 15px;
+    --grid-vgap: 10px;
+    --grid-padding: 25px;
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    --radius-xl: 12px;
+    --radius-round: 20px;
+    
+    /* Shadows */
+    --shadow-sm: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 3, 0, 0, 1);
+    --shadow-md: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 10, 0, 0, 0);
+    --shadow-lg: dropshadow(three-pass-box, rgba(0, 0, 0, 0.25), 20, 0, 0, 5);
+    --shadow-green: dropshadow(three-pass-box, rgba(76, 175, 80, 0.4), 8, 0, 0, 2);
+    
+    /* Typography */
+    --font-family: "Segoe UI", Arial, sans-serif;
+    --font-size-xs: 11px;
+    --font-size-sm: 13px;
+    --font-size-md: 14px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+    --font-size-title: 22px;
+}
+
+/* ============================================
+   Unified Button Classes
+   Use these classes across ALL views
+   ============================================ */
+
+/* Primary Button - Main CTA (Green) */
+.btn-primary {
+    -fx-background-color: var(--primary-green);
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 24px;
+    -fx-background-radius: var(--radius-md);
+    -fx-cursor: hand;
+    -fx-font-family: var(--font-family);
+    -fx-effect: var(--shadow-green);
+    -fx-transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    -fx-background-color: var(--primary-green-hover);
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
+    -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.6), 12, 0, 0, 4);
+}
+
+.btn-primary:pressed {
+    -fx-background-color: var(--primary-green-dark);
+    -fx-effect: none;
+    -fx-translate-y: 1;
+}
+
+.btn-primary:disabled {
+    -fx-background-color: #546E7A;
+    -fx-text-fill: #90A4AE;
+    -fx-effect: none;
+}
+
+/* Secondary Button - Outline style */
+.btn-secondary {
+    -fx-background-color: white;
+    -fx-text-fill: var(--primary-green);
+    -fx-border-color: var(--primary-green);
+    -fx-border-width: 1.5;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 20px;
+    -fx-background-radius: var(--radius-md);
+    -fx-border-radius: var(--radius-md);
+    -fx-cursor: hand;
+    -fx-font-family: var(--font-family);
+}
+
+.btn-secondary:hover {
+    -fx-background-color: var(--success-bg);
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.2), 5, 0, 0, 2);
+}
+
+/* Danger Button */
+.btn-danger {
+    -fx-background-color: var(--error-bg);
+    -fx-text-fill: var(--error);
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: var(--radius-sm);
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #FFCDD2;
+    -fx-text-fill: #B71C1C;
+}
+
+/* Action Button - Edit/View (Blue) */
+.btn-action {
+    -fx-background-color: var(--info-bg);
+    -fx-text-fill: var(--info);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: var(--radius-sm);
+    -fx-cursor: hand;
+}
+
+.btn-action:hover {
+    -fx-background-color: #BBDEFB;
+    -fx-text-fill: #0D47A1;
+}
+
+/* Success Button (Green variant) */
+.btn-success {
+    -fx-background-color: var(--success-bg);
+    -fx-text-fill: var(--success);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 8px;
+    -fx-background-radius: var(--radius-sm);
+    -fx-cursor: hand;
+}
+
+.btn-success:hover {
+    -fx-background-color: #C8E6C9;
+}
+
+/* ============================================
+   Status Classes for Labels
+   ============================================ */
+
+.status-error {
+    -fx-text-fill: var(--error);
+    -fx-font-size: 13px;
+}
+
+.status-warning {
+    -fx-text-fill: var(--warning);
+    -fx-font-size: 13px;
+}
+
+.status-success {
+    -fx-text-fill: #4ecca3;
+    -fx-font-size: 13px;
+}
+
+.status-info {
+    -fx-text-fill: var(--info);
+    -fx-font-size: 13px;
+}
+
+.status-neutral {
+    -fx-text-fill: #a8a8b3;
+    -fx-font-size: 13px;
+}
+
+/* ============================================
+   Priority Classes
+   ============================================ */
+
+.priority-low {
+    -fx-text-fill: var(--priority-low);
+    -fx-font-weight: bold;
+}
+
+.priority-medium {
+    -fx-text-fill: var(--priority-medium);
+    -fx-font-weight: bold;
+}
+
+.priority-high {
+    -fx-text-fill: var(--priority-high);
+    -fx-font-weight: bold;
+}
+
+/* ============================================
+   TTS Button States
+   ============================================ */
+
+.btn-tts-idle {
+    -fx-background-color: var(--warning);
+    -fx-text-fill: white;
+    -fx-padding: 5px 10px;
+    -fx-background-radius: var(--radius-sm);
+    -fx-cursor: hand;
+}
+
+.btn-tts-active {
+    -fx-background-color: var(--error);
+    -fx-text-fill: white;
+    -fx-padding: 5px 10px;
+    -fx-background-radius: var(--radius-sm);
+    -fx-cursor: hand;
+}
+
+/* ============================================
+   Table Cell Standardization
+   ============================================ */
+
+.table-cell-content {
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+    -fx-font-family: var(--font-family);
+    -fx-padding: 10px 12px;
+}
+
+.table-cell-centered {
+    -fx-alignment: CENTER;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-size: 13px;
+    -fx-padding: 10px 12px;
+}
+
+/* ============================================
+   Form Grid Standard
+   ============================================ */
+
+.form-grid {
+    -fx-hgap: var(--grid-hgap);
+    -fx-vgap: var(--grid-vgap);
+    -fx-padding: var(--grid-padding);
+}
+
+.form-grid-compact {
+    -fx-hgap: 10px;
+    -fx-vgap: 5px;
+    -fx-padding: 20px;
+}
+
+/* ============================================
+   Input Field Standardization
+   ============================================ */
+
+.input-standard {
+    -fx-background-color: #F4F6F8;
+    -fx-border-color: transparent;
+    -fx-border-radius: var(--radius-lg);
+    -fx-background-radius: var(--radius-lg);
+    -fx-padding: 12px;
+    -fx-font-size: 14px;
+    -fx-text-fill: var(--text-primary);
+    -fx-font-family: var(--font-family);
+}
+
+.input-standard:focused {
+    -fx-background-color: white;
+    -fx-border-color: var(--primary-green-light);
+    -fx-effect: dropshadow(three-pass-box, rgba(76, 175, 80, 0.2), 5, 0, 0, 0);
+}
+
+.input-dark {
+    -fx-background-color: var(--bg-darker);
+    -fx-border-color: var(--border-default);
+    -fx-border-radius: var(--radius-md);
+    -fx-background-radius: var(--radius-md);
+    -fx-border-width: 2px;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #78909C;
+    -fx-padding: 14px 16px;
+    -fx-font-size: 15px;
+    -fx-font-family: var(--font-family);
+}
+
+.input-dark:focused {
+    -fx-border-color: var(--primary-green-light);
+    -fx-background-color: var(--bg-darker);
+}
+
+/* ============================================
+   Dialog Standardization
+   ============================================ */
+
+.dialog-standard {
+    -fx-background-color: white;
+    -fx-background-radius: var(--radius-xl);
+    -fx-border-radius: var(--radius-xl);
+    -fx-effect: var(--shadow-lg);
+    -fx-padding: 0;
+}
+
+.dialog-header {
+    -fx-background-color: var(--sidebar-dark);
+    -fx-background-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    -fx-padding: var(--grid-padding);
+}
+
+.dialog-header .label {
+    -fx-text-fill: white;
+    -fx-font-size: var(--font-size-title);
+    -fx-font-weight: bold;
+    -fx-font-family: var(--font-family);
+}
+
+.dialog-button-bar {
+    -fx-background-color: #F8F9FA;
+    -fx-padding: 20px;
+    -fx-background-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    -fx-border-color: #EEEEEE;
+    -fx-border-width: 1px 0 0 0;
+}
+
+/* ============================================
+   Face Recognition Views
+   ============================================ */
+
+.face-recognition-root {
+    -fx-background-color: var(--sidebar-dark);
+    -fx-padding: 24px;
+}
+
+.face-recognition-title {
+    -fx-text-fill: var(--primary-green-light);
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-font-family: var(--font-family);
+}
+
+.face-recognition-subtitle {
+    -fx-text-fill: #a8a8b3;
+    -fx-font-size: 12px;
+    -fx-font-family: var(--font-family);
+}
+
+.face-recognition-camera {
+    -fx-effect: dropshadow(gaussian, var(--primary-green), 14, 0.4, 0, 0);
+}
+
+.face-recognition-cancel {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a8a8b3;
+    -fx-border-color: #a8a8b3;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 8px 20px;
+    -fx-cursor: hand;
+}
+
+.face-recognition-cancel:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-text-fill: white;
+}

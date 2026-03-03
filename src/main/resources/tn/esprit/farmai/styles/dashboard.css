@@ -1,7 +1,12 @@
 /* ============================================
    FarmAI - Modern Dashboard Styles
    Template-Based (Green & Grey Theme)
+   ============================================
+   
+   Updated: Now imports root.css for unified design system
    ============================================ */
+
+@import url("root.css");
 
 /* === Main Dashboard Container === */
 .dashboard-root {
@@ -620,4 +625,25 @@
 .table-view .table-row-cell .table-cell * {
     -fx-fill: black;
     -fx-text-fill: black;
+}
+
+/* ============================================
+   PROFILE CARD FIX - Prevents "BIG" bug
+   ============================================ */
+
+.profile-card-container {
+    -fx-pref-height: 110px;
+    -fx-pref-width: 240px;
+    -fx-min-height: 110px;
+    -fx-min-width: 240px;
+    -fx-max-height: 130px;
+    -fx-max-width: 240px;
+}
+
+/* Sidebar active navigation item - CSS class for Java injection */
+.sidebar-active-item {
+    -fx-background-color: #2E7D32 !important;
+    -fx-text-fill: white !important;
+    -fx-font-weight: bold !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.4), 8, 0, 0, 2);
 }

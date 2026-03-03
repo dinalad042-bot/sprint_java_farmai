@@ -239,4 +239,21 @@ public class ProfileManager {
     public static boolean loadUserImageIntoImageView(ImageView imageView, User user) {
         return AvatarUtil.loadUserImageIntoImageView(imageView, user, 100);
     }
+
+    /**
+     * Returns standardized role label across all views.
+     * EXPERT is always displayed as "Expert Agronome" for consistency.
+     */
+    public static String getStandardizedRoleLabel(User user) {
+        if (user == null || user.getRole() == null) {
+            return "Utilisateur";
+        }
+        return switch (user.getRole()) {
+            case ADMIN -> "Administrateur";
+            case EXPERT -> "Expert Agronome";
+            case AGRICOLE -> "Agriculteur";
+            case FOURNISSEUR -> "Fournisseur";
+            default -> "Utilisateur";
+        };
+    }
 }

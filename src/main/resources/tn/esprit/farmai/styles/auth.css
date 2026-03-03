@@ -1,7 +1,12 @@
 /* ============================================
    FarmAI - Authentication Styles (Login/Signup)
    Green and Grey Color Scheme - Clean & Readable
+   ============================================
+   
+   Updated: Now imports root.css for unified design system
    ============================================ */
+
+@import url("root.css");
 
 /* === Main Container === */
 .login-root {

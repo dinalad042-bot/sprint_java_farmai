@@ -18,29 +18,33 @@
                 <Insets top="25" right="20" bottom="25" left="20"/>
             </padding>
 
-            <!-- User Profile Card -->
-            <VBox styleClass="sidebar-profile-card" spacing="10" style="-fx-cursor: hand;">
+            <!-- User Profile Card (Standardized to match expert-dashboard) -->
+            <VBox styleClass="sidebar-profile-card, profile-card-container" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
-                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
+                        <Circle fx:id="userAvatarCircle" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
                         <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
                 </HBox>
                 <VBox spacing="2">
-                    <Label fx:id="welcomeLabel" text="Expert" styleClass="sidebar-profile-name"/>
-                    <Label fx:id="userRoleLabel" text="Agronome" styleClass="sidebar-profile-role"/>
+                    <Label fx:id="welcomeLabel" text="User Name" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Role" styleClass="sidebar-profile-role"/>
                 </VBox>
             </VBox>
 
             <Region prefHeight="30"/>
 
-            <!-- Navigation Menu -->
+            <!-- Navigation Menu (Full Expert Menu - Consistent across all Expert pages) -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity" onAction="#handleDashboard"/>
-                <Button text="🔬  Analyses" styleClass="nav-button" maxWidth="Infinity" onAction="#handleAnalyses"/>
+                <Button text="📋  Analyses" styleClass="nav-button" maxWidth="Infinity" onAction="#handleAnalyses"/>
                 <Button text="💡  Conseils" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
+                <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
+                <Button text="📄  Generer Rapport" styleClass="nav-button" onAction="#handleGenerateReport" maxWidth="Infinity"/>
+                <Button text="⚙️  Paramètres" styleClass="nav-button" onAction="#handleProfile" maxWidth="Infinity"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout"/>
@@ -73,7 +77,7 @@
                 </StackPane>
 
                 <!-- Header User Avatar -->
-                <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+                <Circle fx:id="headerAvatarCircle" radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
             </HBox>
 
             <!-- Action Toolbar -->

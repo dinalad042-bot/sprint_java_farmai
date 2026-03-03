@@ -7,33 +7,30 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="tn.esprit.farmai.controllers.FaceLoginController"
       alignment="CENTER" spacing="14"
-      style="-fx-background-color: #1a1a2e; -fx-padding: 24;">
+      styleClass="face-recognition-root">
 
     <Label text="🔐 Connexion par visage"
-           style="-fx-text-fill: #e94560; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+           styleClass="face-recognition-title"/>
     <Label text="Regardez la caméra pour vous connecter"
-           style="-fx-text-fill: #a8a8b3; -fx-font-size: 12px;"/>
+           styleClass="face-recognition-subtitle"/>
 
     <!-- Camera feed -->
     <ImageView fx:id="cameraFeed"
                fitWidth="480" fitHeight="360"
                preserveRatio="true"
-               style="-fx-effect: dropshadow(gaussian, #e94560, 14, 0.4, 0, 0);"/>
+               styleClass="face-recognition-camera"/>
 
     <!-- Status / countdown -->
     <Label fx:id="statusLabel" text="Initialisation…"
-           style="-fx-text-fill: #a8a8b3; -fx-font-size: 13px;" wrapText="true"
+           styleClass="status-neutral" wrapText="true"
            maxWidth="480" alignment="CENTER"/>
 
     <!-- Progress bar showing time remaining -->
     <ProgressBar fx:id="timeoutBar" progress="1.0" maxWidth="480" prefHeight="6"
-                 style="-fx-accent: #e94560; -fx-background-color: #16213e;"/>
+                 style="-fx-accent: #4CAF50; -fx-background-color: #37474F;"/>
 
     <!-- Cancel -->
     <Button text="Annuler"
             onAction="#handleCancel"
-            style="-fx-background-color: transparent; -fx-text-fill: #a8a8b3;
-                   -fx-border-color: #a8a8b3; -fx-border-radius: 6;
-                   -fx-background-radius: 6; -fx-padding: 8 20;
-                   -fx-cursor: hand;"/>
+            styleClass="face-recognition-cancel"/>
 </VBox>

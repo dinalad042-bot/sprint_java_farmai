@@ -88,7 +88,7 @@ public class FaceLoginController implements Initializable {
             String resourcePath = "/tn/esprit/farmai/cascade/haarcascade_frontalface_default.xml";
             InputStream is = getClass().getResourceAsStream(resourcePath);
             if (is == null) {
-                setStatus("❌ Cascade XML introuvable", "red");
+            setStatus("❌ Cascade XML introuvable", "status-error");
                 return;
             }
             Path tmp = Files.createTempFile("haarcascade_", ".xml");
@@ -96,7 +96,7 @@ public class FaceLoginController implements Initializable {
             tmp.toFile().deleteOnExit();
             faceDetector = new CascadeClassifier(tmp.toAbsolutePath().toString());
         } catch (Exception e) {
-            setStatus("❌ Erreur chargement cascade: " + e.getMessage(), "red");
+            setStatus("❌ Erreur chargement cascade: " + e.getMessage(), "status-error");
         }
     }
 
@@ -111,13 +111,13 @@ public class FaceLoginController implements Initializable {
             grabber.setImageHeight(360);
             grabber.start();
 
-            setStatus("📷 Recherche de votre visage…", "#4ecca3");
+            setStatus("📷 Recherche de votre visage…", "status-success");
 
             timer = Executors.newSingleThreadScheduledExecutor();
             timer.scheduleAtFixedRate(this::processFrame, 0, 1000L / FPS, TimeUnit.MILLISECONDS);
 
         } catch (Exception e) {
-            setStatus("❌ Impossible d'ouvrir la caméra: " + e.getMessage(), "red");
+            setStatus("❌ Impossible d'ouvrir la caméra: " + e.getMessage(), "status-error");
         }
     }
 
@@ -132,7 +132,7 @@ public class FaceLoginController implements Initializable {
 
             if (elapsed >= TIMEOUT_SECONDS && !loginSucceeded.get()) {
                 stopAll();
-                setStatus("⏱ Délai dépassé — visage non reconnu.", "red");
+                setStatus("⏱ Délai dépassé — visage non reconnu.", "status-error");
             }
         }, 1, 1, TimeUnit.SECONDS);
     }
@@ -189,7 +189,7 @@ public class FaceLoginController implements Initializable {
                     User user = match.get();
                     stopAll();
                     Platform.runLater(() -> {
-                        setStatus("✅ Bienvenue, " + user.getPrenom() + "!", "#4ecca3");
+                        setStatus("✅ Bienvenue, " + user.getPrenom() + "!", "status-success");
                         SessionManager.getInstance().setCurrentUser(user);
                         // Navigate to dashboard using the stage of the pop-up
                         Stage stage = (Stage) cameraFeed.getScene().getWindow();
@@ -198,7 +198,7 @@ public class FaceLoginController implements Initializable {
                         NavigationUtil.navigateToDashboard(getPrimaryStage());
                     });
                 } else {
-                    setStatus("🔍 Visage détecté… vérification en cours", "#ffa500");
+                    setStatus("🔍 Visage détecté… vérification en cours", "status-warning");
                 }
                 faceROI.release();
             }
@@ -263,9 +263,10 @@ public class FaceLoginController implements Initializable {
     // Helpers
     // -----------------------------------------------------------------------
 
-    private void setStatus(String message, String color) {
+    private void setStatus(String message, String statusClass) {
         Platform.runLater(() -> {
-            statusLabel.setStyle("-fx-text-fill: " + color + "; -fx-font-size: 13px;");
+            statusLabel.getStyleClass().removeAll("status-error", "status-warning", "status-success", "status-neutral");
+            statusLabel.getStyleClass().add(statusClass);
             statusLabel.setText(message);
         });
     }

@@ -1,5 +1,6 @@
 package tn.esprit.farmai.utils;
 
+import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -7,10 +8,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import tn.esprit.farmai.HelloApplication;
 import tn.esprit.farmai.models.Role;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 
 /**
@@ -134,8 +137,8 @@ public class NavigationUtil {
             Parent root = loader.load();
             Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-            String cssPath = HelloApplication.class.getResource("styles/dashboard.css") != null
-                    ? HelloApplication.class.getResource("styles/dashboard.css").toExternalForm()
+            String cssPath = HelloApplication.class.getResource("styles/main.css") != null
+                    ? HelloApplication.class.getResource("styles/main.css").toExternalForm()
                     : null;
             if (cssPath != null)
                 scene.getStylesheets().add(cssPath);
@@ -159,8 +162,6 @@ public class NavigationUtil {
 
     }
 
-    
-
     public static void navigateToUserList(Stage stage) {
         navigateTo(stage, "views/user-list.fxml", "Gestion des Utilisateurs");
     }
@@ -182,6 +183,62 @@ public class NavigationUtil {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             SessionManager.getInstance().logout();
             navigateToLogin(stage);
+        }
+    }
+
+    /**
+     * Navigate to a view with smooth fade transition.
+     * Provides consistent 200ms fade out and 250ms fade in across the application.
+     * 
+     * @param stage    The current stage
+     * @param fxmlPath The FXML resource path (e.g.,
+     *                 "/tn/esprit/farmai/views/expert-dashboard.fxml")
+     * @param title    The window title
+     */
+    public static void navigateWithFade(Stage stage, String fxmlPath, String title) {
+        try {
+            Parent currentRoot = stage.getScene().getRoot();
+
+            // Fade out current scene (200ms)
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentRoot);
+            fadeOut.setFromValue(1.0);
+            fadeOut.setToValue(0.0);
+
+            fadeOut.setOnFinished(event -> {
+                try {
+                    // Load new view
+                    FXMLLoader loader = new FXMLLoader(NavigationUtil.class.getResource(fxmlPath));
+                    Parent newRoot = loader.load();
+                    Scene scene = new Scene(newRoot, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+
+                    // Apply main.css if available
+                    URL cssUrl = NavigationUtil.class.getResource("/tn/esprit/farmai/styles/main.css");
+                    if (cssUrl != null) {
+                        scene.getStylesheets().add(cssUrl.toExternalForm());
+                    }
+
+                    // Set initial opacity for fade in
+                    newRoot.setOpacity(0.0);
+                    stage.setScene(scene);
+                    stage.setTitle("FarmAI - " + title);
+
+                    // Fade in new scene (250ms)
+                    FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newRoot);
+                    fadeIn.setFromValue(0.0);
+                    fadeIn.setToValue(1.0);
+                    fadeIn.play();
+
+                    stage.show();
+                } catch (Exception e) {
+                    showError("Navigation Error", "Could not load the requested page: " + fxmlPath);
+                    e.printStackTrace();
+                }
+            });
+
+            fadeOut.play();
+        } catch (Exception e) {
+            showError("Navigation Error", e.getMessage());
+            e.printStackTrace();
         }
     }
 

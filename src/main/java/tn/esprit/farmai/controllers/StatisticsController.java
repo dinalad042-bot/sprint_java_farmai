@@ -13,6 +13,12 @@ import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.Conseil;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.ConseilService;
+import tn.esprit.farmai.models.User;
+import tn.esprit.farmai.utils.AvatarUtil;
+import tn.esprit.farmai.utils.ProfileManager;
+import tn.esprit.farmai.utils.SessionManager;
+import javafx.application.Platform;
+import javafx.scene.shape.Circle;
 import tn.esprit.farmai.utils.NavigationUtil;
 
 import java.io.File;
@@ -55,6 +61,15 @@ public class StatisticsController implements Initializable {
     @FXML
     private Button generateReportButton;
 
+    @FXML
+    private Label welcomeLabel;
+    @FXML
+    private Label userRoleLabel;
+    @FXML
+    private Circle userAvatarCircle;
+    @FXML
+    private Circle headerAvatarCircle;
+
     private final AnalyseService analyseService;
     private final ConseilService conseilService;
     private ObservableList<PieChart.Data> pieChartData;
@@ -69,8 +84,39 @@ public class StatisticsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        initializeUserData();
         setupCharts();
         loadStatisticsData();
+    }
+
+    /**
+     * Initialize user data and avatar loading
+     */
+    private void initializeUserData() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            if (welcomeLabel != null) {
+                welcomeLabel.setText(currentUser.getFullName());
+            }
+            if (userRoleLabel != null) {
+                userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(currentUser));
+            }
+            AvatarUtil.loadUserImageIntoCircle(userAvatarCircle, currentUser);
+            AvatarUtil.loadUserImageIntoCircle(headerAvatarCircle, currentUser);
+        }
+        
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                Platform.runLater(() -> {
+                    if (welcomeLabel != null) welcomeLabel.setText(newUser.getFullName());
+                    if (userRoleLabel != null) {
+                        userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(newUser));
+                    }
+                    AvatarUtil.loadUserImageIntoCircle(userAvatarCircle, newUser);
+                    AvatarUtil.loadUserImageIntoCircle(headerAvatarCircle, newUser);
+                });
+            }
+        });
     }
 
     /**

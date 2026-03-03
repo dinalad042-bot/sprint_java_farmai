@@ -19,27 +19,30 @@
             </padding>
 
             <!-- User Profile Card -->
-            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+            <VBox styleClass="sidebar-profile-card, profile-card-container" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
                         <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
-                        <Text fx:id="sidebarAvatarText" text="👨‍🌾" fill="white"/>
+                        <Text fx:id="sidebarAvatarText" text="👤" fill="white"/>
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
                 </HBox>
                 <VBox spacing="2">
                     <Label fx:id="userNameLabel" text="Agriculteur" styleClass="sidebar-profile-name"/>
-                    <Label fx:id="userRoleLabel" text="Agricole" styleClass="sidebar-profile-role"/>
+                    <Label fx:id="userRoleLabel" text="Agriculteur" styleClass="sidebar-profile-role"/>
                 </VBox>
             </VBox>
 
             <Region prefHeight="30"/>
 
-            <!-- Navigation Menu -->
+            <!-- Navigation Menu (Full Agricole Menu) -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleBack" maxWidth="Infinity"/>
                 <Button text="🌱  Mes Cultures" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
+                <Button text="📊  Analyses Expert" styleClass="nav-button" onAction="#handleExpertAnalyses" maxWidth="Infinity"/>
+                <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
@@ -53,15 +56,17 @@
             <VBox styleClass="main-content" spacing="20">
 
                 <!-- Top Header -->
-                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
-                    <Button text="← Retour" styleClass="secondary-btn" onAction="#handleBack"/>
-                    <Region HBox.hgrow="ALWAYS"/>
+                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
                     <Label text="🌾 Mes Cultures" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
-                        <Circle radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
-                        <Text text="👨‍🌾" fill="#2E7D32"/>
-                    </StackPane>
+
+                    <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                        <Text text="🔍" fill="#9E9E9E"/>
+                        <TextField promptText="Recherche..." styleClass="header-search-field"/>
+                    </HBox>
+
+                    <!-- Header User Avatar -->
+                    <Circle fx:id="headerAvatarCircle" radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
                 </HBox>
 
                 <!-- Welcome Section -->
@@ -139,8 +144,7 @@
                             <Text text="💡" style="-fx-font-size: 24px;"/>
                             <Label text="Astuce" styleClass="card-title"/>
                         </HBox>
-                        <Label text="Cliquez sur une carte pour accéder à la gestion correspondante. \
-Vous pouvez également utiliser le bouton 'Retour' pour revenir au tableau de bord."
+                        <Label text="Cliquez sur une carte pour accéder à la gestion correspondante. Vous pouvez également utiliser le bouton 'Retour' pour revenir au tableau de bord."
                                wrapText="true" style="-fx-text-fill: #F57C00;"/>
                     </VBox>
                 </HBox>

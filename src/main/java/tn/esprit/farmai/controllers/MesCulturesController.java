@@ -1,6 +1,5 @@
 package tn.esprit.farmai.controllers;
 
-import javafx.animation.FadeTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -10,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
@@ -44,6 +42,9 @@ public class MesCulturesController implements Initializable {
     @FXML
     private Text sidebarAvatarText;
 
+    @FXML
+    private Circle headerAvatarCircle;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         User currentUser = SessionManager.getInstance().getCurrentUser();
@@ -53,6 +54,14 @@ public class MesCulturesController implements Initializable {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
         }
+
+        // Auto-refresh sidebar when user profile changes (avatar, name, etc.)
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform.runLater(() -> ProfileManager.updateProfileUI(newUser, welcomeLabel,
+                        userNameLabel, sidebarAvatar, sidebarAvatarText));
+            }
+        });
     }
 
     /**
@@ -60,7 +69,20 @@ public class MesCulturesController implements Initializable {
      */
     @FXML
     private void handleAnimaux() {
-        navigateWithFade("/tn/esprit/farmai/views/gestion-animaux.fxml", "FarmAI - Mes Animaux");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/gestion-animaux.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Animaux");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to animal management");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to animal management", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des animaux.");
+        }
     }
 
     /**
@@ -68,7 +90,20 @@ public class MesCulturesController implements Initializable {
      */
     @FXML
     private void handlePlantes() {
-        navigateWithFade("/tn/esprit/farmai/views/gestion-plantes.fxml", "FarmAI - Mes Plantes");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/gestion-plantes.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Plantes");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to plant management");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to plant management", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des plantes.");
+        }
     }
 
     /**
@@ -76,7 +111,20 @@ public class MesCulturesController implements Initializable {
      */
     @FXML
     private void handleFermes() {
-        navigateWithFade("/tn/esprit/farmai/views/gestion-fermes.fxml", "FarmAI - Mes Fermes");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/gestion-fermes.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Fermes");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to farm management");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to farm management", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des fermes.");
+        }
     }
 
     /**
@@ -84,7 +132,120 @@ public class MesCulturesController implements Initializable {
      */
     @FXML
     private void handleBack() {
-        navigateWithFade("/tn/esprit/farmai/views/agricole-dashboard.fxml", "FarmAI - Tableau de Bord");
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/agricole-dashboard.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Tableau de Bord");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated back to dashboard");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to dashboard", e);
+            NavigationUtil.showError("Erreur", "Impossible de retourner au tableau de bord.");
+        }
+    }
+
+    /**
+     * Handle AI Analysis - Navigate to fermier analyses view
+     */
+    @FXML
+    private void handleAIAnalysis() {
+        try {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                LOGGER.log(Level.WARNING, "User session not found when trying to access analyses");
+                NavigationUtil.showError("Session expirée", "Veuillez vous reconnecter pour accéder aux analyses.");
+                return;
+            }
+
+            LOGGER.log(Level.INFO, "User {0} navigating to analyses view", currentUser.getFullName());
+
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/fermier-analyses.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Analyses");
+            stage.show();
+            LOGGER.log(Level.INFO, "Successfully navigated to analyses view");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to analyses view", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des analyses.");
+        }
+    }
+
+    /**
+     * Handle Expert Analyses - Navigate to agricole statistics view (read-only)
+     */
+    @FXML
+    private void handleExpertAnalyses() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/agricole-statistics.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Statistiques");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to statistics view");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to statistics", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir les statistiques.");
+        }
+    }
+
+    /**
+     * Handle Add Face - Open Face Recognition view for face enrollment
+     */
+    @FXML
+    private void handleAddFace() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 800, 600);
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+
+            Stage faceStage = new Stage();
+            faceStage.initOwner(stage);
+            faceStage.setTitle("FarmAI - Enregistrement Visage");
+            faceStage.setScene(scene);
+
+            // Cleanup camera when window closes
+            FaceRecognitionController controller = loader.getController();
+            faceStage.setOnCloseRequest(e -> controller.cleanup());
+
+            faceStage.show();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to open face recognition", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());
+        }
     }
 
     /**
@@ -106,54 +267,5 @@ public class MesCulturesController implements Initializable {
     private void handleLogout() {
         Stage stage = (Stage) welcomeLabel.getScene().getWindow();
         NavigationUtil.logout(stage);
-    }
-
-    /**
-     * Navigate to a view with smooth fade transition
-     */
-    private void navigateWithFade(String fxmlPath, String title) {
-        try {
-            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
-            Parent currentRoot = welcomeLabel.getScene().getRoot();
-
-            // Fade out
-            FadeTransition fadeOut = new FadeTransition(Duration.millis(200), currentRoot);
-            fadeOut.setFromValue(1.0);
-            fadeOut.setToValue(0.0);
-
-            fadeOut.setOnFinished(event -> {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-                    Parent newRoot = loader.load();
-                    Scene scene = new Scene(newRoot, 1200, 800);
-
-                    // Apply CSS
-                    java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
-                    if (cssUrl != null) {
-                        scene.getStylesheets().add(cssUrl.toExternalForm());
-                    }
-
-                    newRoot.setOpacity(0.0);
-                    stage.setScene(scene);
-                    stage.setTitle(title);
-
-                    // Fade in
-                    FadeTransition fadeIn = new FadeTransition(Duration.millis(250), newRoot);
-                    fadeIn.setFromValue(0.0);
-                    fadeIn.setToValue(1.0);
-                    fadeIn.play();
-
-                    stage.show();
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed to load view: " + fxmlPath, e);
-                    NavigationUtil.showError("Erreur", "Impossible de charger la vue: " + e.getMessage());
-                }
-            });
-
-            fadeOut.play();
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Navigation error", e);
-            NavigationUtil.showError("Erreur", "Erreur de navigation: " + e.getMessage());
-        }
     }
 }

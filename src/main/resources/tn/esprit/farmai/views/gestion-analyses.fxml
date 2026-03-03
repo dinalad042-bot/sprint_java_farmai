@@ -18,32 +18,36 @@
                 <Insets top="25" right="20" bottom="25" left="20"/>
             </padding>
 
-            <!-- User Profile Card -->
-            <VBox styleClass="sidebar-profile-card" spacing="10" style="-fx-cursor: hand;">
+            <!-- User Profile Card (Standardized to match expert-dashboard) -->
+            <VBox styleClass="sidebar-profile-card, profile-card-container" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
                     <StackPane>
-                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
-                        <Label fx:id="defaultAvatarText" text="U" textFill="white" visible="false"/>
+                        <Circle fx:id="userAvatarCircle" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Label fx:id="defaultAvatarText" text="👤" textFill="white" visible="false"/>
                     </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Text text="•••" styleClass="menu-dots"/>
                 </HBox>
                 <VBox spacing="2">
-                    <Label fx:id="welcomeLabel" text="Technicien" styleClass="sidebar-profile-name"/>
-                    <Label fx:id="userRoleLabel" text="Expert" styleClass="sidebar-profile-role"/>
+                    <Label fx:id="welcomeLabel" text="User Name" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Role" styleClass="sidebar-profile-role"/>
                 </VBox>
             </VBox>
 
             <Region prefHeight="30"/>
 
-            <!-- Navigation Menu -->
+            <!-- Navigation Menu (Full Expert Menu - Consistent across all Expert pages) -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
-                <Button text="Tableau de bord" styleClass="nav-button" maxWidth="Infinity" onAction="#handleDashboard"/>
-                <Button text="Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="Conseils" styleClass="nav-button" maxWidth="Infinity" onAction="#handleConseils"/>
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" maxWidth="Infinity" onAction="#handleDashboard"/>
+                <Button text="📋  Analyses" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="💡  Conseils" styleClass="nav-button" maxWidth="Infinity" onAction="#handleConseils"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
+                <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
+                <Button text="📄  Generer Rapport" styleClass="nav-button" onAction="#handleGenerateReport" maxWidth="Infinity"/>
+                <Button text="⚙️  Paramètres" styleClass="nav-button" onAction="#handleProfile" maxWidth="Infinity"/>
 
                 <Region VBox.vgrow="ALWAYS"/>
-                <Button text="Deconnexion" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" maxWidth="Infinity" onAction="#handleLogout"/>
             </VBox>
         </VBox>
     </left>
@@ -61,30 +65,30 @@
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <HBox styleClass="search-container" alignment="CENTER_LEFT">
-                    <Label text="?" style="-fx-text-fill: #9E9E9E; -fx-font-weight: bold;"/>
+                    <Text text="🔍" fill="#9E9E9E"/>
                     <TextField promptText="Recherche..." styleClass="header-search-field"/>
                 </HBox>
 
                 <!-- Notifications -->
                 <StackPane style="-fx-cursor: hand;">
                     <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
-                    <Label text="(!)" style="-fx-font-size: 18px; -fx-text-fill: #546E7A;"/>
+                    <Text text="🔔" style="-fx-font-size: 22px;" fill="#546E7A"/>
                     <Label text="0" styleClass="notification-badge" visible="false" StackPane.alignment="TOP_RIGHT"/>
                 </StackPane>
 
                 <!-- Header User Avatar -->
-                <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+                <Circle fx:id="headerAvatarCircle" radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
             </HBox>
 
             <!-- Action Toolbar -->
             <HBox spacing="15" alignment="CENTER_LEFT">
-                <Button fx:id="backButton" text="Retour" styleClass="secondary-btn" onAction="#handleBack"/>
+                <Button fx:id="backButton" text="← Retour" styleClass="secondary-btn" onAction="#handleBack"/>
                 <Label fx:id="totalAnalysesLabel" text="Total: 0 analyses" style="-fx-font-weight: bold; -fx-text-fill: #78909C;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="refreshButton" text="Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
-                <Button fx:id="aiDiagnosticButton" text="AI Diagnostic" styleClass="info-btn" onAction="#handleAIDiagnostic"/>
+                <Button fx:id="refreshButton" text="🔄 Actualiser" styleClass="secondary-btn" onAction="#handleRefresh"/>
+                <Button fx:id="aiDiagnosticButton" text="🤖 AI Diagnostic" styleClass="info-btn" onAction="#handleAIDiagnostic"/>
                 <Button fx:id="visualDiagnoseButton" text="🔍 Diagnostic Visuel" styleClass="info-btn" onAction="#handleVisualDiagnosis"/>
-                <Button fx:id="exportPdfButton" text="Export PDF" styleClass="warning-btn" onAction="#handleExportPDF"/>
+                <Button fx:id="exportPdfButton" text="📄 Export PDF" styleClass="warning-btn" onAction="#handleExportPDF"/>
                 <Button fx:id="addAnalyseButton" text="+ Nouvelle Analyse" styleClass="primary-btn" onAction="#handleAddAnalyse"/>
             </HBox>
 
@@ -94,7 +98,7 @@
                 <!-- Filters -->
                 <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 0 0 10px 0;">
                     <HBox spacing="10" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS" style="-fx-background-color: #F5F5F5; -fx-background-radius: 8px; -fx-padding: 5px 10px;">
-                        <Text text="Recherche:" fill="#90A4AE"/>
+                        <Text text="🔍" fill="#90A4AE"/>
                         <TextField fx:id="searchField"
                                    promptText="Rechercher une analyse..."
                                    style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS"/>

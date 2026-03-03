@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.image.*?>
+<?import javafx.scene.shape.Circle?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" 
             fx:controller="tn.esprit.farmai.controllers.UserLogController"
@@ -18,10 +19,15 @@
                 <Insets top="25" right="20" bottom="25" left="20"/>
             </padding>
             
-            <VBox styleClass="sidebar-profile-card" spacing="10">
+            <!-- User Profile Card (Standardized to match admin-dashboard) -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
                 <HBox alignment="CENTER_LEFT" spacing="10">
-                    <ImageView fx:id="profileImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
+                    <StackPane>
+                        <Circle fx:id="profileImageView" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="defaultAvatarText" text="👤" fill="white" visible="false"/>
+                    </StackPane>
                     <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
                 </HBox>
                 <VBox spacing="2">
                     <Label fx:id="welcomeLabel" text="User" styleClass="sidebar-profile-name"/>
@@ -31,9 +37,16 @@
             
             <Region prefHeight="30"/>
             
+            <!-- Navigation Menu (Full Admin Menu - Consistent across all Admin pages) -->
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#handleDashboard" maxWidth="Infinity"/>
-                <Button text="👥  Utilisateurs" styleClass="nav-button active" onAction="#handleBack" maxWidth="Infinity"/>
+                <Button text="👥  Utilisateurs" styleClass="nav-button" onAction="#handleBack" maxWidth="Infinity"/>
+                <Button text="🌾  Cultures" styleClass="nav-button" onAction="#handleCultures" maxWidth="Infinity"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
+                <Button text="📋  Logs Audit" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="🔐  Profil" styleClass="nav-button" onAction="#handleProfile" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
+                
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
             </VBox>
@@ -51,7 +64,21 @@
             <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
                 <Label text="Audit des Actions Utilisateurs" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <ImageView fx:id="headerAvatarImageView" fitWidth="40.0" fitHeight="40.0" pickOnBounds="true" preserveRatio="true" />
+                
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                    <Text text="🔍" fill="#9E9E9E"/>
+                    <TextField promptText="Recherche..." styleClass="header-search-field"/>
+                </HBox>
+                
+                <!-- Notifications -->
+                <StackPane style="-fx-cursor: hand;">
+                    <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+                    <Text text="🔔" style="-fx-font-size: 22px;" fill="#546E7A"/>
+                    <Label text="0" styleClass="notification-badge" visible="false" StackPane.alignment="TOP_RIGHT"/>
+                </StackPane>
+                
+                <!-- Header User Avatar -->
+                <Circle fx:id="headerAvatarImageView" radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
             </HBox>
             
             <!-- Toolbar -->

@@ -1,260 +1,189 @@
 package tn.esprit.farmai.controllers;
 
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.application.Platform;
-import javafx.scene.Scene;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
-import tn.esprit.farmai.models.Ferme;
-import tn.esprit.farmai.models.Notification;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
-import tn.esprit.farmai.services.FermeService;
-import tn.esprit.farmai.services.NotificationService;
 import tn.esprit.farmai.utils.NavigationUtil;
+import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Controller for Fermier Analyses view.
+ * Displays analyses performed by experts on the farmer's farms.
+ */
 public class FermierAnalysesController implements Initializable {
 
     private static final Logger LOGGER = Logger.getLogger(FermierAnalysesController.class.getName());
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    @FXML
-    private TableView<Analyse> analysesTableView;
-    @FXML
-    private TableColumn<Analyse, Integer> colId;
-    @FXML
-    private TableColumn<Analyse, String> colDate;
-    @FXML
-    private TableColumn<Analyse, String> colResultat;
-    @FXML
-    private TableColumn<Analyse, Integer> colTechnicien;
-    @FXML
-    private TableColumn<Analyse, String> colImage;
-    @FXML
-    private TableColumn<Analyse, Void> colActions;
-
-    @FXML
-    private Button backButton;
-    @FXML
-    private TextField searchField;
-    
-    // Sidebar elements
-    @FXML
-    private Circle sidebarAvatar;
-    @FXML
-    private Text sidebarAvatarText;
     @FXML
     private Label userNameLabel;
+
     @FXML
     private Label userRoleLabel;
 
+    @FXML
+    private Circle sidebarAvatar;
+
+    @FXML
+    private Text sidebarAvatarText;
+
+    @FXML
+    private Circle headerAvatar;
+
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private TableView<Analyse> analysesTableView;
+
+    @FXML
+    private TableColumn<Analyse, String> colId;
+
+    @FXML
+    private TableColumn<Analyse, String> colDate;
+
+    @FXML
+    private TableColumn<Analyse, String> colResultat;
+
+    @FXML
+    private TableColumn<Analyse, String> colTechnicien;
+
+    @FXML
+    private TableColumn<Analyse, String> colImage;
+
+    @FXML
+    private TableColumn<Analyse, Void> colActions;
+
     private final AnalyseService analyseService;
-    private final FermeService fermeService;
     private ObservableList<Analyse> analysesList;
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     public FermierAnalysesController() {
         this.analyseService = new AnalyseService();
-        this.fermeService = new FermeService();
-        this.analysesList = FXCollections.observableArrayList();
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Set user info in sidebar
+        // Initialize user profile
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
-            if (userNameLabel != null) userNameLabel.setText(currentUser.getFullName());
-            if (userRoleLabel != null) userRoleLabel.setText(currentUser.getRole().getDisplayName());
+            ProfileManager.updateProfileUI(currentUser, null, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            if (userRoleLabel != null) {
+                userRoleLabel.setText(currentUser.getRole().getDisplayName());
+            }
         }
-        
-        setupTableView();
+
+        // Auto-refresh sidebar when user profile changes
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform.runLater(() -> 
+                    ProfileManager.updateProfileUI(newUser, null, userNameLabel, sidebarAvatar, sidebarAvatarText));
+            }
+        });
+
+        // Setup table columns
+        setupTableColumns();
+
+        // Load analyses data
+        loadAnalyses();
+
+        // Setup search functionality
         setupSearch();
-        loadAnalysesForFermier();
-        
-        // Check for and display notifications for new analyses
-        checkAndShowNotifications();
-    }
-    
-    /**
-     * Check for unread notifications and show them to the user.
-     * Also marks ANALYSE notifications as read since the user is now viewing the analyses page.
-     */
-    private void checkAndShowNotifications() {
-        User currentUser = SessionManager.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            return;
-        }
-        
-        try {
-            NotificationService notificationService = new NotificationService();
-            
-            // Get unread notifications for this user
-            List<Notification> unreadNotifications = notificationService.findUnreadByUser(currentUser.getIdUser());
-            
-            if (!unreadNotifications.isEmpty()) {
-                // Count analysis notifications
-                long analysisNotifications = unreadNotifications.stream()
-                    .filter(n -> "ANALYSE".equals(n.getType()))
-                    .count();
-                
-                if (analysisNotifications > 0) {
-                    // Show a summary notification
-                    Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Nouvelles Analyses");
-                        alert.setHeaderText(null);
-                        
-                        if (analysisNotifications == 1) {
-                            alert.setContentText("📊 Une nouvelle analyse est disponible pour votre ferme.");
-                        } else {
-                            alert.setContentText("📊 " + analysisNotifications + " nouvelles analyses sont disponibles pour votre ferme.");
-                        }
-                        
-                        alert.showAndWait();
-                    });
-                    
-                    LOGGER.log(Level.INFO, "User {0} has {1} unread analysis notifications", 
-                            new Object[]{currentUser.getFullName(), analysisNotifications});
-                }
-                
-                // Mark ANALYSE notifications as read since user is now viewing the analyses page
-                for (Notification notification : unreadNotifications) {
-                    if ("ANALYSE".equals(notification.getType())) {
-                        notificationService.markAsRead(notification.getIdNotification());
-                    }
-                }
-            }
-            
-        } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Failed to check notifications for user " + currentUser.getIdUser(), e);
-        }
-    }
-    
-    /**
-     * Setup search functionality
-     */
-    private void setupSearch() {
-        if (searchField != null) {
-            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-                filterAnalyses(newVal);
-            });
-        }
-    }
-    
-    /**
-     * Filter analyses based on search text
-     */
-    private void filterAnalyses(String searchText) {
-        if (searchText == null || searchText.trim().isEmpty()) {
-            analysesTableView.setItems(analysesList);
-            return;
-        }
-        
-        String search = searchText.toLowerCase().trim();
-        ObservableList<Analyse> filteredList = FXCollections.observableArrayList();
-        
-        for (Analyse analyse : analysesList) {
-            String resultat = analyse.getResultatTechnique();
-            if (resultat != null && resultat.toLowerCase().contains(search)) {
-                filteredList.add(analyse);
-            } else if (String.valueOf(analyse.getIdAnalyse()).contains(search)) {
-                filteredList.add(analyse);
-            }
-        }
-        
-        analysesTableView.setItems(filteredList);
     }
 
-    private void setupTableView() {
-        analysesTableView.setFixedCellSize(-1);
-
-        colId.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIdAnalyse()));
+    /**
+     * Configure table columns
+     */
+    private void setupTableColumns() {
+        colId.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.valueOf(cellData.getValue().getIdAnalyse())));
 
         colDate.setCellValueFactory(cellData -> {
-            try {
-                LocalDateTime date = cellData.getValue().getDateAnalyse();
-                return date == null ? new SimpleStringProperty("No date")
-                        : new SimpleStringProperty(date.format(DATE_FORMATTER));
-            } catch (Exception e) {
-                return new SimpleStringProperty("Invalid date");
+            if (cellData.getValue().getDateAnalyse() != null) {
+                return new SimpleStringProperty(
+                    cellData.getValue().getDateAnalyse().format(DATE_FORMATTER));
             }
+            return new SimpleStringProperty("-");
         });
 
         colResultat.setCellValueFactory(cellData -> {
             String resultat = cellData.getValue().getResultatTechnique();
-            return new SimpleStringProperty(resultat == null || resultat.trim().isEmpty() ? "No result" : resultat);
+            if (resultat != null && resultat.length() > 50) {
+                resultat = resultat.substring(0, 50) + "...";
+            }
+            return new SimpleStringProperty(resultat != null ? resultat : "-");
         });
 
-        colTechnicien
-                .setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getIdTechnicien()));
+        // Use idTechnicien (int) instead of technicien name
+        colTechnicien.setCellValueFactory(cellData -> 
+            new SimpleStringProperty("Tech #" + cellData.getValue().getIdTechnicien()));
 
-        colImage.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getImageUrl()));
-        colImage.setCellFactory(col -> new TableCell<Analyse, String>() {
+        // Image column with thumbnail
+        colImage.setCellFactory(column -> new TableCell<Analyse, String>() {
+            private final ImageView imageView = new ImageView();
+            {
+                imageView.setFitWidth(50);
+                imageView.setFitHeight(50);
+                imageView.setPreserveRatio(true);
+            }
+
             @Override
-            protected void updateItem(String imageUrl, boolean empty) {
-                super.updateItem(imageUrl, empty);
-                if (empty || imageUrl == null || imageUrl.trim().isEmpty()) {
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
+                    setText("-");
                 } else {
-                    try {
-                        ImageView imageView = new ImageView();
-                        imageView.setFitWidth(40);
-                        imageView.setFitHeight(30);
-                        imageView.setPreserveRatio(true);
-
-                        File imageFile = new File(imageUrl);
-                        if (imageFile.exists()) {
-                            imageView.setImage(new Image(imageFile.toURI().toString()));
-                        } else {
-                            imageView.setImage(new Image("file:" + imageUrl, true));
+                    Analyse analyse = getTableRow().getItem();
+                    String imageUrl = analyse.getImageUrl();
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        try {
+                            Image image = new Image(imageUrl, 50, 50, true, true, true);
+                            imageView.setImage(image);
+                            setGraphic(imageView);
+                            setText(null);
+                        } catch (Exception e) {
+                            setText("🖼️");
+                            setGraphic(null);
                         }
-                        setGraphic(imageView);
-                    } catch (Exception e) {
-                        setGraphic(new Label("[IMG]"));
+                    } else {
+                        setText("-");
+                        setGraphic(null);
                     }
                 }
             }
         });
 
-        // Actions: View PDF
-        colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button exportPdfButton = new Button("Export PDF");
-            private final HBox pane = new HBox(5, exportPdfButton);
-
+        // Actions column with view button
+        colActions.setCellFactory(column -> new TableCell<Analyse, Void>() {
+            private final Button viewButton = new Button("👁️ Voir");
             {
-                pane.setAlignment(Pos.CENTER);
-                pane.setStyle("-fx-padding: 5px;");
-                exportPdfButton.setStyle(
-                        "-fx-background-color: #E8F5E9; -fx-text-fill: #2E7D32; -fx-font-size: 11px; -fx-padding: 4px 8px; -fx-background-radius: 4px;");
-
-                exportPdfButton.setOnAction(event -> {
+                viewButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 11px;");
+                viewButton.setOnAction(event -> {
                     Analyse analyse = getTableRow().getItem();
                     if (analyse != null) {
-                        handleExportPDF(analyse);
+                        showAnalyseDetails(analyse);
                     }
                 });
             }
@@ -262,83 +191,171 @@ public class FermierAnalysesController implements Initializable {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(viewButton);
+                }
             }
         });
     }
 
     /**
-     * Load analyses for the current fermier user.
-     * Handles edge cases: user not logged in, no farm associated, no analyses found.
+     * Load analyses from database
      */
-    private void loadAnalysesForFermier() {
+    private void loadAnalyses() {
         try {
-            analysesList.clear();
-
-            // Step 1: Check if user is logged in
-            User currentUser = SessionManager.getInstance().getCurrentUser();
-            if (currentUser == null) {
-                LOGGER.log(Level.WARNING, "No user session found");
-                analysesTableView.setPlaceholder(new Label("Session expirée. Veuillez vous reconnecter."));
-                NavigationUtil.showError("Session expirée", "Aucune session active. Veuillez vous reconnecter.");
-                return;
-            }
-
-            LOGGER.log(Level.INFO, "Loading analyses for user: {0} (ID: {1})", 
-                    new Object[]{currentUser.getFullName(), currentUser.getIdUser()});
-
-            // Step 2: Find the farm associated with this fermier
-            Ferme ferme = fermeService.findByFermier(currentUser.getIdUser());
-            if (ferme == null) {
-                LOGGER.log(Level.WARNING, "No farm found for user ID: {0}", currentUser.getIdUser());
-                analysesTableView.setPlaceholder(new Label(
-                    "Aucune ferme associée à votre compte.\n" +
-                    "Veuillez contacter l'administrateur pour associer une ferme à votre profil."));
-                return;
-            }
-
-            int farmId = ferme.getIdFerme();
-            LOGGER.log(Level.INFO, "Farm found: {0} (ID: {1})", new Object[]{ferme.getNomFerme(), farmId});
-
-            // Step 3: Load analyses for this farm
-            List<Analyse> analyses = analyseService.findByFerme(farmId);
-            LOGGER.log(Level.INFO, "Found {0} analyses for farm ID: {1}", new Object[]{analyses.size(), farmId});
-
-            if (analyses.isEmpty()) {
-                analysesTableView.setPlaceholder(new Label(
-                    "Aucune analyse disponible pour votre ferme.\n" +
-                    "Les analyses effectuées par l'expert apparaîtront ici."));
-            } else {
-                analysesList.addAll(analyses);
-                analysesTableView.setItems(analysesList);
-            }
-
+            analysesList = FXCollections.observableArrayList(analyseService.selectALL());
+            analysesTableView.setItems(analysesList);
+            LOGGER.log(Level.INFO, "Loaded {0} analyses", analysesList.size());
         } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Database error while loading analyses", e);
-            analysesTableView.setPlaceholder(new Label(
-                "Erreur de chargement des analyses.\n" +
-                "Détails: " + (e.getMessage() != null ? e.getMessage() : "Erreur inconnue")));
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Unexpected error while loading analyses", e);
-            analysesTableView.setPlaceholder(new Label(
-                "Erreur inattendue.\n" +
-                "Veuillez réessayer ou contacter le support."));
+            LOGGER.log(Level.SEVERE, "Failed to load analyses", e);
+            NavigationUtil.showError("Erreur", "Impossible de charger les analyses: " + e.getMessage());
         }
     }
 
-    private void handleExportPDF(Analyse analyse) {
-        // Using the exact logic from GestionAnalysesController (US9)
-        try {
-            String pdfPath = analyseService.exportAnalysisToPDF(analyse.getIdAnalyse());
-            NavigationUtil.showSuccess("PDF généré", "Fichier sauvegardé dans : " + pdfPath);
-        } catch (Exception e) {
-            NavigationUtil.showError("Erreur PDF", "Erreur lors de la génération : " + e.getMessage());
+    /**
+     * Setup search functionality
+     */
+    private void setupSearch() {
+        if (searchField != null) {
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                filterAnalyses(newValue);
+            });
         }
     }
 
+    /**
+     * Filter analyses based on search text
+     */
+    private void filterAnalyses(String searchText) {
+        if (searchText == null || searchText.isEmpty()) {
+            analysesTableView.setItems(analysesList);
+        } else {
+            String lowerCaseFilter = searchText.toLowerCase();
+            ObservableList<Analyse> filteredList = analysesList.filtered(analyse ->
+                String.valueOf(analyse.getIdAnalyse()).contains(lowerCaseFilter) ||
+                (analyse.getResultatTechnique() != null && 
+                 analyse.getResultatTechnique().toLowerCase().contains(lowerCaseFilter)) ||
+                String.valueOf(analyse.getIdTechnicien()).contains(lowerCaseFilter)
+            );
+            analysesTableView.setItems(filteredList);
+        }
+    }
+
+    /**
+     * Show analysis details in an alert dialog
+     */
+    private void showAnalyseDetails(Analyse analyse) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Détails de l'Analyse");
+        alert.setHeaderText("Analyse #" + analyse.getIdAnalyse());
+        
+        StringBuilder content = new StringBuilder();
+        content.append("Date: ").append(
+            analyse.getDateAnalyse() != null ? 
+            analyse.getDateAnalyse().format(DATE_FORMATTER) : "-"
+        ).append("\n\n");
+        content.append("Technicien ID: ").append(analyse.getIdTechnicien()).append("\n\n");
+        content.append("Ferme ID: ").append(analyse.getIdFerme()).append("\n\n");
+        content.append("Résultat Technique:\n");
+        content.append(analyse.getResultatTechnique() != null ? 
+            analyse.getResultatTechnique() : "Aucun résultat disponible");
+
+        alert.setContentText(content.toString());
+        alert.showAndWait();
+    }
+
+    /**
+     * Handle back button - return to Agricole Dashboard
+     */
     @FXML
     private void handleBack() {
-        NavigationUtil.navigateToAgricoleDashboard((Stage) analysesTableView.getScene().getWindow());
+        navigateToDashboard();
+    }
+
+    /**
+     * Navigate to Mes Cultures
+     */
+    @FXML
+    private void handleMesCultures() {
+        try {
+            Stage stage = (Stage) userNameLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/mes-cultures.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Cultures");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to mes cultures");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to mes cultures", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la gestion des cultures.");
+        }
+    }
+
+    /**
+     * Handle AI Analysis - Refresh current view
+     */
+    @FXML
+    private void handleAIAnalysis() {
+        loadAnalyses();
+        NavigationUtil.showSuccess("Actualisation", "La liste des analyses a été actualisée.");
+    }
+
+    /**
+     * Handle Add Face - Open Face Recognition view
+     */
+    @FXML
+    private void handleAddFace() {
+        try {
+            Stage stage = (Stage) userNameLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root, 800, 600);
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+
+            Stage faceStage = new Stage();
+            faceStage.initOwner(stage);
+            faceStage.setTitle("FarmAI - Enregistrement Visage");
+            faceStage.setScene(scene);
+
+            // Cleanup camera when window closes
+            FaceRecognitionController controller = loader.getController();
+            faceStage.setOnCloseRequest(e -> controller.cleanup());
+
+            faceStage.show();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to open face recognition", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Handle profile click
+     */
+    @FXML
+    private void handleProfile() {
+        boolean updated = ProfileManager.showProfileEditDialog(userNameLabel.getScene().getWindow());
+        if (updated) {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            ProfileManager.updateProfileUI(currentUser, null, userNameLabel, sidebarAvatar, sidebarAvatarText);
+        }
     }
 
     /**
@@ -346,7 +363,34 @@ public class FermierAnalysesController implements Initializable {
      */
     @FXML
     private void handleLogout() {
-        Stage stage = (Stage) analysesTableView.getScene().getWindow();
+        Stage stage = (Stage) userNameLabel.getScene().getWindow();
         NavigationUtil.logout(stage);
+    }
+
+    /**
+     * Navigate to dashboard helper method
+     */
+    private void navigateToDashboard() {
+        try {
+            Stage stage = (Stage) userNameLabel.getScene().getWindow();
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/agricole-dashboard.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root, 1200, 800);
+
+            // Apply CSS
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Tableau de Bord");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to dashboard");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to dashboard", e);
+            NavigationUtil.showError("Erreur", "Impossible de retourner au tableau de bord.");
+        }
     }
 }

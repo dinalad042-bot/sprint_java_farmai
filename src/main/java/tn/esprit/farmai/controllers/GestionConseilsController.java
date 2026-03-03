@@ -1,6 +1,7 @@
 
 package tn.esprit.farmai.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,10 +18,13 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Conseil;
 import tn.esprit.farmai.models.Priorite;
+import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.ConseilService;
 import tn.esprit.farmai.utils.AlertUtils;
 import tn.esprit.farmai.utils.NavigationUtil;
+import tn.esprit.farmai.utils.ProfileManager;
+import tn.esprit.farmai.utils.SessionManager;
 import tn.esprit.farmai.utils.SpeechUtils;
 
 import java.net.URL;
@@ -91,6 +95,60 @@ public class GestionConseilsController implements Initializable {
         setupFilters();
         loadConseils();
         setupDoubleClick();
+        initializeUserData();
+    }
+
+    /**
+     * Initialize user data from SessionManager - ensures consistent avatar
+     * and user info display across all pages.
+     */
+    private void initializeUserData() {
+        User currentUser = SessionManager.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            // Update sidebar labels
+            if (welcomeLabel != null) {
+                welcomeLabel.setText(currentUser.getFullName());
+            }
+            if (userNameLabel != null) {
+                userNameLabel.setText(currentUser.getFullName());
+            }
+            if (userRoleLabel != null) {
+                userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(currentUser));
+            }
+
+            // Load avatar images using ProfileManager
+            ProfileManager.loadUserImageIntoCircle(userAvatarCircle, currentUser);
+            ProfileManager.loadUserImageIntoCircle(headerAvatarCircle, currentUser);
+
+            // Show default avatar text if no image loaded
+            if (defaultAvatarText != null) {
+                boolean hasImage = currentUser.getImageUrl() != null && !currentUser.getImageUrl().isEmpty();
+                defaultAvatarText.setVisible(!hasImage);
+            }
+        }
+
+        // Listen for profile changes (avatar updates, etc.)
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                Platform.runLater(() -> {
+                    if (welcomeLabel != null) {
+                        welcomeLabel.setText(newUser.getFullName());
+                    }
+                    if (userNameLabel != null) {
+                        userNameLabel.setText(newUser.getFullName());
+                    }
+                    if (userRoleLabel != null) {
+                        userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(newUser));
+                    }
+                    ProfileManager.loadUserImageIntoCircle(userAvatarCircle, newUser);
+                    ProfileManager.loadUserImageIntoCircle(headerAvatarCircle, newUser);
+                    if (defaultAvatarText != null) {
+                        boolean hasImage = newUser.getImageUrl() != null && !newUser.getImageUrl().isEmpty();
+                        defaultAvatarText.setVisible(!hasImage);
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -98,8 +156,7 @@ public class GestionConseilsController implements Initializable {
      */
     private void setupTableView() {
         // ID Column
-        colId.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(
+        colId.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getIdConseil()));
         colId.setCellFactory(tc -> new TableCell<Conseil, Integer>() {
             private final javafx.scene.text.Text text = new javafx.scene.text.Text();
@@ -107,6 +164,7 @@ public class GestionConseilsController implements Initializable {
                 text.setStyle("-fx-fill: #000000;");
                 setGraphic(text);
             }
+
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
@@ -119,8 +177,7 @@ public class GestionConseilsController implements Initializable {
         });
 
         // Description Column with text wrapping
-        colDescription.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleStringProperty(
+        colDescription.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(
                 cellData.getValue().getDescriptionConseil()));
         colDescription.setCellFactory(tc -> {
             TableCell<Conseil, String> cell = new TableCell<>();
@@ -133,14 +190,14 @@ public class GestionConseilsController implements Initializable {
         });
 
         // Priorite Column with color indicator
-        colPriorite.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(
+        colPriorite.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getPriorite()));
         colPriorite.setCellFactory(column -> new TableCell<Conseil, Priorite>() {
             private final javafx.scene.text.Text text = new javafx.scene.text.Text();
             {
                 setGraphic(text);
             }
+
             @Override
             protected void updateItem(Priorite priorite, boolean empty) {
                 super.updateItem(priorite, empty);
@@ -159,8 +216,7 @@ public class GestionConseilsController implements Initializable {
         });
 
         // Analyse ID Column (FK) - Shows the related analysis
-        colAnalyseId.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleObjectProperty<>(
+        colAnalyseId.setCellValueFactory(cellData -> new javafx.beans.property.SimpleObjectProperty<>(
                 cellData.getValue().getIdAnalyse()));
         colAnalyseId.setCellFactory(tc -> new TableCell<Conseil, Integer>() {
             private final javafx.scene.text.Text text = new javafx.scene.text.Text();
@@ -168,6 +224,7 @@ public class GestionConseilsController implements Initializable {
                 text.setStyle("-fx-fill: #000000;");
                 setGraphic(text);
             }
+
             @Override
             protected void updateItem(Integer item, boolean empty) {
                 super.updateItem(item, empty);
@@ -204,7 +261,7 @@ public class GestionConseilsController implements Initializable {
                     Conseil conseil = getTableView().getItems().get(getIndex());
                     handleDeleteConseil(conseil);
                 });
-                
+
                 // TTS: Read conseil aloud
                 ttsBtn.setOnAction(event -> {
                     Conseil conseil = getTableView().getItems().get(getIndex());
@@ -268,7 +325,7 @@ public class GestionConseilsController implements Initializable {
             updateTotalLabel();
         } catch (SQLException e) {
             NavigationUtil.showError("Erreur",
-                "Impossible de charger les conseils: " + e.getMessage());
+                    "Impossible de charger les conseils: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -284,12 +341,12 @@ public class GestionConseilsController implements Initializable {
 
         for (Conseil conseil : conseilsList) {
             boolean matchesSearch = searchText.isEmpty() ||
-                conseil.getDescriptionConseil().toLowerCase().contains(searchText) ||
-                String.valueOf(conseil.getIdConseil()).contains(searchText) ||
-                String.valueOf(conseil.getIdAnalyse()).contains(searchText);
+                    conseil.getDescriptionConseil().toLowerCase().contains(searchText) ||
+                    String.valueOf(conseil.getIdConseil()).contains(searchText) ||
+                    String.valueOf(conseil.getIdAnalyse()).contains(searchText);
 
             boolean matchesPriorite = selectedPriorite == null ||
-                conseil.getPriorite() == selectedPriorite;
+                    conseil.getPriorite() == selectedPriorite;
 
             if (matchesSearch && matchesPriorite) {
                 filteredList.add(conseil);
@@ -306,7 +363,7 @@ public class GestionConseilsController implements Initializable {
     private void handleEditConseil(Conseil conseil) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/ajout-conseil.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/ajout-conseil.fxml"));
             Parent root = loader.load();
 
             // Get controller and set edit mode
@@ -324,7 +381,7 @@ public class GestionConseilsController implements Initializable {
 
         } catch (Exception e) {
             NavigationUtil.showError("Erreur",
-                "Impossible d'ouvrir l'édition: " + e.getMessage());
+                    "Impossible d'ouvrir l'édition: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -334,9 +391,8 @@ public class GestionConseilsController implements Initializable {
      */
     private void handleDeleteConseil(Conseil conseil) {
         Optional<ButtonType> result = NavigationUtil.showConfirmation(
-            "Confirmer la suppression",
-            "Êtes-vous sûr de vouloir supprimer le conseil ID " + conseil.getIdConseil() + " ?"
-        );
+                "Confirmer la suppression",
+                "Êtes-vous sûr de vouloir supprimer le conseil ID " + conseil.getIdConseil() + " ?");
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
@@ -346,7 +402,7 @@ public class GestionConseilsController implements Initializable {
                 NavigationUtil.showSuccess("Succès", "Conseil supprimé avec succès.");
             } catch (SQLException e) {
                 NavigationUtil.showError("Erreur",
-                    "Impossible de supprimer le conseil: " + e.getMessage());
+                        "Impossible de supprimer le conseil: " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -372,7 +428,7 @@ public class GestionConseilsController implements Initializable {
     @FXML
     private void handleBack() {
         navigateWithFade("/tn/esprit/farmai/views/expert-dashboard.fxml",
-                        "FarmAI - Tableau de Bord Expert");
+                "FarmAI - Tableau de Bord Expert");
     }
 
     /**
@@ -381,7 +437,7 @@ public class GestionConseilsController implements Initializable {
     @FXML
     private void handleDashboard() {
         navigateWithFade("/tn/esprit/farmai/views/expert-dashboard.fxml",
-                        "FarmAI - Tableau de Bord Expert");
+                "FarmAI - Tableau de Bord Expert");
     }
 
     /**
@@ -390,7 +446,81 @@ public class GestionConseilsController implements Initializable {
     @FXML
     private void handleAnalyses() {
         navigateWithFade("/tn/esprit/farmai/views/gestion-analyses.fxml",
-                        "FarmAI - Gestion des Analyses");
+                "FarmAI - Gestion des Analyses");
+    }
+
+    /**
+     * Handle statistics navigation from sidebar
+     */
+    @FXML
+    private void handleStatistics() {
+        navigateWithFade("/tn/esprit/farmai/views/statistics.fxml",
+                "FarmAI - Statistiques");
+    }
+
+    /**
+     * Handle add face navigation from sidebar
+     */
+    @FXML
+    private void handleAddFace() {
+        try {
+            Stage stage = (Stage) conseilsTableView.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            javafx.scene.Parent root = loader.load();
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 800, 600);
+            String cssPath = getClass().getResource("/tn/esprit/farmai/styles/main.css") != null
+                    ? getClass().getResource("/tn/esprit/farmai/styles/main.css").toExternalForm()
+                    : null;
+            if (cssPath != null) {
+                scene.getStylesheets().add(cssPath);
+            }
+
+            Stage faceStage = new Stage();
+            faceStage.initOwner(stage);
+            faceStage.setTitle("FarmAI - Enregistrement Visage");
+            faceStage.setScene(scene);
+
+            // Cleanup camera when window closes
+            FaceRecognitionController controller = loader.getController();
+            faceStage.setOnCloseRequest(e -> controller.cleanup());
+
+            faceStage.show();
+        } catch (Exception e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Handle generate report navigation from sidebar
+     */
+    @FXML
+    private void handleGenerateReport() {
+        NavigationUtil.showInfo("Info", "Fonctionnalité de rapport en cours de développement.");
+    }
+
+    /**
+     * Handle profile navigation from sidebar
+     */
+    @FXML
+    private void handleProfile() {
+        boolean updated = ProfileManager.showProfileEditDialog(conseilsTableView.getScene().getWindow());
+        if (updated) {
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (welcomeLabel != null) {
+                welcomeLabel.setText(currentUser.getFullName());
+            }
+            if (userNameLabel != null) {
+                userNameLabel.setText(currentUser.getFullName());
+            }
+            if (userRoleLabel != null) {
+                userRoleLabel.setText(ProfileManager.getStandardizedRoleLabel(currentUser));
+            }
+            ProfileManager.loadUserImageIntoCircle(userAvatarCircle, currentUser);
+            ProfileManager.loadUserImageIntoCircle(headerAvatarCircle, currentUser);
+        }
     }
 
     /**
@@ -412,7 +542,7 @@ public class GestionConseilsController implements Initializable {
 
             // Fade out
             javafx.animation.FadeTransition fadeOut = new javafx.animation.FadeTransition(
-                javafx.util.Duration.millis(200), currentRoot);
+                    javafx.util.Duration.millis(200), currentRoot);
             fadeOut.setFromValue(1.0);
             fadeOut.setToValue(0.0);
 
@@ -422,7 +552,7 @@ public class GestionConseilsController implements Initializable {
                     Parent newRoot = loader.load();
                     Scene scene = new Scene(newRoot, 1200, 800);
 
-                    java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+                    java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/main.css");
                     if (cssUrl != null) {
                         scene.getStylesheets().add(cssUrl.toExternalForm());
                     }
@@ -432,7 +562,7 @@ public class GestionConseilsController implements Initializable {
                     stage.setTitle(title);
 
                     javafx.animation.FadeTransition fadeIn = new javafx.animation.FadeTransition(
-                        javafx.util.Duration.millis(250), newRoot);
+                            javafx.util.Duration.millis(250), newRoot);
                     fadeIn.setFromValue(0.0);
                     fadeIn.setToValue(1.0);
                     fadeIn.play();
@@ -458,7 +588,7 @@ public class GestionConseilsController implements Initializable {
     private void handleAddConseil() {
         try {
             FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/ajout-conseil.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/ajout-conseil.fxml"));
             Parent root = loader.load();
 
             Stage stage = new Stage();
@@ -472,7 +602,7 @@ public class GestionConseilsController implements Initializable {
 
         } catch (Exception e) {
             NavigationUtil.showError("Erreur",
-                "Impossible d'ouvrir l'ajout de conseil: " + e.getMessage());
+                    "Impossible d'ouvrir l'ajout de conseil: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -483,26 +613,26 @@ public class GestionConseilsController implements Initializable {
     private void updateTotalLabel() {
         if (totalConseilsLabel != null) {
             totalConseilsLabel.setText(
-                "Total: " + conseilsTableView.getItems().size() + " conseil(s)");
+                    "Total: " + conseilsTableView.getItems().size() + " conseil(s)");
         }
     }
-    
+
     /**
      * Handle TTS: Read conseil description aloud.
      * Uses SpeechUtils for async text-to-speech.
      * SRP: SpeechUtils handles TTS, this method handles UI state.
      * 
      * @param conseil The conseil to read aloud
-     * @param ttsBtn The button to update during playback
+     * @param ttsBtn  The button to update during playback
      */
     private void handleReadAloud(Conseil conseil, Button ttsBtn) {
         if (conseil == null || conseil.getDescriptionConseil() == null) {
             AlertUtils.showWarning("Aucun contenu", "Ce conseil n'a pas de description à lire.");
             return;
         }
-        
+
         String description = conseil.getDescriptionConseil();
-        
+
         // Check if TTS is already playing
         if (SpeechUtils.isPlaying()) {
             SpeechUtils.stop();
@@ -510,30 +640,30 @@ public class GestionConseilsController implements Initializable {
             ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
             return;
         }
-        
+
         // Update button state
         ttsBtn.setText("⏹");
         ttsBtn.setStyle("-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-padding: 5px 10px;");
-        
+
         // Run TTS asynchronously to avoid UI freeze
         SpeechUtils.speakAsync(description)
-            .thenRun(() -> {
-                // Reset button state when done
-                javafx.application.Platform.runLater(() -> {
-                    ttsBtn.setText("🔊");
-                    ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                .thenRun(() -> {
+                    // Reset button state when done
+                    javafx.application.Platform.runLater(() -> {
+                        ttsBtn.setText("🔊");
+                        ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                    });
+                })
+                .exceptionally(ex -> {
+                    // Handle TTS errors gracefully
+                    javafx.application.Platform.runLater(() -> {
+                        ttsBtn.setText("🔊");
+                        ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
+                        AlertUtils.showError("Erreur TTS", "Impossible de lire le conseil: " + ex.getMessage());
+                    });
+                    return null;
                 });
-            })
-            .exceptionally(ex -> {
-                // Handle TTS errors gracefully
-                javafx.application.Platform.runLater(() -> {
-                    ttsBtn.setText("🔊");
-                    ttsBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 5px 10px;");
-                    AlertUtils.showError("Erreur TTS", "Impossible de lire le conseil: " + ex.getMessage());
-                });
-                return null;
-            });
-        
+
         // Show feedback to user
         AlertUtils.showToast("Lecture en cours...", 2000);
     }
