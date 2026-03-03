@@ -18,6 +18,8 @@ import tn.esprit.farmai.services.IntelligentReportService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
+import javafx.scene.image.ImageView;
+import tn.esprit.farmai.utils.AvatarUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,6 +52,9 @@ public class ExpertDashboardController implements Initializable {
     @FXML
     private Text sidebarAvatarText;
 
+    @FXML
+    private ImageView headerProfileImage;
+
     // Dynamic statistics labels
     @FXML
     private Label totalAnalysesLabel;
@@ -75,6 +80,10 @@ public class ExpertDashboardController implements Initializable {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            // Load header profile image
+            if (headerProfileImage != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerProfileImage, currentUser, 36);
+            }
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
@@ -86,6 +95,10 @@ public class ExpertDashboardController implements Initializable {
                 javafx.application.Platform
                         .runLater(() -> ProfileManager.updateProfileUI(newUser, welcomeLabel, userNameLabel,
                                 sidebarAvatar, sidebarAvatarText));
+                // Update header avatar on profile change
+                if (headerProfileImage != null) {
+                    AvatarUtil.loadUserImageIntoImageView(headerProfileImage, newUser, 36);
+                }
             }
         });
 
@@ -149,6 +162,10 @@ public class ExpertDashboardController implements Initializable {
         if (updated) {
             User currentUser = SessionManager.getInstance().getCurrentUser();
             ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            // Load header profile image
+            if (headerProfileImage != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerProfileImage, currentUser, 36);
+            }
         }
     }
 

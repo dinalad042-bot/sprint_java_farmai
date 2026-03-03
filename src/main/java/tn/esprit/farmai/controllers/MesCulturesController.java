@@ -7,6 +7,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Circle;
+import javafx.scene.image.ImageView;
+import tn.esprit.farmai.utils.AvatarUtil;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.User;
@@ -43,13 +45,18 @@ public class MesCulturesController implements Initializable {
     private Text sidebarAvatarText;
 
     @FXML
-    private Circle headerAvatarCircle;
+    private ImageView headerProfileImage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+
+            // Load header profile image
+            if (headerProfileImage != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerProfileImage, currentUser, 36);
+            }
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }

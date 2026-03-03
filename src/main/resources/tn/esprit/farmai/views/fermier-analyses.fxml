@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Text?>
@@ -68,7 +69,7 @@
                 </HBox>
 
                 <!-- Header User Avatar -->
-                <Circle fx:id="headerAvatar" radius="18" fill="#E8F5E9" stroke="#4CAF50"/>
+                <ImageView fx:id="headerProfileImage" fitWidth="36" fitHeight="36" pickOnBounds="true" preserveRatio="true" onMouseClicked="#handleProfile"/>
             </HBox>
 
             <!-- Info Card -->

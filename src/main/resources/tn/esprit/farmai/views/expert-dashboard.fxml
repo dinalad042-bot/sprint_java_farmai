@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.shape.Circle?>
@@ -71,8 +72,7 @@
                     </StackPane>
                     
                     <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
-                        <Circle radius="18" fill="#E3F2FD" stroke="#2196F3"/>
-                        <Text text="🔬" fill="#1565C0"/>
+                        <ImageView fx:id="headerProfileImage" fitWidth="36" fitHeight="36" pickOnBounds="true" preserveRatio="true"/>
                     </StackPane>
                 </HBox>
                 

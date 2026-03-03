@@ -647,3 +647,32 @@
     -fx-font-weight: bold !important;
     -fx-effect: dropshadow(three-pass-box, rgba(46, 125, 50, 0.4), 8, 0, 0, 2);
 }
+
+/* ============================================
+   HEADER PROFILE ICON - Consistent styling
+   ============================================ */
+
+.header-profile-icon {
+    -fx-fit-width: 36px;
+    -fx-fit-height: 36px;
+    -fx-preserve-ratio: true;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 2, 0, 0, 1);
+}
+
+/* Circular clip is applied programmatically via AvatarUtil.applyCircularClip() */
+/* This ensures the avatar is always perfectly round regardless of image aspect ratio */
+
+  
+/* ============================================  
+   HEADER PROFILE ICON - Consistent styling  
+   ============================================ */  
+  
+.header-profile-icon {  
+    -fx-fit-width: 36px;  
+    -fx-fit-height: 36px;  
+    -fx-preserve-ratio: true;  
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 2, 0, 0, 1);  
+}  
+  
+/* Circular clip is applied programmatically via AvatarUtil.applyCircularClip() */  
+/* This ensures the avatar is always perfectly round regardless of image aspect ratio */ 

@@ -13,6 +13,8 @@ import tn.esprit.farmai.services.FermeService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
+import javafx.scene.image.ImageView;
+import tn.esprit.farmai.utils.AvatarUtil;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -43,6 +45,9 @@ public class FournisseurDashboardController implements Initializable {
     @FXML
     private Text sidebarAvatarText;
 
+    @FXML
+    private ImageView headerProfileImage;
+
     // Dynamic statistics labels
     @FXML
     private Label totalAnalysesLabel;
@@ -68,6 +73,10 @@ public class FournisseurDashboardController implements Initializable {
         User currentUser = SessionManager.getInstance().getCurrentUser();
         if (currentUser != null) {
             ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            // Load header profile image
+            if (headerProfileImage != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerProfileImage, currentUser, 36);
+            }
             if (userRoleLabel != null) {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
@@ -142,6 +151,10 @@ public class FournisseurDashboardController implements Initializable {
         if (updated) {
             User currentUser = SessionManager.getInstance().getCurrentUser();
             ProfileManager.updateProfileUI(currentUser, welcomeLabel, userNameLabel, sidebarAvatar, sidebarAvatarText);
+            // Load header profile image
+            if (headerProfileImage != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerProfileImage, currentUser, 36);
+            }
         }
     }
 
