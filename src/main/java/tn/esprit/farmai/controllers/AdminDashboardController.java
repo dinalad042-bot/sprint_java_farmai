@@ -218,4 +218,27 @@ public class AdminDashboardController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Opens the Face Recognition (camera + detection) window.
+     * Users can enrol their face here.
+     */
+    @FXML
+    private void handleFaceRecognition() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+            Parent root = loader.load();
+            FaceRecognitionController ctrl = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("FarmAi — Reconnaissance Faciale");
+            stage.setScene(new Scene(root));
+            stage.setOnCloseRequest(e -> ctrl.cleanup());
+            stage.show();
+        } catch (IOException e) {
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale.");
+            e.printStackTrace();
+        }
+    }
 }

@@ -146,8 +146,9 @@ public class NavigationUtil {
             stage.setMinHeight(700);
             stage.centerOnScreen();
             stage.show();
-        } catch (IOException e) {
-            showError("Navigation Error", "Could not load dashboard.");
+        } catch (Exception e) {
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            showError("Navigation Error", "Could not load dashboard: " + msg);
             e.printStackTrace();
         }
     }

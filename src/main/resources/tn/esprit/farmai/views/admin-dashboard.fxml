@@ -45,6 +45,7 @@
                 <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
                 <Button text="📋  Logs Audit" styleClass="nav-button" onAction="#handleUserLogs" maxWidth="Infinity"/>
                 <Button text="🔐  Profil" styleClass="nav-button" onAction="#handleProfileEdit" maxWidth="Infinity"/>
+                <Button text="📷  Reconnaissance Faciale" styleClass="nav-button" onAction="#handleFaceRecognition" maxWidth="Infinity"/>
 
                 
                 <Region VBox.vgrow="ALWAYS"/>
