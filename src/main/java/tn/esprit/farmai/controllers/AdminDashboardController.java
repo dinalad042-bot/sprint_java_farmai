@@ -93,6 +93,15 @@ public class AdminDashboardController implements Initializable {
             }
         }
 
+        // Auto-refresh sidebar when user profile changes (avatar, name, etc.)
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform
+                        .runLater(() -> ProfileManager.updateProfileUI(newUser, welcomeLabel, userNameLabel,
+                                sidebarAvatar, sidebarAvatarText));
+            }
+        });
+
         // Load statistics
         loadStatistics();
     }
@@ -187,7 +196,7 @@ public class AdminDashboardController implements Initializable {
         try {
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/admin_map.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/admin_map.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
             stage.setScene(scene);
@@ -207,7 +216,7 @@ public class AdminDashboardController implements Initializable {
         try {
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
             stage.setScene(scene);

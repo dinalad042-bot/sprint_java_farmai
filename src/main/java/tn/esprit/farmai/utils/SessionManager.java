@@ -1,15 +1,23 @@
 package tn.esprit.farmai.utils;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import tn.esprit.farmai.models.User;
 
 /**
  * Singleton class to manage the current user session.
  * Stores the logged-in user and provides session utilities.
+ *
+ * Uses a JavaFX ObjectProperty so that UI controllers can listen
+ * for user changes and refresh avatars / labels automatically.
  */
 public class SessionManager {
 
     private static SessionManager instance;
     private User currentUser;
+
+    /** Observable property — controllers bind to this for live updates. */
+    private final ObjectProperty<User> currentUserProperty = new SimpleObjectProperty<>(null);
 
     private SessionManager() {
         // Private constructor for singleton
@@ -26,10 +34,13 @@ public class SessionManager {
     }
 
     /**
-     * Set the current logged-in user
+     * Set the current logged-in user.
+     * Updates both the plain field AND the observable property
+     * so that all registered listeners are notified immediately.
      */
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        this.currentUserProperty.set(user);
     }
 
     /**
@@ -37,6 +48,16 @@ public class SessionManager {
      */
     public User getCurrentUser() {
         return currentUser;
+    }
+
+    /**
+     * Observable property for the current user.
+     * Controllers should call:
+     * {@code SessionManager.getInstance().currentUserProperty().addListener(...)}
+     * to react to profile changes (avatar, name, etc.).
+     */
+    public ObjectProperty<User> currentUserProperty() {
+        return currentUserProperty;
     }
 
     /**
@@ -51,6 +72,7 @@ public class SessionManager {
      */
     public void logout() {
         this.currentUser = null;
+        this.currentUserProperty.set(null);
     }
 
     /**

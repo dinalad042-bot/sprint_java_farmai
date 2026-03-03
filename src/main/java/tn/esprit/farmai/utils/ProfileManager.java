@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
@@ -225,95 +226,17 @@ public class ProfileManager {
 
     /**
      * Loads a user's image (from URL, local path, or fallback) into a Circle.
+     * Delegates to AvatarUtil for consistent avatar handling.
      */
     public static boolean loadUserImageIntoCircle(Circle circle, User user) {
-        if (circle == null || user == null)
-            return false;
-
-        boolean imageLoaded = false;
-        String imgUrl = user.getImageUrl();
-
-        // 1. Try User Image from Path/URL
-        if (imgUrl != null && !imgUrl.isEmpty()) {
-            try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                    java.io.File file = new java.io.File(imgUrl);
-                    if (file.exists()) {
-                        pathToLoad = file.toURI().toString();
-                    }
-                }
-                javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
-                if (!img.isError()) {
-                    circle.setFill(new javafx.scene.paint.ImagePattern(img));
-                    imageLoaded = true;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to load user image: " + e.getMessage());
-            }
-        }
-
-        // 2. Fallback: UI Avatars (Online)
-        if (!imageLoaded) {
-            try {
-                String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                        + (user.getPrenom() != null ? user.getPrenom() : "User");
-                String fallbackUrl = "https://ui-avatars.com/api/?name=" + name
-                        + "&background=random&color=fff&size=128";
-                circle.setFill(new javafx.scene.paint.ImagePattern(new javafx.scene.image.Image(fallbackUrl, true)));
-                imageLoaded = true;
-            } catch (Exception e) {
-                // 3. Final Fallback: Simple Color
-                circle.setFill(javafx.scene.paint.Color.web("#90A4AE"));
-                imageLoaded = false;
-            }
-        }
-        return imageLoaded;
+        return AvatarUtil.loadUserImageIntoCircle(circle, user);
     }
 
     /**
      * Loads a user's image (from URL, local path, or fallback) into an ImageView.
+     * Delegates to AvatarUtil for consistent avatar handling.
      */
     public static boolean loadUserImageIntoImageView(ImageView imageView, User user) {
-        if (imageView == null || user == null)
-            return false;
-
-        boolean imageLoaded = false;
-        String imgUrl = user.getImageUrl();
-
-        // 1. Try User Image from Path/URL
-        if (imgUrl != null && !imgUrl.isEmpty()) {
-            try {
-                String pathToLoad = imgUrl;
-                if (!imgUrl.startsWith("http") && !imgUrl.startsWith("file:")) {
-                    java.io.File file = new java.io.File(imgUrl);
-                    if (file.exists()) {
-                        pathToLoad = file.toURI().toString();
-                    }
-                }
-                javafx.scene.image.Image img = new javafx.scene.image.Image(pathToLoad, true);
-                if (!img.isError()) {
-                    imageView.setImage(img);
-                    imageLoaded = true;
-                }
-            } catch (Exception e) {
-                System.err.println("Failed to load user image: " + e.getMessage());
-            }
-        }
-
-        // 2. Fallback: UI Avatars (Online)
-        if (!imageLoaded) {
-            try {
-                String name = (user.getNom() != null ? user.getNom() : "U") + "+"
-                        + (user.getPrenom() != null ? user.getPrenom() : "User");
-                String fallbackUrl = "https://ui-avatars.com/api/?name=" + name
-                        + "&background=random&color=fff&size=128";
-                imageView.setImage(new javafx.scene.image.Image(fallbackUrl, true));
-                imageLoaded = true;
-            } catch (Exception e) {
-                imageLoaded = false;
-            }
-        }
-        return imageLoaded;
+        return AvatarUtil.loadUserImageIntoImageView(imageView, user, 100);
     }
 }

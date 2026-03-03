@@ -6,6 +6,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -13,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.shape.Circle;
@@ -22,6 +24,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import tn.esprit.farmai.models.Role;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.UserService;
+import tn.esprit.farmai.utils.AvatarUtil;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.NotificationManager;
 import tn.esprit.farmai.utils.SessionManager;
@@ -93,6 +96,16 @@ public class UserListController implements Initializable {
         updateNotificationBadge();
         NotificationManager.getNotifications().addListener((ListChangeListener<String>) c -> updateNotificationBadge());
 
+        // Auto-refresh sidebar when user profile changes
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform.runLater(() -> {
+                    updateUserSessionUI();
+                    userListView.refresh(); // Force ListView cells to re-render
+                });
+            }
+        });
+
         loadUsers();
     }
 
@@ -102,15 +115,17 @@ public class UserListController implements Initializable {
             if (welcomeLabel != null)
                 welcomeLabel.setText(currentUser.getFullName());
             if (userRoleLabel != null)
-                userRoleLabel.setText(currentUser.getRole().getDisplayName()); // Assuming Role has logic or plain text
+                userRoleLabel.setText(currentUser.getRole().getDisplayName());
 
-            // Update both sidebar and header avatars using ProfileManager
-            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(profileImageView, currentUser);
-            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(headerAvatarImageView, currentUser);
+            // AvatarUtil handles circular clipping internally — no manual clip needed
+            if (profileImageView != null) {
+                AvatarUtil.loadUserImageIntoImageView(profileImageView, currentUser, 40);
+            }
+            if (headerAvatarImageView != null) {
+                AvatarUtil.loadUserImageIntoImageView(headerAvatarImageView, currentUser, 40);
+            }
         }
     }
-
-    // Unified profile image loading via ProfileManager
 
     private void setupListView() {
         userListView.setCellFactory(param -> new ListCell<User>() {
@@ -124,15 +139,11 @@ public class UserListController implements Initializable {
                 } else {
                     HBox card = new HBox(15);
                     card.setAlignment(Pos.CENTER_LEFT);
-                    card.getStyleClass().add("content-card"); // Reuse card styling
+                    card.getStyleClass().add("content-card");
                     card.setStyle("-fx-padding: 15px; -fx-background-radius: 12px;");
 
-                    ImageView avatar = new ImageView();
-                    avatar.setFitWidth(50);
-                    avatar.setFitHeight(50);
-
-                    // Use ProfileManager for consistent image loading
-                    tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(avatar, user);
+                    // Create circular avatar using AvatarUtil
+                    StackPane avatar = AvatarUtil.createCircularAvatar(user, 50);
 
                     VBox infoBox = new VBox(5);
                     Label nameLabel = new Label(user.getFullName());
@@ -155,13 +166,12 @@ public class UserListController implements Initializable {
                     HBox actionsBox = new HBox(8);
                     actionsBox.setAlignment(Pos.CENTER_RIGHT);
 
-                    // Improved icons using Unicode symbols that are widely supported
-                    Button editBtn = new Button("\u270E"); // ✎ Lower Right Pencil
+                    Button editBtn = new Button("\u270E");
                     editBtn.getStyleClass().add("action-btn");
                     editBtn.setTooltip(new Tooltip("Modifier l'utilisateur"));
                     editBtn.setOnAction(e -> handleEditUser(user));
 
-                    Button deleteBtn = new Button("\uD83D\uDDD1"); // 🗑 Wastebasket
+                    Button deleteBtn = new Button("\uD83D\uDDD1");
                     deleteBtn.getStyleClass().add("danger-btn");
                     deleteBtn.setTooltip(new Tooltip("Supprimer l'utilisateur"));
                     deleteBtn.setOnAction(e -> handleDeleteUser(user));
@@ -312,13 +322,11 @@ public class UserListController implements Initializable {
         ComboBox<Role> roleComboBox = new ComboBox<>(FXCollections.observableArrayList(Role.values()));
         roleComboBox.setValue(user != null ? user.getRole() : Role.AGRICOLE);
 
-        ImageView imagePreview = new ImageView();
-        imagePreview.setFitWidth(80);
-        imagePreview.setFitHeight(80);
-        imagePreview.setPreserveRatio(true);
-        if (user != null) {
-            tn.esprit.farmai.utils.ProfileManager.loadUserImageIntoImageView(imagePreview, user);
-        }
+        // Create circular avatar preview using AvatarUtil
+        final StackPane[] imagePreviewContainer = new StackPane[1];
+        imagePreviewContainer[0] = (user != null)
+                ? AvatarUtil.createCircularAvatar(user, 80)
+                : AvatarUtil.createCircularAvatar(null, 80);
 
         Button uploadImageBtn = new Button("Choisir Photo");
         uploadImageBtn.getStyleClass().add("secondary-btn");
@@ -334,12 +342,22 @@ public class UserListController implements Initializable {
             if (selectedFile != null) {
                 selectedImagePath.setLength(0);
                 selectedImagePath.append(selectedFile.getAbsolutePath());
-                imagePreview.setImage(new Image(selectedFile.toURI().toString()));
+                // Update preview with new circular image
+                Image newImage = new Image(selectedFile.toURI().toString());
+                ImageView iv = new ImageView(newImage);
+                iv.setFitWidth(80);
+                iv.setFitHeight(80);
+                iv.setPreserveRatio(true);
+                Circle clip = new Circle(40, 40, 40);
+                iv.setClip(clip);
+                imagePreviewContainer[0].getChildren().clear();
+                imagePreviewContainer[0].getChildren().add(iv);
             }
         });
 
-        VBox imageBox = new VBox(5, imagePreview, uploadImageBtn);
+        VBox imageBox = new VBox(10, imagePreviewContainer[0], uploadImageBtn);
         imageBox.setAlignment(Pos.CENTER);
+        imageBox.setPadding(new Insets(0, 0, 10, 0));
 
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setHgap(10);
@@ -441,7 +459,6 @@ public class UserListController implements Initializable {
             try (Workbook workbook = new XSSFWorkbook()) {
                 Sheet sheet = workbook.createSheet("Utilisateurs");
 
-                // Create header row
                 Row headerRow = sheet.createRow(0);
                 String[] columns = { "ID", "Nom", "Prénom", "Email", "CIN", "Téléphone", "Rôle", "Adresse" };
 
@@ -456,7 +473,6 @@ public class UserListController implements Initializable {
                     cell.setCellStyle(headerCellStyle);
                 }
 
-                // Fill data
                 int rowNum = 1;
                 for (User user : userList) {
                     Row row = sheet.createRow(rowNum++);
@@ -470,12 +486,10 @@ public class UserListController implements Initializable {
                     row.createCell(7).setCellValue(user.getAdresse());
                 }
 
-                // Auto-size columns
                 for (int i = 0; i < columns.length; i++) {
                     sheet.autoSizeColumn(i);
                 }
 
-                // Write to file
                 try (FileOutputStream fileOut = new FileOutputStream(file)) {
                     workbook.write(fileOut);
                 }
@@ -497,7 +511,7 @@ public class UserListController implements Initializable {
         try {
             Stage stage = (Stage) userListView.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/UserLogView.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root, 1200, 800);
             stage.setScene(scene);
@@ -509,7 +523,6 @@ public class UserListController implements Initializable {
         }
     }
 
-    // --- Notification Logic ---
     private void updateNotificationBadge() {
         int count = NotificationManager.getUnreadCount();
         if (notificationBadge != null) {
@@ -531,12 +544,7 @@ public class UserListController implements Initializable {
             stage.initOwner(userListView.getScene().getWindow());
             stage.setTitle("Notifications");
             stage.setScene(new Scene(root));
-
-            // Re-apply common stylesheet if needed (usually view has it)
-
             stage.showAndWait();
-
-            // After close, update badge
             updateNotificationBadge();
         } catch (IOException e) {
             e.printStackTrace();

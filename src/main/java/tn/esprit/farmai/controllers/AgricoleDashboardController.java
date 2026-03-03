@@ -85,14 +85,23 @@ public class AgricoleDashboardController implements Initializable {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
         }
-        
+
+        // Auto-refresh sidebar when user profile changes (avatar, name, etc.)
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform
+                        .runLater(() -> ProfileManager.updateProfileUI(newUser, welcomeLabel, userNameLabel,
+                                sidebarAvatar, sidebarAvatarText));
+            }
+        });
+
         // Load dynamic statistics
         loadStatistics();
-        
+
         // Check for unread notifications
         checkNotifications();
     }
-    
+
     /**
      * Check for unread notifications and update badge + show alert
      */
@@ -101,11 +110,11 @@ public class AgricoleDashboardController implements Initializable {
         if (currentUser == null) {
             return;
         }
-        
+
         try {
             NotificationService notificationService = new NotificationService();
             int unreadCount = notificationService.countUnreadByUser(currentUser.getIdUser());
-            
+
             // Update notification badge
             final int count = unreadCount;
             Platform.runLater(() -> {
@@ -118,17 +127,17 @@ public class AgricoleDashboardController implements Initializable {
                     notificationCountLabel.setVisible(false);
                 }
             });
-            
+
             if (unreadCount > 0) {
-                LOGGER.log(Level.INFO, "User {0} has {1} unread notifications", 
-                        new Object[]{currentUser.getFullName(), unreadCount});
+                LOGGER.log(Level.INFO, "User {0} has {1} unread notifications",
+                        new Object[] { currentUser.getFullName(), unreadCount });
             }
-            
+
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Failed to check notifications for user " + currentUser.getIdUser(), e);
         }
     }
-    
+
     /**
      * Handle notification bell click - show notifications popup
      */
@@ -138,15 +147,15 @@ public class AgricoleDashboardController implements Initializable {
         if (currentUser == null) {
             return;
         }
-        
+
         try {
             NotificationService notificationService = new NotificationService();
             int unreadCount = notificationService.countUnreadByUser(currentUser.getIdUser());
-            
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Notifications");
             alert.setHeaderText("📬 Vos Notifications");
-            
+
             if (unreadCount == 0) {
                 alert.setContentText("Aucune nouvelle notification.");
             } else if (unreadCount == 1) {
@@ -156,9 +165,9 @@ public class AgricoleDashboardController implements Initializable {
                 alert.setContentText("Vous avez " + unreadCount + " notifications non lues.\n\n" +
                         "Rendez-vous dans 'Analyse IA' pour consulter vos nouvelles analyses.");
             }
-            
+
             alert.showAndWait();
-            
+
         } catch (SQLException e) {
             LOGGER.log(Level.WARNING, "Failed to load notifications", e);
         }
@@ -199,15 +208,18 @@ public class AgricoleDashboardController implements Initializable {
                 totalConseilsLabel.setText(String.valueOf(totalConseils));
             }
 
-            LOGGER.log(Level.INFO, "Agricole Statistics loaded: {0} fermes, {1} analyses, {2} conseils", 
-                    new Object[]{totalFermes, totalAnalyses, totalConseils});
+            LOGGER.log(Level.INFO, "Agricole Statistics loaded: {0} fermes, {1} analyses, {2} conseils",
+                    new Object[] { totalFermes, totalAnalyses, totalConseils });
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error loading agricole statistics", e);
             // Set default values on error
-            if (totalFermesLabel != null) totalFermesLabel.setText("-");
-            if (totalAnalysesLabel != null) totalAnalysesLabel.setText("-");
-            if (totalConseilsLabel != null) totalConseilsLabel.setText("-");
+            if (totalFermesLabel != null)
+                totalFermesLabel.setText("-");
+            if (totalAnalysesLabel != null)
+                totalAnalysesLabel.setText("-");
+            if (totalConseilsLabel != null)
+                totalConseilsLabel.setText("-");
         }
     }
 
@@ -264,13 +276,13 @@ public class AgricoleDashboardController implements Initializable {
                     getClass().getResource("/tn/esprit/farmai/views/mes-cultures.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
-            
+
             // Apply CSS
             java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }
-            
+
             stage.setScene(scene);
             stage.setTitle("FarmAI - Mes Cultures");
             stage.show();
@@ -312,7 +324,8 @@ public class AgricoleDashboardController implements Initializable {
 
     /**
      * Handle AI analysis (Consultation Fermier)
-     * Navigates to the fermier analyses view where the user can see expert analyses.
+     * Navigates to the fermier analyses view where the user can see expert
+     * analyses.
      */
     @FXML
     private void handleAIAnalysis() {
@@ -356,12 +369,12 @@ public class AgricoleDashboardController implements Initializable {
                     LOGGER.log(Level.INFO, "Successfully navigated to analyses view");
                 } catch (java.io.IOException e) {
                     LOGGER.log(Level.SEVERE, "Failed to load fermier-analyses.fxml", e);
-                    NavigationUtil.showError("Erreur de chargement", 
+                    NavigationUtil.showError("Erreur de chargement",
                             "Impossible de charger la vue des analyses.\n" +
-                            "Veuillez réessayer ou contacter le support.");
+                                    "Veuillez réessayer ou contacter le support.");
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Unexpected error loading analyses view", e);
-                    NavigationUtil.showError("Erreur", 
+                    NavigationUtil.showError("Erreur",
                             "Une erreur inattendue s'est produite: " + e.getMessage());
                 }
             });
@@ -369,7 +382,7 @@ public class AgricoleDashboardController implements Initializable {
             fadeOut.play();
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error during navigation to analyses", e);
-            NavigationUtil.showError("Erreur de navigation", 
+            NavigationUtil.showError("Erreur de navigation",
                     "Impossible de naviguer vers les analyses: " + e.getMessage());
         }
     }
@@ -386,13 +399,13 @@ public class AgricoleDashboardController implements Initializable {
                     getClass().getResource("/tn/esprit/farmai/views/agricole-statistics.fxml"));
             javafx.scene.Parent root = loader.load();
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
-            
+
             // Apply CSS
             java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
             if (cssUrl != null) {
                 scene.getStylesheets().add(cssUrl.toExternalForm());
             }
-            
+
             stage.setScene(scene);
             stage.setTitle("FarmAI - Statistiques");
             stage.show();
@@ -411,9 +424,9 @@ public class AgricoleDashboardController implements Initializable {
         try {
             Stage stage = (Stage) welcomeLabel.getScene().getWindow();
             javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
-                getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
+                    getClass().getResource("/tn/esprit/farmai/views/face-recognition-view.fxml"));
             javafx.scene.Parent root = loader.load();
-            
+
             javafx.scene.Scene scene = new javafx.scene.Scene(root, 800, 600);
             String cssPath = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css") != null
                     ? getClass().getResource("/tn/esprit/farmai/styles/dashboard.css").toExternalForm()
@@ -421,16 +434,16 @@ public class AgricoleDashboardController implements Initializable {
             if (cssPath != null) {
                 scene.getStylesheets().add(cssPath);
             }
-            
+
             Stage faceStage = new Stage();
             faceStage.initOwner(stage);
             faceStage.setTitle("FarmAI - Enregistrement Visage");
             faceStage.setScene(scene);
-            
+
             // Cleanup camera when window closes
             FaceRecognitionController controller = loader.getController();
             faceStage.setOnCloseRequest(e -> controller.cleanup());
-            
+
             faceStage.show();
         } catch (Exception e) {
             NavigationUtil.showError("Erreur", "Impossible d'ouvrir la reconnaissance faciale: " + e.getMessage());

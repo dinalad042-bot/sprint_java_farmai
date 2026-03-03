@@ -72,7 +72,16 @@ public class FournisseurDashboardController implements Initializable {
                 userRoleLabel.setText(currentUser.getRole().getDisplayName());
             }
         }
-        
+
+        // Auto-refresh sidebar when user profile changes (avatar, name, etc.)
+        SessionManager.getInstance().currentUserProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                javafx.application.Platform
+                        .runLater(() -> ProfileManager.updateProfileUI(newUser, welcomeLabel, userNameLabel,
+                                sidebarAvatar, sidebarAvatarText));
+            }
+        });
+
         // Load dynamic statistics
         loadStatistics();
     }
@@ -100,15 +109,18 @@ public class FournisseurDashboardController implements Initializable {
                 totalConseilsLabel.setText(String.valueOf(totalConseils));
             }
 
-            LOGGER.log(Level.INFO, "Fournisseur Statistics loaded: {0} analyses, {1} fermes, {2} conseils", 
-                    new Object[]{totalAnalyses, totalFermes, totalConseils});
+            LOGGER.log(Level.INFO, "Fournisseur Statistics loaded: {0} analyses, {1} fermes, {2} conseils",
+                    new Object[] { totalAnalyses, totalFermes, totalConseils });
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error loading fournisseur statistics", e);
             // Set default values on error
-            if (totalAnalysesLabel != null) totalAnalysesLabel.setText("-");
-            if (totalFermesLabel != null) totalFermesLabel.setText("-");
-            if (totalConseilsLabel != null) totalConseilsLabel.setText("-");
+            if (totalAnalysesLabel != null)
+                totalAnalysesLabel.setText("-");
+            if (totalFermesLabel != null)
+                totalFermesLabel.setText("-");
+            if (totalConseilsLabel != null)
+                totalConseilsLabel.setText("-");
         }
     }
 
