@@ -3,7 +3,7 @@
 
 ---
 
-## 1. Architecture & Emplacement du Code
+## 1. Architecture & Emplacement du Codeg
 
 ### StruPackages
 
