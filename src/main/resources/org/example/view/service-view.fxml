@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.ServiceController"
+            fitToWidth="true"
+            fitToHeight="true"
+            stylesheets="@/styles/erp-modern.css"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="20"
+          prefWidth="1000"
+          style="-fx-background-color:#0B0E14;">
+
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <!-- FORM CARD -->
+        <VBox spacing="0" styleClass="card">
+            <HBox styleClass="card-header">
+                <Label text="📦 Gestion des Services"/>
+            </HBox>
+
+            <VBox spacing="15" style="-fx-padding: 20px;">
+                <GridPane hgap="15" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="300"/>
+                        <ColumnConstraints minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="300"/>
+                    </columnConstraints>
+
+                    <Label text="Nom du service" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="fieldNom" promptText="ex: Fertilisation" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="Prix (€)" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="fieldPrix" promptText="0.00" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+
+                    <Label text="Stock" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="fieldStock" promptText="0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="Seuil critique" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="fieldSeuilCritique" promptText="0" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+
+                    <Label text="Description" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.valignment="TOP"/>
+                    <TextArea fx:id="fieldDescription"
+                              promptText="Description détaillée du service..."
+                              wrapText="true"
+                              prefRowCount="4"
+                              GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
+                </GridPane>
+
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button text="➕ Nouveau" onAction="#nouveau" styleClass="secondary"/>
+                    <Button text="💾 Enregistrer" onAction="#enregistrer" defaultButton="true"/>
+                    <Button text="✏️ Modifier" onAction="#modifier"/>
+                    <Button text="🗑️ Supprimer" onAction="#supprimer" styleClass="danger"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <!-- TABLE CARD -->
+        <VBox spacing="0" styleClass="card" VBox.vgrow="ALWAYS">
+            <HBox styleClass="card-header">
+                <Label text="📊 Liste des Services"/>
+            </HBox>
+
+            <VBox style="-fx-padding: 20px;" VBox.vgrow="ALWAYS">
+                <TableView fx:id="tableService"
+                           VBox.vgrow="ALWAYS"
+                           prefHeight="400"
+                           minHeight="350">
+                    <columns>
+                        <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+                        <TableColumn fx:id="colNom" text="Nom du service" prefWidth="220"/>
+                        <TableColumn fx:id="colPrix" text="Prix (€)" prefWidth="140"/>
+                        <TableColumn fx:id="colStock" text="Stock" prefWidth="140"/>
+                        <TableColumn fx:id="colSeuil" text="Seuil critique" prefWidth="160"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+
+        <!-- Add some bottom padding -->
+        <Region prefHeight="20" />
+
+    </VBox>
+</ScrollPane>

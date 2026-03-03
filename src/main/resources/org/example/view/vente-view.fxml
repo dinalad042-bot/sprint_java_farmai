@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.controller.VenteController"
+            fitToWidth="true"
+            fitToHeight="true"
+            stylesheets="@/styles/erp-modern.css"
+            style="-fx-background-color: transparent; -fx-background: transparent;">
+
+    <VBox spacing="20" prefWidth="1000" style="-fx-background-color:#0B0E14;">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <!-- VENTE INFO CARD -->
+        <VBox spacing="0" styleClass="card">
+            <HBox styleClass="card-header">
+                <Label text="🧾 Nouvelle Vente"/>
+            </HBox>
+
+            <VBox spacing="15" style="-fx-padding: 20px;">
+                <GridPane hgap="15" vgap="15">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                        <ColumnConstraints minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="Date de vente" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <DatePicker fx:id="dateVente" GridPane.columnIndex="1" GridPane.rowIndex="0" prefWidth="250"/>
+
+                    <Label text="Total" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="fieldTotal"
+                               editable="false"
+                               promptText="0.00 €"
+                               styleClass="amount-field"
+                               GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                </GridPane>
+
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button text="➕ Nouvelle vente" onAction="#nouveau" styleClass="secondary"/>
+                    <Button text="💾 Enregistrer" onAction="#enregistrer" defaultButton="true"/>
+                    <Button text="🗑️ Supprimer" onAction="#supprimer" styleClass="danger"/>
+
+                    <ComboBox fx:id="comboCurrency" promptText="Currency" prefWidth="140"/>
+                    <Button text="💱 Convert" onAction="#convertTotal" styleClass="secondary"/>
+                </HBox>
+
+                <Label fx:id="labelConverted"
+                       text="Converted: -"
+                       style="-fx-text-fill:#C9D1D9; -fx-font-size:14px;"/>
+            </VBox>
+        </VBox>
+
+        <!-- LINE EDITOR CARD -->
+        <VBox spacing="0" styleClass="card">
+            <HBox styleClass="card-header">
+                <Label text="📝 Détails de la vente"/>
+            </HBox>
+
+            <VBox spacing="15" style="-fx-padding: 20px;">
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <ComboBox fx:id="comboService" promptText="Sélectionner un service" prefWidth="300"/>
+                    <Label text="Quantité:" styleClass="label-title"/>
+                    <TextField fx:id="fieldQuantite" promptText="0" prefWidth="120"/>
+                    <Label text="Prix unitaire:" styleClass="label-title"/>
+                    <TextField fx:id="fieldPrixUnitaire" promptText="0.00 €" prefWidth="150"/>
+                    <Button text="➕ Ajouter" onAction="#ajouterLigne" defaultButton="true"/>
+                    <Button text="✖️ Retirer" onAction="#retirerLigne" styleClass="secondary"/>
+                </HBox>
+
+                <TableView fx:id="tableLignes" VBox.vgrow="ALWAYS" prefHeight="350" minHeight="300">
+                    <columns>
+                        <TableColumn fx:id="colLigneService" text="Service" prefWidth="250"/>
+                        <TableColumn fx:id="colLigneQuantite" text="Quantité" prefWidth="150"/>
+                        <TableColumn fx:id="colLignePrix" text="Prix unitaire" prefWidth="180"/>
+                        <TableColumn fx:id="colLigneSousTotal" text="Sous-total" prefWidth="180"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+
+        <!-- HISTORY CARD -->
+        <VBox spacing="0" styleClass="card" VBox.vgrow="ALWAYS">
+            <HBox styleClass="card-header">
+                <Label text="📋 Historique des ventes"/>
+            </HBox>
+
+            <VBox style="-fx-padding: 20px;" VBox.vgrow="ALWAYS">
+                <TableView fx:id="tableVentes" VBox.vgrow="ALWAYS" prefHeight="350" minHeight="300">
+                    <columns>
+                        <TableColumn fx:id="colVenteId" text="N° Vente" prefWidth="100"/>
+                        <TableColumn fx:id="colVenteDate" text="Date" prefWidth="200"/>
+                        <TableColumn fx:id="colVenteTotal" text="Total (€)" prefWidth="180"/>
+                    </columns>
+                </TableView>
+            </VBox>
+        </VBox>
+
+        <Region prefHeight="20"/>
+    </VBox>
+</ScrollPane>

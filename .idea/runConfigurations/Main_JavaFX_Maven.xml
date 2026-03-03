@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Main (JavaFX Maven)" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <option name="myGeneralSettings" />
+    </MavenSettings>
+    <RunnerSettings>
+      <MavenRunnerSettings>
+        <option name="jreName" />
+        <option name="vmOptions" />
+      </MavenRunnerSettings>
+    </RunnerSettings>
+    <RunnerSettings>
+      <option name="mavenGoal" value="clean javafx:run" />
+      <option name="mavenOptions" />
+    </RunnerSettings>
+    <method v="2" />
+  </configuration>
+</component>

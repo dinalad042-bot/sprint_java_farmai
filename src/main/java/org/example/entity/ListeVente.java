@@ -1,0 +1,77 @@
+package org.example.entity;
+
+/**
+ * Entité ListeAchat - Ligne d'un achat (table associative N:M).
+ */
+public class ListeVente {
+    private int id;
+    private int idVente;
+    private int idService;
+    private int quantite;
+    private double prixUnitaire;
+
+    // Références optionnelles pour affichage
+    private String nomService;
+
+    public ListeVente() {
+    }
+
+    public ListeVente(int idVente, int idService, int quantite, double prixUnitaire) {
+        this.idVente = idVente;
+        this.idService = idService;
+        this.quantite = quantite;
+        this.prixUnitaire = prixUnitaire;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getIdVente() {
+        return idVente;
+    }
+
+    public void setIdVente(int idVente) {
+        this.idVente = idVente;
+    }
+
+    public int getIdService() {
+        return idService;
+    }
+
+    public void setIdService(int idService) {
+        this.idService = idService;
+    }
+
+    public int getQuantite() {
+        return quantite;
+    }
+
+    public void setQuantite(int quantite) {
+        this.quantite = quantite;
+    }
+
+    public double getPrixUnitaire() {
+        return prixUnitaire;
+    }
+
+    public void setPrixUnitaire(double prixUnitaire) {
+        this.prixUnitaire = prixUnitaire;
+    }
+
+    public double getSousTotal() {
+        return quantite * prixUnitaire;
+    }
+
+    public String getNomService() {
+        return nomService;
+    }
+
+    public void setNomService(String nomService) {
+        this.nomService = nomService;
+    }
+}
