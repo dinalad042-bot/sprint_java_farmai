@@ -5,7 +5,7 @@
 
 ## 1. Architecture & Emplacement du Code
 
-### Structure des Packages
+### StruPackages
 
 | Package | Fichier | Role | Ligne de Reference |
 |---------|---------|------|-------------------|
