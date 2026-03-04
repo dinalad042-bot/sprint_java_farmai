@@ -25,6 +25,7 @@ import tn.esprit.farmai.models.DiagnosisResult;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
 import tn.esprit.farmai.services.ExpertVisionService;
+import tn.esprit.farmai.services.IntelligentReportService;
 import tn.esprit.farmai.services.NotificationService;
 import tn.esprit.farmai.utils.AlertUtils;
 import tn.esprit.farmai.utils.AnalyseDialog;
@@ -941,10 +942,10 @@ public class GestionAnalysesController implements Initializable {
      */
     private void setupActionsColumn() {
         colActions.setCellFactory(param -> new TableCell<>() {
-            private final Button editButton = new Button("Edit");
-            private final Button deleteButton = new Button("Del");
-            private final Button viewButton = new Button("View");
-            private final HBox pane = new HBox(5, editButton, viewButton, deleteButton);
+            private final Button editButton = new Button("✎");
+            private final Button deleteButton = new Button("🗑");
+            private final Button viewButton = new Button("👁");
+            private final HBox pane = new HBox(5, viewButton, editButton, deleteButton);
 
             {
                 pane.setAlignment(Pos.CENTER);
@@ -954,6 +955,11 @@ public class GestionAnalysesController implements Initializable {
                 editButton.getStyleClass().add("btn-action");
                 viewButton.getStyleClass().add("btn-success");
                 deleteButton.getStyleClass().add("btn-danger");
+                
+                // Add tooltips
+                editButton.setTooltip(new Tooltip("Modifier l'analyse"));
+                viewButton.setTooltip(new Tooltip("Voir les détails"));
+                deleteButton.setTooltip(new Tooltip("Supprimer"));
 
                 editButton.setOnAction(event -> {
                     Analyse analyse = getTableRow().getItem();
@@ -1155,11 +1161,182 @@ public class GestionAnalysesController implements Initializable {
     }
 
     /**
-     * Handle generate report navigation from sidebar
+     * NEW: Handle Generate Report - Generate intelligent analysis report with AI summary
      */
     @FXML
     private void handleGenerateReport() {
-        NavigationUtil.showInfo("Info", "Fonctionnalité de rapport en cours de développement.");
+        // Show simple dialog to select farm ID
+        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog("1");
+        dialog.setTitle("Generer Rapport");
+        dialog.setHeaderText("Rapport Intelligent d'Analyse");
+        dialog.setContentText("ID de la ferme:");
+
+        dialog.showAndWait().ifPresent(farmIdStr -> {
+            try {
+                int farmId = Integer.parseInt(farmIdStr.trim());
+                generateReportForFarm(farmId);
+            } catch (NumberFormatException e) {
+                NavigationUtil.showError("Erreur", "ID de ferme invalide.");
+            }
+        });
+    }
+
+    /**
+     * Generate report for specified farm with progress updates
+     */
+    private void generateReportForFarm(int farmId) {
+        // Show progress dialog with progress bar
+        javafx.scene.control.Dialog<Void> progressDialog = new javafx.scene.control.Dialog<>();
+        progressDialog.setTitle("Generation du Rapport");
+        progressDialog.setHeaderText("Creation du rapport intelligent en cours...");
+
+        // Progress bar
+        javafx.scene.control.ProgressBar progressBar = new javafx.scene.control.ProgressBar(0);
+        progressBar.setPrefWidth(300);
+        progressBar.setStyle("-fx-accent: #4CAF50;");
+
+        // Status label that shows current step
+        javafx.scene.control.Label statusLabel = new javafx.scene.control.Label("Initialisation...");
+        statusLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #555;");
+
+        // Percentage label
+        javafx.scene.control.Label percentLabel = new javafx.scene.control.Label("0%");
+        percentLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+
+        javafx.scene.layout.VBox dialogContent = new javafx.scene.layout.VBox(15,
+                statusLabel,
+                progressBar,
+                percentLabel);
+        dialogContent.setAlignment(javafx.geometry.Pos.CENTER);
+        dialogContent.setPadding(new javafx.geometry.Insets(25));
+
+        progressDialog.getDialogPane().setContent(dialogContent);
+        progressDialog.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.CANCEL);
+
+        // Progress callback to update UI
+        IntelligentReportService.ProgressCallback progressCallback = (step, percent) -> {
+            javafx.application.Platform.runLater(() -> {
+                statusLabel.setText(step);
+                progressBar.setProgress(percent / 100.0);
+                percentLabel.setText(percent + "%");
+            });
+        };
+
+        // Store result path for use after thread completes
+        final String[] resultPath = new String[1];
+        final IntelligentReportService.ReportException[] error = new IntelligentReportService.ReportException[1];
+
+        // Run report generation in background
+        Thread reportThread = new Thread(() -> {
+            try {
+                IntelligentReportService reportService = new IntelligentReportService();
+                resultPath[0] = reportService.generateFarmReport(farmId, null, null, progressCallback);
+
+                javafx.application.Platform.runLater(() -> {
+                    progressDialog.close();
+                    showReportSuccessDialog(resultPath[0]);
+                });
+
+            } catch (IntelligentReportService.ReportException e) {
+                error[0] = e;
+                javafx.application.Platform.runLater(() -> {
+                    progressDialog.close();
+                    NavigationUtil.showError("Erreur de rapport", e.getMessage());
+                });
+            } catch (Exception e) {
+                javafx.application.Platform.runLater(() -> {
+                    progressDialog.close();
+                    NavigationUtil.showError("Erreur", "Une erreur s'est produite: " + e.getMessage());
+                    e.printStackTrace();
+                });
+            }
+        });
+
+        reportThread.setDaemon(true);
+        reportThread.start();
+
+        progressDialog.showAndWait();
+    }
+
+    /**
+     * Show report generation success dialog with clear file location and access buttons
+     */
+    private void showReportSuccessDialog(String pdfPath) {
+        javafx.scene.control.Dialog<javafx.scene.control.ButtonType> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("✅ Rapport Genere avec Succes!");
+        dialog.setHeaderText(null);
+        dialog.setResizable(true);
+
+        javafx.scene.layout.VBox content = new javafx.scene.layout.VBox(15);
+        content.setPadding(new javafx.geometry.Insets(25));
+        content.setPrefWidth(550);
+        content.setMinHeight(300);
+        content.setStyle("-fx-background-color: #E8F5E9;");
+
+        // Success message
+        javafx.scene.control.Label successLabel = new javafx.scene.control.Label("📄 Votre rapport a ete genere!");
+        successLabel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2E7D32;");
+
+        // File location section
+        javafx.scene.control.Label locationTitle = new javafx.scene.control.Label("📁 Emplacement du fichier:");
+        locationTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #333;");
+
+        File pdfFile = new File(pdfPath);
+        javafx.scene.control.TextField pathField = new javafx.scene.control.TextField(pdfPath);
+        pathField.setEditable(false);
+        pathField.setPrefWidth(480);
+        pathField.setMinWidth(400);
+
+        javafx.scene.control.Label filenameLabel = new javafx.scene.control.Label(
+                "Nom: " + pdfFile.getName());
+        filenameLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #555;");
+
+        // Action buttons
+        javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox(15);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonBox.setPadding(new javafx.geometry.Insets(20, 0, 0, 0));
+
+        // Open PDF button (primary)
+        javafx.scene.control.Button openPdfBtn = new javafx.scene.control.Button("📖 Ouvrir le PDF");
+        openPdfBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+        openPdfBtn.setPrefSize(150, 40);
+        openPdfBtn.setOnAction(e -> {
+            try {
+                java.awt.Desktop.getDesktop().open(pdfFile);
+                dialog.close();
+            } catch (IOException ex) {
+                NavigationUtil.showError("Erreur", "Impossible d'ouvrir le PDF: " + ex.getMessage());
+            }
+        });
+
+        // Open folder button
+        javafx.scene.control.Button openFolderBtn = new javafx.scene.control.Button("📂 Ouvrir Dossier");
+        openFolderBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;");
+        openFolderBtn.setPrefSize(130, 40);
+        openFolderBtn.setOnAction(e -> {
+            try {
+                java.awt.Desktop.getDesktop().open(pdfFile.getParentFile());
+            } catch (IOException ex) {
+                NavigationUtil.showError("Erreur", "Impossible d'ouvrir le dossier: " + ex.getMessage());
+            }
+        });
+
+        buttonBox.getChildren().addAll(openPdfBtn, openFolderBtn);
+
+        content.getChildren().addAll(
+                successLabel,
+                new javafx.scene.control.Separator(),
+                locationTitle,
+                pathField,
+                filenameLabel,
+                new javafx.scene.control.Separator(),
+                buttonBox);
+
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setPrefSize(600, 400);
+        dialog.getDialogPane().getButtonTypes().add(javafx.scene.control.ButtonType.OK);
+
+        dialog.showAndWait();
     }
 
     /**
@@ -1315,21 +1492,47 @@ public class GestionAnalysesController implements Initializable {
     }
 
     private void handleViewAnalyse(Analyse analyse) {
-        // Railway Track: View-only dialog for Analyse entity
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("View Analysis");
-        alert.setHeaderText("Analysis ID: " + analyse.getIdAnalyse());
-
-        StringBuilder content = new StringBuilder();
-        content.append("Date: ").append(analyse.getDateAnalyse().format(DATE_FORMATTER)).append("\n\n");
-        content.append("Technical Result:\n").append(analyse.getResultatTechnique()).append("\n\n");
-        content.append("Technician ID: ").append(analyse.getIdTechnicien()).append("\n");
-        content.append("Farm ID: ").append(analyse.getIdFerme()).append("\n");
-        content.append("Image: ").append(analyse.getImageUrl() != null ? analyse.getImageUrl() : "No image");
-
-        alert.setContentText(content.toString());
-        alert.getDialogPane().setExpandableContent(new TextArea(analyse.getResultatTechnique()));
-        alert.showAndWait();
+        // Railway Track: View-only dialog for Analyse entity with full details
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.setTitle("Détails de l'Analyse");
+        dialog.setHeaderText("Analyse ID: " + analyse.getIdAnalyse());
+        dialog.setResizable(true);
+        
+        VBox content = new VBox(15);
+        content.setPadding(new javafx.geometry.Insets(20));
+        content.setPrefWidth(600);
+        content.setMinHeight(400);
+        
+        // Date
+        Label dateLabel = new Label("Date: " + analyse.getDateAnalyse().format(DATE_FORMATTER));
+        dateLabel.setStyle("-fx-font-size: 14px;");
+        
+        // Farm and Technician info
+        HBox infoBox = new HBox(20);
+        Label farmLabel = new Label("Ferme: #" + analyse.getIdFerme());
+        Label techLabel = new Label("Technicien: #" + analyse.getIdTechnicien());
+        infoBox.getChildren().addAll(farmLabel, techLabel);
+        
+        // Image info
+        Label imageLabel = new Label("Image: " + (analyse.getImageUrl() != null ? analyse.getImageUrl() : "Aucune image"));
+        imageLabel.setStyle("-fx-text-fill: #78909C;");
+        
+        // Technical Result section
+        Label resultTitle = new Label("Résultat technique:");
+        resultTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        
+        TextArea resultArea = new TextArea(analyse.getResultatTechnique());
+        resultArea.setWrapText(true);
+        resultArea.setEditable(false);
+        resultArea.setPrefRowCount(15);
+        resultArea.setStyle("-fx-font-family: 'Segoe UI'; -fx-font-size: 13px;");
+        VBox.setVgrow(resultArea, javafx.scene.layout.Priority.ALWAYS);
+        
+        content.getChildren().addAll(dateLabel, infoBox, imageLabel, new Separator(), resultTitle, resultArea);
+        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setPrefSize(650, 500);
+        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+        dialog.showAndWait();
     }
 
     private void handleDeleteAnalyse(Analyse analyse) {

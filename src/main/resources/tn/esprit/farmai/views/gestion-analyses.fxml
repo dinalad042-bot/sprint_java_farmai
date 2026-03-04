@@ -116,7 +116,7 @@
                         <TableColumn fx:id="colTechnicien" text="Technicien" prefWidth="100"/>
                         <TableColumn fx:id="colFerme" text="Ferme" prefWidth="80"/>
                         <TableColumn fx:id="colImage" text="Image" prefWidth="100"/>
-                        <TableColumn fx:id="colActions" text="Actions" prefWidth="120"/>
+                        <TableColumn fx:id="colActions" text="Actions" prefWidth="150"/>
                     </columns>
                     <placeholder>
                         <Label text="Aucune analyse trouvée" styleClass="table-placeholder"/>

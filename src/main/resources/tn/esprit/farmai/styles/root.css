@@ -156,12 +156,14 @@
 .btn-danger {
     -fx-background-color: var(--error-bg);
     -fx-text-fill: var(--error);
-    -fx-font-size: 13px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 8px 16px;
+    -fx-padding: 8px 12px;
     -fx-background-radius: var(--radius-sm);
     -fx-cursor: hand;
     -fx-border-color: transparent;
+    -fx-min-width: 36px;
+    -fx-min-height: 32px;
 }
 
 .btn-danger:hover {
@@ -173,11 +175,13 @@
 .btn-action {
     -fx-background-color: var(--info-bg);
     -fx-text-fill: var(--info);
-    -fx-font-size: 11px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 4px 8px;
+    -fx-padding: 8px 12px;
     -fx-background-radius: var(--radius-sm);
     -fx-cursor: hand;
+    -fx-min-width: 36px;
+    -fx-min-height: 32px;
 }
 
 .btn-action:hover {
@@ -189,11 +193,13 @@
 .btn-success {
     -fx-background-color: var(--success-bg);
     -fx-text-fill: var(--success);
-    -fx-font-size: 11px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 4px 8px;
+    -fx-padding: 8px 12px;
     -fx-background-radius: var(--radius-sm);
     -fx-cursor: hand;
+    -fx-min-width: 36px;
+    -fx-min-height: 32px;
 }
 
 .btn-success:hover {

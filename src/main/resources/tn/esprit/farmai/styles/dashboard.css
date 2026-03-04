@@ -676,3 +676,21 @@
   
 /* Circular clip is applied programmatically via AvatarUtil.applyCircularClip() */  
 /* This ensures the avatar is always perfectly round regardless of image aspect ratio */ 
+
+
+/* ============================================
+   TABLE IMAGE PREVIEW - Circular thumbnails
+   ============================================ */
+.table-image-preview {
+    -fx-fit-width: 40px;
+    -fx-fit-height: 40px;
+    -fx-preserve-ratio: true;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.table-image-preview:hover {
+    -fx-scale-x: 1.15;
+    -fx-scale-y: 1.15;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(76,175,80,0.4), 5, 0, 0, 2);
+}

@@ -11,16 +11,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.geometry.Pos;
+import javafx.scene.layout.HBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
+import tn.esprit.farmai.utils.AvatarUtil;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
 
+import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
@@ -139,38 +143,53 @@ public class FermierAnalysesController implements Initializable {
         colTechnicien.setCellValueFactory(cellData -> 
             new SimpleStringProperty("Tech #" + cellData.getValue().getIdTechnicien()));
 
-        // Image column with thumbnail
-        colImage.setCellFactory(column -> new TableCell<Analyse, String>() {
-            private final ImageView imageView = new ImageView();
-            {
-                imageView.setFitWidth(50);
-                imageView.setFitHeight(50);
-                imageView.setPreserveRatio(true);
-            }
+        // Image column - cell value factory (extracts imageUrl from Analyse object)
+        colImage.setCellValueFactory(cellData -> {
+            String imageUrl = cellData.getValue().getImageUrl();
+            return new SimpleStringProperty(imageUrl);
+        });
 
+        // Image column - cell factory (renders the thumbnail)
+        colImage.setCellFactory(col -> new TableCell<Analyse, String>() {
             @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+            protected void updateItem(String imageUrl, boolean empty) {
+                super.updateItem(imageUrl, empty);
+                if (empty) {
                     setGraphic(null);
-                    setText("-");
-                } else {
-                    Analyse analyse = getTableRow().getItem();
-                    String imageUrl = analyse.getImageUrl();
-                    if (imageUrl != null && !imageUrl.isEmpty()) {
-                        try {
-                            Image image = new Image(imageUrl, 50, 50, true, true, true);
+                } else if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+                    try {
+                        // Create fresh ImageView for each cell
+                        ImageView imageView = new ImageView();
+                        imageView.setFitWidth(40);
+                        imageView.setFitHeight(40);
+                        imageView.setPreserveRatio(true);
+                        imageView.getStyleClass().add("table-image-preview");
+                        
+                        // Apply circular clip for consistent look with Expert UI
+                        AvatarUtil.applyCircularClip(imageView, 40);
+
+                        // Load image - check if local file exists first
+                        File imageFile = new File(imageUrl);
+                        if (imageFile.exists()) {
+                            Image image = new Image(imageFile.toURI().toString());
                             imageView.setImage(image);
-                            setGraphic(imageView);
-                            setText(null);
-                        } catch (Exception e) {
-                            setText("🖼️");
-                            setGraphic(null);
+                        } else {
+                            imageView.setImage(new Image("file:" + imageUrl, true));
                         }
-                    } else {
-                        setText("-");
-                        setGraphic(null);
+
+                        // Center in HBox for proper alignment
+                        HBox hbox = new HBox(imageView);
+                        hbox.setAlignment(Pos.CENTER);
+                        setGraphic(hbox);
+                    } catch (Exception e) {
+                        Label label = new Label("[IMG]");
+                        label.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 11px; -fx-font-weight: bold;");
+                        setGraphic(label);
                     }
+                } else {
+                    Label label = new Label("[NO IMG]");
+                    label.setStyle("-fx-text-fill: #9E9E9E; -fx-font-size: 11px;");
+                    setGraphic(label);
                 }
             }
         });
