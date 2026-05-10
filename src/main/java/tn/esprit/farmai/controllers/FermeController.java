@@ -24,6 +24,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class FermeController implements Initializable {
@@ -129,11 +132,34 @@ public class FermeController implements Initializable {
     // ==========================================
     // MÉTHODES CRUD STANDARDS
     // ==========================================
+
+    private int getCurrentUserId() {
+        if (SessionManager.getInstance().isLoggedIn()) {
+            return SessionManager.getInstance().getCurrentUser().getIdUser();
+        }
+        return 0;
+    }
+
+    private List<Ferme> getUserFermes() {
+        try {
+            int userId = getCurrentUserId();
+            if (userId == 0) return new ArrayList<>();
+            return sf.findByFermier(userId);
+        } catch (SQLException e) { e.printStackTrace(); return new ArrayList<>(); }
+    }
+
     @FXML
     private void handleRecherche() {
         String query = tfRecherche.getText().trim();
         try {
-            tvFermes.setItems(FXCollections.observableArrayList(query.isEmpty() ? sf.selectALL() : sf.findByLieu(query)));
+            List<Ferme> userFermes = getUserFermes();
+            if (!query.isEmpty()) {
+                userFermes = userFermes.stream()
+                    .filter(f -> f.getNomFerme().toLowerCase().contains(query.toLowerCase()) ||
+                                 f.getLieu().toLowerCase().contains(query.toLowerCase()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            tvFermes.setItems(FXCollections.observableArrayList(userFermes));
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -191,7 +217,7 @@ public class FermeController implements Initializable {
 
     private void rafraichir() {
         try {
-            tvFermes.setItems(FXCollections.observableArrayList(sf.selectALL()));
+            tvFermes.setItems(FXCollections.observableArrayList(getUserFermes()));
         } catch (Exception e) { e.printStackTrace(); }
     }
 
