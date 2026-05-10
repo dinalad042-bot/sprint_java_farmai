@@ -89,4 +89,28 @@ public class ServiceAnimaux implements CRUD<Animaux> {
         }
         return list;
     }
+
+    public List<Animaux> findByFermes(List<Integer> fermeIds) throws SQLException {
+        if (fermeIds == null || fermeIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Animaux> list = new ArrayList<>();
+        String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
+        String req = "SELECT * FROM `animaux` WHERE `id_ferme` IN (" + placeholders + ")";
+        PreparedStatement ps = cnx.prepareStatement(req);
+        for (int i = 0; i < fermeIds.size(); i++) {
+            ps.setInt(i + 1, fermeIds.get(i));
+        }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new Animaux(
+                rs.getInt("id_animal"),
+                rs.getString("espece"),
+                rs.getString("etat_sante"),
+                rs.getDate("date_naissance"),
+                rs.getInt("id_ferme")
+            ));
+        }
+        return list;
+    }
 }

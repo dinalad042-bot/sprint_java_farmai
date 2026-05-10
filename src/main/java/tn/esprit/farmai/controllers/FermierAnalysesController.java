@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import tn.esprit.farmai.models.Analyse;
 import tn.esprit.farmai.models.User;
 import tn.esprit.farmai.services.AnalyseService;
+import tn.esprit.farmai.services.FermeService;
 import tn.esprit.farmai.utils.AvatarUtil;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
@@ -28,6 +29,7 @@ import java.io.File;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -220,13 +222,32 @@ public class FermierAnalysesController implements Initializable {
     }
 
     /**
-     * Load analyses from database
+     * Load analyses from database - filtered by current user's farms
      */
     private void loadAnalyses() {
         try {
-            analysesList = FXCollections.observableArrayList(analyseService.selectALL());
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                analysesList = FXCollections.observableArrayList();
+                analysesTableView.setItems(analysesList);
+                return;
+            }
+            int userId = currentUser.getIdUser();
+
+            // Get user's own ferme IDs
+            FermeService fermeService = new FermeService();
+            List<Integer> userFermeIds = fermeService.getFermeIdsByFermier(userId);
+
+            if (userFermeIds.isEmpty()) {
+                analysesList = FXCollections.observableArrayList();
+            } else {
+                // Load only analyses belonging to user's farms
+                analysesList = FXCollections.observableArrayList(
+                    analyseService.findByFermes(userFermeIds)
+                );
+            }
             analysesTableView.setItems(analysesList);
-            LOGGER.log(Level.INFO, "Loaded {0} analyses", analysesList.size());
+            LOGGER.log(Level.INFO, "Loaded {0} analyses for user {1}", new Object[]{analysesList.size(), currentUser.getFullName()});
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Failed to load analyses", e);
             NavigationUtil.showError("Erreur", "Impossible de charger les analyses: " + e.getMessage());

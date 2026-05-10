@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * Ferme entity representing a farm in the FarmAI application.
- * Linked to a User (fermier) via idFermier.
+ * Linked to a User (fermier) via id_user.
  */
 public class Ferme {
 
@@ -12,7 +12,7 @@ public class Ferme {
     private String nomFerme;
     private String lieu;
     private double surface; // en hectares
-    private int idFermier; // FK to User
+    private int idFermier; // FK to User (id_user column in DB)
 
     // Default constructor
     public Ferme() {}

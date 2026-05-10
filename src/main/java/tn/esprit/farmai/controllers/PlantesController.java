@@ -19,6 +19,8 @@ import tn.esprit.farmai.utils.NavigationUtil;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
@@ -200,7 +202,8 @@ planteSelectionnee.getNomEspece(), totalGlobalUSD));
 
 private void chargerFermes() {
 try {
-cbFerme.setItems(FXCollections.observableArrayList(sf.selectALL()));
+int userId = tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser();
+cbFerme.setItems(FXCollections.observableArrayList(sf.findByFermier(userId)));
 cbFerme.setConverter(new StringConverter<Ferme>() {
 @Override public String toString(Ferme f) { return (f != null) ? f.getNomFerme() : ""; }
 @Override public Ferme fromString(String s) { return null; }
@@ -254,9 +257,25 @@ tvPlantes.refresh();
         }
     }
 
+private List<Integer> getUserFermeIds() {
+try {
+return sf.getFermeIdsByFermier(
+tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser()
+);
+} catch (SQLException e) { e.printStackTrace(); return new java.util.ArrayList<>(); }
+}
+
+private List<Plantes> getPlantesByUserFermes() {
+try {
+List<Integer> ids = getUserFermeIds();
+if (ids.isEmpty()) return new java.util.ArrayList<>();
+return sp.findByFermes(ids);
+} catch (SQLException e) { e.printStackTrace(); return new java.util.ArrayList<>(); }
+}
+
 private void rafraichir() {
-try { tvPlantes.setItems(FXCollections.observableArrayList(sp.selectALL())); }
-catch (SQLException e) { e.printStackTrace(); }
+try { tvPlantes.setItems(FXCollections.observableArrayList(getPlantesByUserFermes())); }
+catch (Exception e) { e.printStackTrace(); }
 }
 
     private boolean validerChamps() {

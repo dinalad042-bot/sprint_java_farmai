@@ -172,7 +172,7 @@ public class SignupController implements Initializable {
             User newUser = new User();
             newUser.setNom(nomField.getText().trim());
             newUser.setPrenom(prenomField.getText().trim());
-            newUser.setEmail(emailField.getText().trim());
+            newUser.setEmail(emailField.getText().trim().toLowerCase());
             newUser.setPassword(passwordField.getText());
             newUser.setCin(cinField.getText().trim());
             newUser.setTelephone(telephoneField.getText().trim());

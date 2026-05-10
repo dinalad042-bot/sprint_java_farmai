@@ -22,6 +22,8 @@ import tn.esprit.farmai.utils.NavigationUtil;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.function.Function;
 
@@ -89,14 +91,36 @@ public class AnimauxController implements Initializable {
     // --- LOGIQUE CRUD ---
 
     private void chargerFermes() {
-        try {
-            cbFerme.setItems(FXCollections.observableArrayList(sf.selectALL()));
-            cbFerme.setConverter(new StringConverter<Ferme>() {
-                @Override public String toString(Ferme f) { return (f != null) ? f.getNomFerme() : ""; }
-                @Override public Ferme fromString(String s) { return null; }
-            });
-        } catch (SQLException e) { e.printStackTrace(); }
-    }
+try {
+int userId = tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser();
+cbFerme.setItems(FXCollections.observableArrayList(sf.findByFermier(userId)));
+cbFerme.setConverter(new StringConverter<Ferme>() {
+@Override public String toString(Ferme f) { return (f != null) ? f.getNomFerme() : ""; }
+@Override public Ferme fromString(String s) { return null; }
+});
+} catch (SQLException e) { e.printStackTrace(); }
+}
+
+private List<Integer> getUserFermeIds() {
+try {
+return sf.getFermeIdsByFermier(
+tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser()
+);
+} catch (SQLException e) { e.printStackTrace(); return new java.util.ArrayList<>(); }
+}
+
+private List<Animaux> getAnimauxByUserFermes() {
+try {
+List<Integer> ids = getUserFermeIds();
+if (ids.isEmpty()) return new java.util.ArrayList<>();
+return sa.findByFermes(ids);
+} catch (SQLException e) { e.printStackTrace(); return new java.util.ArrayList<>(); }
+}
+
+private void rafraichir() {
+try { tvAnimaux.setItems(FXCollections.observableArrayList(getAnimauxByUserFermes())); }
+catch (Exception e) { e.printStackTrace(); }
+}
 
     @FXML
     private void ajouter() {
@@ -164,11 +188,6 @@ public class AnimauxController implements Initializable {
         } catch (Exception e) {
             new Alert(Alert.AlertType.ERROR, "Erreur PDF : " + e.getMessage()).show();
         }
-    }
-
-    private void rafraichir() {
-        try { tvAnimaux.setItems(FXCollections.observableArrayList(sa.selectALL())); }
-        catch (SQLException e) { e.printStackTrace(); }
     }
 
     private boolean validerChamps() {

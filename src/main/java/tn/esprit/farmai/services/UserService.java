@@ -50,7 +50,7 @@ public class UserService implements CRUD<User> {
             ps.setString(1, user.getNom());
             ps.setString(2, user.getPrenom());
             ps.setString(3, user.getEmail());
-            ps.setString(4, PasswordUtil.hashPassword(user.getPassword()));
+            ps.setString(4, PasswordUtil.hashPasswordBcrypt(user.getPassword()));
             ps.setString(5, user.getCin());
             ps.setString(6, user.getAdresse());
             ps.setString(7, user.getTelephone());
@@ -96,7 +96,7 @@ public class UserService implements CRUD<User> {
         String query = "UPDATE user SET password = ? WHERE id_user = ?";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
-            ps.setString(1, PasswordUtil.hashPassword(newPassword));
+            ps.setString(1, PasswordUtil.hashPasswordBcrypt(newPassword));
             ps.setInt(2, userId);
             ps.executeUpdate();
         }

@@ -927,6 +927,55 @@ public class AnalyseService implements CRUD<Analyse> {
     }
 
     /**
+     * Find analyses by farm IDs (for user-scoped filtering)
+     */
+    public List<Analyse> findByFermes(List<Integer> fermeIds) throws SQLException {
+        if (fermeIds == null || fermeIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Analyse> analyses = new ArrayList<>();
+        String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
+        String query = "SELECT * FROM analyse WHERE id_ferme IN (" + placeholders + ") ORDER BY date_analyse DESC";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            for (int i = 0; i < fermeIds.size(); i++) {
+                ps.setInt(i + 1, fermeIds.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                analyses.add(mapResultSetToAnalyse(rs));
+            }
+        }
+        return analyses;
+    }
+
+    /**
+     * US10: Get analysis count per farm for visualization - filtered by user's farms
+     */
+    public List<Object[]> getAnalysisPerFarmStats(List<Integer> fermeIds) throws SQLException {
+        if (fermeIds == null || fermeIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Object[]> stats = new ArrayList<>();
+        String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
+        String query = "SELECT id_ferme, COUNT(*) as count FROM analyse WHERE id_ferme IN (" + placeholders + ") GROUP BY id_ferme ORDER BY count DESC";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            for (int i = 0; i < fermeIds.size(); i++) {
+                ps.setInt(i + 1, fermeIds.get(i));
+            }
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                stats.add(new Object[]{
+                    rs.getInt("id_ferme"),
+                    rs.getInt("count")
+                });
+            }
+        }
+        return stats;
+    }
+
+    /**
      * Find analyses by farm ID
      */
     public List<Analyse> findByFerme(int idFerme) throws SQLException {

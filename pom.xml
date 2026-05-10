@@ -115,6 +115,13 @@
             <version>4.5.14</version>
         </dependency>
 
+        <!-- jBCrypt for PHP bcrypt password verification (shared auth with web app) -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
         <!-- JSON Processing -->
         <dependency>
             <groupId>org.json</groupId>

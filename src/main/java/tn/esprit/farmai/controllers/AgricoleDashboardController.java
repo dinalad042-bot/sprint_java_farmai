@@ -24,6 +24,7 @@ import javafx.application.Platform;
 
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -192,30 +193,31 @@ public class AgricoleDashboardController implements Initializable {
     private void loadStatistics() {
         try {
             User currentUser = SessionManager.getInstance().getCurrentUser();
-            int userId = currentUser != null ? currentUser.getIdUser() : 0;
+            if (currentUser == null) {
+                setDefaultStatistics();
+                return;
+            }
+            int userId = currentUser.getIdUser();
+
+            // Get user's own ferme IDs
+            List<Integer> userFermeIds = fermeService.getFermeIdsByFermier(userId);
 
             // Total fermes for this user
-            int totalFermes = 0;
-            try {
-                totalFermes = fermeService.selectALL().stream()
-                        .filter(f -> f.getIdFermier() == userId)
-                        .toList()
-                        .size();
-            } catch (Exception e) {
-                // If filtering fails, show total count
-                totalFermes = fermeService.selectALL().size();
-            }
+            int totalFermes = userFermeIds.size();
             if (totalFermesLabel != null) {
                 totalFermesLabel.setText(String.valueOf(totalFermes));
             }
 
-            // Total analyses
-            int totalAnalyses = analyseService.selectALL().size();
+            // Total analyses for user's farms only
+            int totalAnalyses = 0;
+            if (!userFermeIds.isEmpty()) {
+                totalAnalyses = analyseService.findByFermes(userFermeIds).size();
+            }
             if (totalAnalysesLabel != null) {
                 totalAnalysesLabel.setText(String.valueOf(totalAnalyses));
             }
 
-            // Total conseils
+            // Total conseils (still global - would need more complex filtering)
             int totalConseils = conseilService.selectALL().size();
             if (totalConseilsLabel != null) {
                 totalConseilsLabel.setText(String.valueOf(totalConseils));
@@ -226,14 +228,17 @@ public class AgricoleDashboardController implements Initializable {
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error loading agricole statistics", e);
-            // Set default values on error
-            if (totalFermesLabel != null)
-                totalFermesLabel.setText("-");
-            if (totalAnalysesLabel != null)
-                totalAnalysesLabel.setText("-");
-            if (totalConseilsLabel != null)
-                totalConseilsLabel.setText("-");
+            setDefaultStatistics();
         }
+    }
+
+    private void setDefaultStatistics() {
+        if (totalFermesLabel != null)
+            totalFermesLabel.setText("-");
+        if (totalAnalysesLabel != null)
+            totalAnalysesLabel.setText("-");
+        if (totalConseilsLabel != null)
+            totalConseilsLabel.setText("-");
     }
 
     /**

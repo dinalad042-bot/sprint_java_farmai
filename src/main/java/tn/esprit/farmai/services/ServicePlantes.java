@@ -88,4 +88,28 @@ public class ServicePlantes implements CRUD<Plantes> {
         }
         return list;
     }
+
+    public List<Plantes> findByFermes(List<Integer> fermeIds) throws SQLException {
+        if (fermeIds == null || fermeIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Plantes> list = new ArrayList<>();
+        String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
+        String req = "SELECT * FROM `plantes` WHERE `id_ferme` IN (" + placeholders + ")";
+        PreparedStatement ps = cnx.prepareStatement(req);
+        for (int i = 0; i < fermeIds.size(); i++) {
+            ps.setInt(i + 1, fermeIds.get(i));
+        }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new Plantes(
+                rs.getInt("id_plante"),
+                rs.getString("nom_espece"),
+                rs.getString("cycle_vie"),
+                rs.getInt("id_ferme"),
+                rs.getDouble("quantite")
+            ));
+        }
+        return list;
+    }
 }

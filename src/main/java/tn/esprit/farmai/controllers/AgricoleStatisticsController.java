@@ -109,13 +109,31 @@ public class AgricoleStatisticsController implements Initializable {
     }
 
     /**
-     * Load statistics from database
+     * Load statistics from database - filtered by current user's farms
      */
     private void loadStatistics() {
         try {
-            int totalAnalyses = analyseService.selectALL().size();
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                setDefaultStatistics();
+                return;
+            }
+            int userId = currentUser.getIdUser();
+
+            // Get user's own ferme IDs
+            List<Integer> userFermeIds = fermeService.getFermeIdsByFermier(userId);
+
+            // Total farms for this user
+            int totalFarms = userFermeIds.size();
+
+            // Total analyses for user's farms only
+            int totalAnalyses = 0;
+            if (!userFermeIds.isEmpty()) {
+                totalAnalyses = analyseService.findByFermes(userFermeIds).size();
+            }
+
+            // Total conseils (global - would need more complex filtering by analyse IDs)
             int totalConseils = conseilService.selectALL().size();
-            int totalFarms = fermeService.selectALL().size();
 
             totalAnalysesLabel.setText(String.valueOf(totalAnalyses));
             totalConseilsLabel.setText(String.valueOf(totalConseils));
@@ -126,10 +144,14 @@ public class AgricoleStatisticsController implements Initializable {
 
         } catch (SQLException e) {
             LOGGER.log(Level.SEVERE, "Error loading statistics", e);
-            totalAnalysesLabel.setText("-");
-            totalConseilsLabel.setText("-");
-            totalFarmsLabel.setText("-");
+            setDefaultStatistics();
         }
+    }
+
+    private void setDefaultStatistics() {
+        totalAnalysesLabel.setText("-");
+        totalConseilsLabel.setText("-");
+        totalFarmsLabel.setText("-");
     }
 
     /**
@@ -162,11 +184,23 @@ public class AgricoleStatisticsController implements Initializable {
     }
 
     /**
-     * Load farm analysis frequency bar chart
+     * Load farm analysis frequency bar chart - filtered by user's farms
      */
     private void loadFarmBarChart() {
         try {
-            List<Object[]> farmStats = analyseService.getAnalysisPerFarmStats();
+            User currentUser = SessionManager.getInstance().getCurrentUser();
+            if (currentUser == null) {
+                return;
+            }
+            int userId = currentUser.getIdUser();
+            List<Integer> userFermeIds = fermeService.getFermeIdsByFermier(userId);
+
+            if (userFermeIds.isEmpty()) {
+                farmBarChart.getData().clear();
+                return;
+            }
+
+            List<Object[]> farmStats = analyseService.getAnalysisPerFarmStats(userFermeIds);
             farmBarChart.getData().clear();
 
             javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
