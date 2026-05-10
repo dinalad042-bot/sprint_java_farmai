@@ -48,7 +48,7 @@ public class AnalyseService implements CRUD<Analyse> {
 
     @Override
     public void insertOne(Analyse analyse) throws SQLException {
-        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien, id_ferme_id, image_url) " +
+        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien_id, id_ferme_id, image_url) " +
                       "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -70,7 +70,7 @@ public class AnalyseService implements CRUD<Analyse> {
     @Override
     public void updateOne(Analyse analyse) throws SQLException {
         String query = "UPDATE analyse SET date_analyse = ?, resultat_technique = ?, " +
-                      "id_technicien = ?, id_ferme_id = ?, image_url = ? WHERE id_analyse = ?";
+                      "id_technicien_id = ?, id_ferme_id = ?, image_url = ? WHERE id_analyse = ?";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setTimestamp(1, Timestamp.valueOf(analyse.getDateAnalyse()));
@@ -913,7 +913,7 @@ public class AnalyseService implements CRUD<Analyse> {
      */
     public List<Analyse> findByTechnicien(int idTechnicien) throws SQLException {
         List<Analyse> analyses = new ArrayList<>();
-        String query = "SELECT * FROM analyse WHERE id_technicien = ? ORDER BY date_analyse DESC";
+        String query = "SELECT * FROM analyse WHERE id_technicien_id = ? ORDER BY date_analyse DESC";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, idTechnicien);
@@ -1092,7 +1092,7 @@ public class AnalyseService implements CRUD<Analyse> {
         analyse.setIdAnalyse(rs.getInt("id_analyse"));
         analyse.setDateAnalyse(rs.getTimestamp("date_analyse").toLocalDateTime());
         analyse.setResultatTechnique(rs.getString("resultat_technique"));
-        analyse.setIdTechnicien(rs.getInt("id_technicien"));
+        analyse.setIdTechnicien(rs.getInt("id_technicien_id"));
         analyse.setIdFerme(rs.getInt("id_ferme_id"));
         analyse.setImageUrl(rs.getString("image_url"));
         return analyse;
