@@ -48,7 +48,7 @@ public class AnalyseService implements CRUD<Analyse> {
 
     @Override
     public void insertOne(Analyse analyse) throws SQLException {
-        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien, id_ferme, image_url) " +
+        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien, id_ferme_id, image_url) " +
                       "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -70,7 +70,7 @@ public class AnalyseService implements CRUD<Analyse> {
     @Override
     public void updateOne(Analyse analyse) throws SQLException {
         String query = "UPDATE analyse SET date_analyse = ?, resultat_technique = ?, " +
-                      "id_technicien = ?, id_ferme = ?, image_url = ? WHERE id_analyse = ?";
+                      "id_technicien = ?, id_ferme_id = ?, image_url = ? WHERE id_analyse = ?";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setTimestamp(1, Timestamp.valueOf(analyse.getDateAnalyse()));
@@ -876,14 +876,14 @@ public class AnalyseService implements CRUD<Analyse> {
      */
     public List<Object[]> getAnalysisPerFarmStats() throws SQLException {
         List<Object[]> stats = new ArrayList<>();
-        String query = "SELECT id_ferme, COUNT(*) as count FROM analyse GROUP BY id_ferme ORDER BY count DESC";
+        String query = "SELECT id_ferme_id, COUNT(*) as count FROM analyse GROUP BY id_ferme_id ORDER BY count DESC";
 
         try (Statement st = cnx.createStatement();
              ResultSet rs = st.executeQuery(query)) {
 
             while (rs.next()) {
                 stats.add(new Object[]{
-                    rs.getInt("id_ferme"),
+                    rs.getInt("id_ferme_id"),
                     rs.getInt("count")
                 });
             }
@@ -935,7 +935,7 @@ public class AnalyseService implements CRUD<Analyse> {
         }
         List<Analyse> analyses = new ArrayList<>();
         String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
-        String query = "SELECT * FROM analyse WHERE id_ferme IN (" + placeholders + ") ORDER BY date_analyse DESC";
+        String query = "SELECT * FROM analyse WHERE id_ferme_id IN (" + placeholders + ") ORDER BY date_analyse DESC";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             for (int i = 0; i < fermeIds.size(); i++) {
@@ -958,7 +958,7 @@ public class AnalyseService implements CRUD<Analyse> {
         }
         List<Object[]> stats = new ArrayList<>();
         String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
-        String query = "SELECT id_ferme, COUNT(*) as count FROM analyse WHERE id_ferme IN (" + placeholders + ") GROUP BY id_ferme ORDER BY count DESC";
+        String query = "SELECT id_ferme_id, COUNT(*) as count FROM analyse WHERE id_ferme_id IN (" + placeholders + ") GROUP BY id_ferme_id ORDER BY count DESC";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             for (int i = 0; i < fermeIds.size(); i++) {
@@ -967,7 +967,7 @@ public class AnalyseService implements CRUD<Analyse> {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 stats.add(new Object[]{
-                    rs.getInt("id_ferme"),
+                    rs.getInt("id_ferme_id"),
                     rs.getInt("count")
                 });
             }
@@ -980,7 +980,7 @@ public class AnalyseService implements CRUD<Analyse> {
      */
     public List<Analyse> findByFerme(int idFerme) throws SQLException {
         List<Analyse> analyses = new ArrayList<>();
-        String query = "SELECT * FROM analyse WHERE id_ferme = ? ORDER BY date_analyse DESC";
+        String query = "SELECT * FROM analyse WHERE id_ferme_id = ? ORDER BY date_analyse DESC";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, idFerme);
@@ -1069,7 +1069,7 @@ public class AnalyseService implements CRUD<Analyse> {
      * @return The farm location string, or null if not found
      */
     public String getFermeLieu(int idFerme) {
-        String query = "SELECT lieu FROM ferme WHERE id_ferme = ?";
+        String query = "SELECT lieu FROM ferme WHERE id_ferme_id = ?";
         
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setInt(1, idFerme);
@@ -1093,7 +1093,7 @@ public class AnalyseService implements CRUD<Analyse> {
         analyse.setDateAnalyse(rs.getTimestamp("date_analyse").toLocalDateTime());
         analyse.setResultatTechnique(rs.getString("resultat_technique"));
         analyse.setIdTechnicien(rs.getInt("id_technicien"));
-        analyse.setIdFerme(rs.getInt("id_ferme"));
+        analyse.setIdFerme(rs.getInt("id_ferme_id"));
         analyse.setImageUrl(rs.getString("image_url"));
         return analyse;
     }
