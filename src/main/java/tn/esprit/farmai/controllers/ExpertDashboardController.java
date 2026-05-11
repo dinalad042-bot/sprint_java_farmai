@@ -179,6 +179,15 @@ public class ExpertDashboardController implements Initializable {
     }
 
     /**
+     * Handle demandes - Open Expert Requests view with fade transition
+     */
+    @FXML
+    private void handleDemandes() {
+        navigateWithFade("/tn/esprit/farmai/views/expert-requests.fxml",
+                "FarmAI - Demandes des Agriculteurs");
+    }
+
+    /**
      * Handle recommendations - Open GestionConseils with fade transition
      */
     @FXML

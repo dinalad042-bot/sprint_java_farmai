@@ -472,4 +472,58 @@ public class AgricoleDashboardController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Handle new request - Navigate to farmer request submission
+     */
+    @FXML
+    private void handleNewRequest() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/farmer-request.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Nouvelle Demande");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to farmer request form");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to farmer request", e);
+            NavigationUtil.showError("Erreur", "Impossible d'ouvrir le formulaire de demande.");
+        }
+    }
+
+    /**
+     * Handle my requests - Navigate to farmer request view (view all requests)
+     */
+    @FXML
+    private void handleMyRequests() {
+        try {
+            Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/tn/esprit/farmai/views/farmer-request.fxml"));
+            javafx.scene.Parent root = loader.load();
+            javafx.scene.Scene scene = new javafx.scene.Scene(root, 1200, 800);
+
+            java.net.URL cssUrl = getClass().getResource("/tn/esprit/farmai/styles/dashboard.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            }
+
+            stage.setScene(scene);
+            stage.setTitle("FarmAI - Mes Demandes");
+            stage.show();
+            LOGGER.log(Level.INFO, "Navigated to farmer requests list");
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to navigate to farmer requests: " + e.getClass().getSimpleName() + " - " + e.getMessage(), e);
+            NavigationUtil.showError("Erreur", "Impossible d'afficher vos demandes.\n\nCause: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
+    }
 }

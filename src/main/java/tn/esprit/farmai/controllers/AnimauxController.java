@@ -103,9 +103,11 @@ cbFerme.setConverter(new StringConverter<Ferme>() {
 
 private List<Integer> getUserFermeIds() {
 try {
-return sf.getFermeIdsByFermier(
-tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser()
-);
+int userId = tn.esprit.farmai.utils.SessionManager.getInstance().getCurrentUser().getIdUser();
+System.out.println("DEBUG [AnimauxController] User ID: " + userId);
+List<Integer> ids = sf.getFermeIdsByFermier(userId);
+System.out.println("DEBUG [AnimauxController] Ferme IDs: " + ids);
+return ids;
 } catch (SQLException e) { e.printStackTrace(); return new java.util.ArrayList<>(); }
 }
 

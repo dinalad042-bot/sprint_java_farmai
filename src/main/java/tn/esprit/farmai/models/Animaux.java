@@ -42,13 +42,7 @@ public class Animaux {
 
     @Override
     public String toString() {
-        return "Animaux{" +
-                "idAnimal=" + idAnimal +
-                ", espece='" + espece + '\'' +
-                ", etatSante='" + etatSante + '\'' +
-                ", dateNaissance=" + dateNaissance +
-                ", idFerme=" + idFerme +
-                '}';
+        return espece + " (#" + idAnimal + ")";
     }
 
     @Override

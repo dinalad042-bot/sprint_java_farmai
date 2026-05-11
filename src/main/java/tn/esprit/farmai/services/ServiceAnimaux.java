@@ -21,7 +21,7 @@ public class ServiceAnimaux implements CRUD<Animaux> {
 
     @Override
     public void insertOne(Animaux animal) throws SQLException {
-        String req = "INSERT INTO `animaux`(`espece`, `etat_sante`, `date_naissance`, `id_ferme`) VALUES (?, ?, ?, ?)";
+        String req = "INSERT INTO `animal`(`espece`, `etat_sante`, `date_naissance`, `id_ferme`) VALUES (?, ?, ?, ?)";
         PreparedStatement ps = cnx.prepareStatement(req);
         ps.setString(1, animal.getEspece());
         ps.setString(2, animal.getEtatSante());
@@ -32,7 +32,7 @@ public class ServiceAnimaux implements CRUD<Animaux> {
 
     @Override
     public void updateOne(Animaux animal) throws SQLException {
-        String req = "UPDATE `animaux` SET `espece`=?, `etat_sante`=?, `date_naissance`=?, `id_ferme`=? WHERE `id_animal`=?";
+        String req = "UPDATE `animal` SET `espece`=?, `etat_sante`=?, `date_naissance`=?, `id_ferme`=? WHERE `id_animal`=?";
         PreparedStatement ps = cnx.prepareStatement(req);
         ps.setString(1, animal.getEspece());
         ps.setString(2, animal.getEtatSante());
@@ -44,7 +44,7 @@ public class ServiceAnimaux implements CRUD<Animaux> {
 
     @Override
     public void deleteOne(Animaux animal) throws SQLException {
-        String req = "DELETE FROM `animaux` WHERE `id_animal`=?";
+        String req = "DELETE FROM `animal` WHERE `id_animal`=?";
         PreparedStatement ps = cnx.prepareStatement(req);
         ps.setInt(1, animal.getIdAnimal());
         ps.executeUpdate();
@@ -53,7 +53,7 @@ public class ServiceAnimaux implements CRUD<Animaux> {
     @Override
     public List<Animaux> selectALL() throws SQLException {
         List<Animaux> list = new ArrayList<>();
-        String req = "SELECT * FROM `animaux`";
+        String req = "SELECT * FROM `animal`";
         Statement st = cnx.createStatement();
         ResultSet rs = st.executeQuery(req);
 
@@ -73,7 +73,7 @@ public class ServiceAnimaux implements CRUD<Animaux> {
     // Méthode de recherche spécifique
     public List<Animaux> chercherParEspece(String espece) throws SQLException {
         List<Animaux> list = new ArrayList<>();
-        String req = "SELECT * FROM `animaux` WHERE `espece` LIKE ?";
+        String req = "SELECT * FROM `animal` WHERE `espece` LIKE ?";
         PreparedStatement ps = cnx.prepareStatement(req);
         ps.setString(1, "%" + espece + "%");
         ResultSet rs = ps.executeQuery();
@@ -96,11 +96,29 @@ public class ServiceAnimaux implements CRUD<Animaux> {
         }
         List<Animaux> list = new ArrayList<>();
         String placeholders = String.join(",", fermeIds.stream().map(id -> "?").toList());
-        String req = "SELECT * FROM `animaux` WHERE `id_ferme` IN (" + placeholders + ")";
+        String req = "SELECT * FROM `animal` WHERE `id_ferme` IN (" + placeholders + ")";
         PreparedStatement ps = cnx.prepareStatement(req);
         for (int i = 0; i < fermeIds.size(); i++) {
             ps.setInt(i + 1, fermeIds.get(i));
         }
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            list.add(new Animaux(
+                rs.getInt("id_animal"),
+                rs.getString("espece"),
+                rs.getString("etat_sante"),
+                rs.getDate("date_naissance"),
+                rs.getInt("id_ferme")
+            ));
+        }
+        return list;
+    }
+
+    public List<Animaux> findByFerme(int idFerme) throws SQLException {
+        List<Animaux> list = new ArrayList<>();
+        String req = "SELECT * FROM `animal` WHERE `id_ferme` = ?";
+        PreparedStatement ps = cnx.prepareStatement(req);
+        ps.setInt(1, idFerme);
         ResultSet rs = ps.executeQuery();
         while (rs.next()) {
             list.add(new Animaux(

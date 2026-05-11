@@ -39,7 +39,8 @@
             
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="🏠  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="📋  Analyses" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
+                <Button text="📋  Demandes" styleClass="nav-button" onAction="#handleDemandes" maxWidth="Infinity"/>
+                <Button text="🔬  Analyses" styleClass="nav-button" onAction="#handleConsultations" maxWidth="Infinity"/>
                 <Button text="💡  Conseils" styleClass="nav-button" onAction="#handleRecommendations" maxWidth="Infinity"/>
                 <Button text="📊  Statistiques" styleClass="nav-button" onAction="#handleStatistics" maxWidth="Infinity"/>
                 <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>

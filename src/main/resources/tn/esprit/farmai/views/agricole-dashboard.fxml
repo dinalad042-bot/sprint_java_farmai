@@ -39,9 +39,10 @@
             
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="📊  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📝  Nouvelle Demande" styleClass="nav-button" onAction="#handleNewRequest" maxWidth="Infinity"/>
                 <Button text="🌱  Mes Cultures" styleClass="nav-button" onAction="#handleMyCrops" maxWidth="Infinity"/>
                 <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
-                <Button text="📊  Analyses Expert" styleClass="nav-button" onAction="#handleExpertAnalyses" maxWidth="Infinity"/>
+                <Button text="📋  Mes Demandes" styleClass="nav-button" onAction="#handleMyRequests" maxWidth="Infinity"/>
                 <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>

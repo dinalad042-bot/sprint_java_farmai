@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.sql.Types;
 
 /**
  * Service class for Analyse CRUD operations with advanced features.
@@ -48,15 +49,26 @@ public class AnalyseService implements CRUD<Analyse> {
 
     @Override
     public void insertOne(Analyse analyse) throws SQLException {
-        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien_id, id_ferme_id, image_url) " +
-                      "VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO analyse (date_analyse, resultat_technique, id_technicien_id, id_ferme_id, " +
+                      "statut, id_demandeur, description_demande, image_url, id_animal_cible, id_plante_cible, " +
+                      "ai_diagnosis_result, ai_diagnosis_date, ai_confidence_score, diagnosis_mode) " +
+                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setTimestamp(1, Timestamp.valueOf(analyse.getDateAnalyse()));
             ps.setString(2, analyse.getResultatTechnique());
             ps.setInt(3, analyse.getIdTechnicien());
             ps.setInt(4, analyse.getIdFerme());
-            ps.setString(5, analyse.getImageUrl());
+            ps.setString(5, analyse.getStatut() != null ? analyse.getStatut() : "en_attente");
+            ps.setInt(6, analyse.getIdDemandeur());
+            ps.setString(7, analyse.getDescriptionDemande());
+            ps.setString(8, analyse.getImageUrl());
+            ps.setInt(9, analyse.getIdAnimalCible());
+            ps.setInt(10, analyse.getIdPlanteCible());
+            ps.setString(11, analyse.getAiDiagnosisResult());
+            ps.setTimestamp(12, analyse.getAiDiagnosisDate() != null ? Timestamp.valueOf(analyse.getAiDiagnosisDate()) : null);
+            ps.setString(13, analyse.getAiConfidenceScore());
+            ps.setString(14, analyse.getDiagnosisMode());
 
             ps.executeUpdate();
 
@@ -67,10 +79,48 @@ public class AnalyseService implements CRUD<Analyse> {
         }
     }
 
+    /**
+     * Create a new farmer request (simplified insert for agricultural users)
+     */
+    public void createFarmerRequest(Analyse analyse) throws SQLException {
+        String query = "INSERT INTO analyse (date_analyse, statut, id_demandeur, id_ferme_id, " +
+                      "description_demande, image_url, id_animal_cible, id_plante_cible) " +
+                      "VALUES (NOW(), 'en_attente', ?, ?, ?, ?, ?, ?)";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, analyse.getIdDemandeur());
+            ps.setInt(2, analyse.getIdFerme());
+            ps.setString(3, analyse.getDescriptionDemande());
+            ps.setString(4, analyse.getImageUrl());
+            if (analyse.getIdAnimalCible() > 0) {
+                ps.setInt(5, analyse.getIdAnimalCible());
+            } else {
+                ps.setNull(5, Types.INTEGER);
+            }
+            if (analyse.getIdPlanteCible() > 0) {
+                ps.setInt(6, analyse.getIdPlanteCible());
+            } else {
+                ps.setNull(6, Types.INTEGER);
+            }
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                analyse.setIdAnalyse(rs.getInt(1));
+                analyse.setStatut("en_attente");
+            }
+        }
+    }
+
     @Override
     public void updateOne(Analyse analyse) throws SQLException {
         String query = "UPDATE analyse SET date_analyse = ?, resultat_technique = ?, " +
-                      "id_technicien_id = ?, id_ferme_id = ?, image_url = ? WHERE id_analyse = ?";
+                      "id_technicien_id = ?, id_ferme_id = ?, image_url = ?, " +
+                      "statut = ?, id_demandeur = ?, description_demande = ?, " +
+                      "id_animal_cible = ?, id_plante_cible = ?, " +
+                      "ai_diagnosis_result = ?, ai_diagnosis_date = ?, ai_confidence_score = ?, diagnosis_mode = ? " +
+                      "WHERE id_analyse = ?";
 
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setTimestamp(1, Timestamp.valueOf(analyse.getDateAnalyse()));
@@ -78,7 +128,16 @@ public class AnalyseService implements CRUD<Analyse> {
             ps.setInt(3, analyse.getIdTechnicien());
             ps.setInt(4, analyse.getIdFerme());
             ps.setString(5, analyse.getImageUrl());
-            ps.setInt(6, analyse.getIdAnalyse());
+            ps.setString(6, analyse.getStatut());
+            ps.setInt(7, analyse.getIdDemandeur());
+            ps.setString(8, analyse.getDescriptionDemande());
+            ps.setInt(9, analyse.getIdAnimalCible());
+            ps.setInt(10, analyse.getIdPlanteCible());
+            ps.setString(11, analyse.getAiDiagnosisResult());
+            ps.setTimestamp(12, analyse.getAiDiagnosisDate() != null ? Timestamp.valueOf(analyse.getAiDiagnosisDate()) : null);
+            ps.setString(13, analyse.getAiConfidenceScore());
+            ps.setString(14, analyse.getDiagnosisMode());
+            ps.setInt(15, analyse.getIdAnalyse());
 
             ps.executeUpdate();
         }
@@ -927,6 +986,105 @@ public class AnalyseService implements CRUD<Analyse> {
     }
 
     /**
+     * Find all pending requests (for expert to take)
+     */
+    public List<Analyse> findPendingRequests() throws SQLException {
+        List<Analyse> analyses = new ArrayList<>();
+        String query = "SELECT * FROM analyse WHERE statut = 'en_attente' ORDER BY date_analyse ASC";
+
+        try (Statement st = cnx.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+            while (rs.next()) {
+                analyses.add(mapResultSetToAnalyse(rs));
+            }
+        }
+        return analyses;
+    }
+
+    /**
+     * Expert takes a request (assigns to themselves)
+     */
+    public void takeRequest(int idAnalyse, int idTechnicien) throws SQLException {
+        String query = "UPDATE analyse SET statut = 'en_cours', id_technicien_id = ? WHERE id_analyse = ? AND statut = 'en_attente'";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, idTechnicien);
+            ps.setInt(2, idAnalyse);
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("Request not found or already taken");
+            }
+        }
+    }
+
+    /**
+     * Find analyses by demandeur (farmer who made the request)
+     */
+    public List<Analyse> findByDemandeur(int idDemandeur) throws SQLException {
+        List<Analyse> analyses = new ArrayList<>();
+        String query = "SELECT * FROM analyse WHERE id_demandeur = ? ORDER BY date_analyse DESC";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, idDemandeur);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                analyses.add(mapResultSetToAnalyse(rs));
+            }
+        }
+        return analyses;
+    }
+
+    /**
+     * Find analyses in progress for a technician
+     */
+    public List<Analyse> findInProgressByTechnicien(int idTechnicien) throws SQLException {
+        List<Analyse> analyses = new ArrayList<>();
+        String query = "SELECT * FROM analyse WHERE id_technicien_id = ? AND statut = 'en_cours' ORDER BY date_analyse DESC";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setInt(1, idTechnicien);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                analyses.add(mapResultSetToAnalyse(rs));
+            }
+        }
+        return analyses;
+    }
+
+    /**
+     * Complete an analysis with result
+     */
+    public void completeAnalyse(int idAnalyse, String resultatTechnique) throws SQLException {
+        String query = "UPDATE analyse SET statut = 'terminee', resultat_technique = ? WHERE id_analyse = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setString(1, resultatTechnique);
+            ps.setInt(2, idAnalyse);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Update AI diagnosis result - saves to both resultat_technique (visible in UI)
+     * and ai_diagnosis_result (for tracking)
+     */
+    public void updateAIDiagnosis(int idAnalyse, String aiResult, String confidence, String mode) throws SQLException {
+        String query = "UPDATE analyse SET resultat_technique = ?, ai_diagnosis_result = ?, " +
+                      "ai_confidence_score = ?, diagnosis_mode = ?, ai_diagnosis_date = NOW() WHERE id_analyse = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(query)) {
+            ps.setString(1, aiResult);
+            ps.setString(2, aiResult);
+            ps.setString(3, confidence);
+            ps.setString(4, mode);
+            ps.setInt(5, idAnalyse);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
      * Find analyses by farm IDs (for user-scoped filtering)
      */
     public List<Analyse> findByFermes(List<Integer> fermeIds) throws SQLException {
@@ -1090,11 +1248,45 @@ public class AnalyseService implements CRUD<Analyse> {
     private Analyse mapResultSetToAnalyse(ResultSet rs) throws SQLException {
         Analyse analyse = new Analyse();
         analyse.setIdAnalyse(rs.getInt("id_analyse"));
-        analyse.setDateAnalyse(rs.getTimestamp("date_analyse").toLocalDateTime());
+
+        Timestamp ts = rs.getTimestamp("date_analyse");
+        if (ts != null) {
+            analyse.setDateAnalyse(rs.getTimestamp("date_analyse").toLocalDateTime());
+        }
+
         analyse.setResultatTechnique(rs.getString("resultat_technique"));
         analyse.setIdTechnicien(rs.getInt("id_technicien_id"));
         analyse.setIdFerme(rs.getInt("id_ferme_id"));
         analyse.setImageUrl(rs.getString("image_url"));
+
+        // Farmer request fields
+        String statut = rs.getString("statut");
+        analyse.setStatut(statut != null ? statut : "en_attente");
+
+        analyse.setIdDemandeur(rs.getInt("id_demandeur"));
+        analyse.setDescriptionDemande(rs.getString("description_demande"));
+
+        int animalCible = rs.getInt("id_animal_cible");
+        if (!rs.wasNull()) {
+            analyse.setIdAnimalCible(animalCible);
+        }
+
+        int planteCible = rs.getInt("id_plante_cible");
+        if (!rs.wasNull()) {
+            analyse.setIdPlanteCible(planteCible);
+        }
+
+        // AI diagnosis fields
+        analyse.setAiDiagnosisResult(rs.getString("ai_diagnosis_result"));
+
+        Timestamp aiDate = rs.getTimestamp("ai_diagnosis_date");
+        if (aiDate != null) {
+            analyse.setAiDiagnosisDate(aiDate.toLocalDateTime());
+        }
+
+        analyse.setAiConfidenceScore(rs.getString("ai_confidence_score"));
+        analyse.setDiagnosisMode(rs.getString("diagnosis_mode"));
+
         return analyse;
     }
 }

@@ -5,20 +5,37 @@ import java.util.Objects;
 
 /**
  * Analyse entity representing a technical analysis in the FarmAI application.
+ * Supports farmer requests and expert handling workflow.
  */
 public class Analyse {
 
     private int idAnalyse;
     private LocalDateTime dateAnalyse;
     private String resultatTechnique;
-    private int idTechnicien; // FK to User
+    private int idTechnicien; // FK to User (expert who handles the analysis)
     private int idFerme; // FK to Ferme
-    private String imageUrl; // URL for visual documentation (no BLOB)
+
+    // Farmer request fields
+    private String statut; // en_attente, en_cours, terminee, annulee
+    private int idDemandeur; // FK to User (farmer who made the request)
+    private String descriptionDemande; // Farmer's request description
+    private String imageUrl; // URL for visual documentation
+    private int idAnimalCible; // FK to Animal (optional)
+    private int idPlanteCible; // FK to Plante (optional)
+
+    // AI Diagnosis fields
+    private String aiDiagnosisResult;
+    private LocalDateTime aiDiagnosisDate;
+    private String aiConfidenceScore;
+    private String diagnosisMode; // text or vision
 
     // Default constructor
-    public Analyse() {}
+    public Analyse() {
+        this.dateAnalyse = LocalDateTime.now();
+        this.statut = "en_attente";
+    }
 
-    // Constructor without ID (for new analyses)
+    // Backward compatible constructor (for old tests)
     public Analyse(LocalDateTime dateAnalyse, String resultatTechnique,
                    int idTechnicien, int idFerme, String imageUrl) {
         this.dateAnalyse = dateAnalyse;
@@ -26,9 +43,10 @@ public class Analyse {
         this.idTechnicien = idTechnicien;
         this.idFerme = idFerme;
         this.imageUrl = imageUrl;
+        this.statut = "en_attente";
     }
 
-    // Full constructor
+    // Backward compatible full constructor (for old tests)
     public Analyse(int idAnalyse, LocalDateTime dateAnalyse, String resultatTechnique,
                    int idTechnicien, int idFerme, String imageUrl) {
         this.idAnalyse = idAnalyse;
@@ -37,6 +55,43 @@ public class Analyse {
         this.idTechnicien = idTechnicien;
         this.idFerme = idFerme;
         this.imageUrl = imageUrl;
+        this.statut = "en_attente";
+    }
+
+    // Constructor for farmer request
+    public Analyse(LocalDateTime dateAnalyse, int idDemandeur, int idFerme,
+                   String descriptionDemande, String imageUrl, int idAnimalCible, int idPlanteCible) {
+        this.dateAnalyse = dateAnalyse;
+        this.idDemandeur = idDemandeur;
+        this.idFerme = idFerme;
+        this.descriptionDemande = descriptionDemande;
+        this.imageUrl = imageUrl;
+        this.idAnimalCible = idAnimalCible;
+        this.idPlanteCible = idPlanteCible;
+        this.statut = "en_attente";
+    }
+
+    // Full constructor
+    public Analyse(int idAnalyse, LocalDateTime dateAnalyse, String resultatTechnique,
+                   int idTechnicien, int idFerme, String statut, int idDemandeur,
+                   String descriptionDemande, String imageUrl, int idAnimalCible,
+                   int idPlanteCible, String aiDiagnosisResult, LocalDateTime aiDiagnosisDate,
+                   String aiConfidenceScore, String diagnosisMode) {
+        this.idAnalyse = idAnalyse;
+        this.dateAnalyse = dateAnalyse;
+        this.resultatTechnique = resultatTechnique;
+        this.idTechnicien = idTechnicien;
+        this.idFerme = idFerme;
+        this.statut = statut;
+        this.idDemandeur = idDemandeur;
+        this.descriptionDemande = descriptionDemande;
+        this.imageUrl = imageUrl;
+        this.idAnimalCible = idAnimalCible;
+        this.idPlanteCible = idPlanteCible;
+        this.aiDiagnosisResult = aiDiagnosisResult;
+        this.aiDiagnosisDate = aiDiagnosisDate;
+        this.aiConfidenceScore = aiConfidenceScore;
+        this.diagnosisMode = diagnosisMode;
     }
 
     // Getters and Setters
@@ -80,12 +135,96 @@ public class Analyse {
         this.idFerme = idFerme;
     }
 
+    public String getStatut() {
+        return statut;
+    }
+
+    public void setStatut(String statut) {
+        this.statut = statut;
+    }
+
+    public int getIdDemandeur() {
+        return idDemandeur;
+    }
+
+    public void setIdDemandeur(int idDemandeur) {
+        this.idDemandeur = idDemandeur;
+    }
+
+    public String getDescriptionDemande() {
+        return descriptionDemande;
+    }
+
+    public void setDescriptionDemande(String descriptionDemande) {
+        this.descriptionDemande = descriptionDemande;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public int getIdAnimalCible() {
+        return idAnimalCible;
+    }
+
+    public void setIdAnimalCible(int idAnimalCible) {
+        this.idAnimalCible = idAnimalCible;
+    }
+
+    public int getIdPlanteCible() {
+        return idPlanteCible;
+    }
+
+    public void setIdPlanteCible(int idPlanteCible) {
+        this.idPlanteCible = idPlanteCible;
+    }
+
+    public String getAiDiagnosisResult() {
+        return aiDiagnosisResult;
+    }
+
+    public void setAiDiagnosisResult(String aiDiagnosisResult) {
+        this.aiDiagnosisResult = aiDiagnosisResult;
+    }
+
+    public LocalDateTime getAiDiagnosisDate() {
+        return aiDiagnosisDate;
+    }
+
+    public void setAiDiagnosisDate(LocalDateTime aiDiagnosisDate) {
+        this.aiDiagnosisDate = aiDiagnosisDate;
+    }
+
+    public String getAiConfidenceScore() {
+        return aiConfidenceScore;
+    }
+
+    public void setAiConfidenceScore(String aiConfidenceScore) {
+        this.aiConfidenceScore = aiConfidenceScore;
+    }
+
+    public String getDiagnosisMode() {
+        return diagnosisMode;
+    }
+
+    public void setDiagnosisMode(String diagnosisMode) {
+        this.diagnosisMode = diagnosisMode;
+    }
+
+    public boolean isPending() {
+        return "en_attente".equals(statut);
+    }
+
+    public boolean isInProgress() {
+        return "en_cours".equals(statut);
+    }
+
+    public boolean isCompleted() {
+        return "terminee".equals(statut);
     }
 
     @Override
@@ -106,10 +245,10 @@ public class Analyse {
         return "Analyse{" +
                 "idAnalyse=" + idAnalyse +
                 ", dateAnalyse=" + dateAnalyse +
-                ", resultatTechnique='" + resultatTechnique + '\'' +
-                ", idTechnicien=" + idTechnicien +
+                ", statut='" + statut + '\'' +
+                ", idDemandeur=" + idDemandeur +
                 ", idFerme=" + idFerme +
-                ", imageUrl='" + imageUrl + '\'' +
+                ", idTechnicien=" + idTechnicien +
                 '}';
     }
 }
