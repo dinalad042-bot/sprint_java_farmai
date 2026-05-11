@@ -6,9 +6,9 @@ import java.sql.SQLException;
 
 public class MyDBConnexion {
 
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "";
-    private static final String URL = "jdbc:mysql://localhost:3306/farmia_new";
+    private static final String USERNAME = "2sXQZXGXGsoK1vx.root";
+    private static final String PASSWORD = "qnysm2y695RfCJg9";
+    private static final String URL = "jdbc:mysql://gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com:4000/farmia_new?sslMode=VERIFY_IDENTITY";
 
     private Connection cnx;
 
