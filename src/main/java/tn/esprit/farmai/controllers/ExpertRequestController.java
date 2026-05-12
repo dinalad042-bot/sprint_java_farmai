@@ -108,9 +108,9 @@ public class ExpertRequestController implements Initializable {
         colDemandeur.setCellValueFactory(cell -> new SimpleStringProperty("Demandeur #" + cell.getValue().getIdDemandeur()));
 
         colActions.setCellFactory(col -> new TableCell<>() {
-            private final Button takeBtn = new Button("Prendre en charge");
+            private final Button takeBtn = new Button("Prendre");
             {
-                takeBtn.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+                takeBtn.setStyle("-fx-background-color: #1e2a38; -fx-text-fill: white; -fx-font-size: 12px; -fx-cursor: hand;");
                 takeBtn.setOnAction(e -> takeRequest(getTableRow().getItem()));
             }
             @Override
@@ -144,14 +144,14 @@ public class ExpertRequestController implements Initializable {
             private final Button aiBtn = new Button("IA");
             private final Button completeBtn = new Button("Terminer");
             {
-                viewBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-size: 11px;");
+                viewBtn.setStyle("-fx-background-color: #455A64; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;");
                 viewBtn.setOnAction(e -> showRequestDetails(getTableRow().getItem()));
 
-                aiBtn.setStyle("-fx-background-color: #9C27B0; -fx-text-fill: white; -fx-font-size: 11px;");
+                aiBtn.setStyle("-fx-background-color: #1e2a38; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;");
                 aiBtn.setTooltip(new Tooltip("Diagnostic IA visuel"));
                 aiBtn.setOnAction(e -> handleAIDiagnosis(getTableRow().getItem()));
 
-                completeBtn.setStyle("-fx-background-color: #FF9800; -fx-text-fill: white; -fx-font-size: 11px;");
+                completeBtn.setStyle("-fx-background-color: #1e2a38; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;");
                 completeBtn.setOnAction(e -> showCompleteDialog(getTableRow().getItem()));
             }
             @Override
@@ -163,10 +163,8 @@ public class ExpertRequestController implements Initializable {
                     Analyse a = getTableRow().getItem();
                     HBox hbox = new HBox(5);
                     hbox.getChildren().add(viewBtn);
-                    // Only show AI button if there's an image URL
-                    if (a.getImageUrl() != null && !a.getImageUrl().trim().isEmpty()) {
-                        hbox.getChildren().add(aiBtn);
-                    }
+                    // Always show AI button (removed image URL check for testing)
+                    hbox.getChildren().add(aiBtn);
                     if ("en_cours".equals(a.getStatut())) {
                         hbox.getChildren().add(completeBtn);
                     }
@@ -344,6 +342,7 @@ public class ExpertRequestController implements Initializable {
 
     /**
      * Show diagnosis result and offer to save to analysis.
+     * Fix: Force layout pass when dialog window is shown to prevent blank content.
      */
     private void showDiagnosisResultDialog(DiagnosisResult result, int analyseId) {
         Dialog<ButtonType> dialog = new Dialog<>();
@@ -360,9 +359,10 @@ public class ExpertRequestController implements Initializable {
         // Condition with color badge
         Label conditionLabel = new Label("Condition: " + result.getCondition());
         conditionLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
-        if (result.getCondition().toLowerCase().contains("saine")) {
+        String conditionLower = result.getCondition().toLowerCase();
+        if (conditionLower.contains("saine") || conditionLower.contains("normale") || conditionLower.contains("normal")) {
             conditionLabel.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 18px; -fx-font-weight: bold;");
-        } else if (result.getCondition().toLowerCase().contains("pas une plante")) {
+        } else if (conditionLower.contains("pas") && (conditionLower.contains("plante") || conditionLower.contains("animal"))) {
             conditionLabel.setStyle("-fx-text-fill: #9E9E9E; -fx-font-size: 18px; -fx-font-weight: bold;");
         }
 
@@ -407,6 +407,12 @@ public class ExpertRequestController implements Initializable {
 
         dialog.getDialogPane().setContent(content);
         dialog.getDialogPane().setPrefSize(600, 500);
+
+        // THE ONLY REAL FIX: force layout pass when window is shown
+        dialog.setOnShown(e -> {
+            dialog.getDialogPane().requestLayout();
+            dialog.getDialogPane().layout();
+        });
 
         // Save to analysis button
         ButtonType saveBtn = new ButtonType("Sauvegarder Resultat", ButtonBar.ButtonData.OK_DONE);

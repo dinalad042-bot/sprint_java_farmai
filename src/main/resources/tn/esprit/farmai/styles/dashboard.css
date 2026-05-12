@@ -138,7 +138,7 @@
 }
 
 .welcome-subtitle {
-    -fx-text-fill: #78909C;
+    -fx-text-fill: #555555;
     -fx-font-size: 14px;
     -fx-font-family: "Segoe UI", sans-serif;
 }

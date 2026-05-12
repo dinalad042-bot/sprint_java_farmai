@@ -11,6 +11,13 @@ import java.util.List;
 
 /**
  * Service class for UserLog CRUD operations.
+ * Schema matches Symfony Entity (src/Entity/UserLog.php):
+ * - id (bigint)
+ * - user_id (bigint)
+ * - action_type (string)
+ * - performed_by (bigint)
+ * - timestamp (datetime)
+ * - description (text)
  */
 public class UserLogService implements CRUD<UserLog> {
 
@@ -23,16 +30,16 @@ public class UserLogService implements CRUD<UserLog> {
 
     /**
      * Creates the user_log table if it doesn't exist.
+     * Matches Symfony schema exactly.
      */
     private void createTableIfNotExists() {
         String query = "CREATE TABLE IF NOT EXISTS user_log (" +
-                "id_log INT AUTO_INCREMENT PRIMARY KEY, " +
-                "user_id INT NOT NULL, " +
-                "action ENUM('CREATE','UPDATE','DELETE','LOGIN','LOGOUT') NOT NULL, " +
-                "performed_by VARCHAR(150) NOT NULL, " +
-                "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, " +
-                "description TEXT, " +
-                "FOREIGN KEY (user_id) REFERENCES user(id_user) ON DELETE CASCADE" +
+                "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                "user_id BIGINT, " +
+                "action_type VARCHAR(20), " +
+                "performed_by BIGINT, " +
+                "timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                "description TEXT" +
                 ")";
         try (Statement st = cnx.createStatement()) {
             st.execute(query);
@@ -43,12 +50,12 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void insertOne(UserLog log) throws SQLException {
-        String query = "INSERT INTO user_log (user_id, action, performed_by, timestamp, description) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO user_log (user_id, action_type, performed_by, timestamp, description) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = cnx.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, log.getUserId());
-            ps.setString(2, log.getActionType().name());
-            ps.setString(3, log.getPerformedBy());
-            ps.setTimestamp(4, Timestamp.valueOf(log.getTimestamp()));
+            ps.setObject(1, log.getUserId() > 0 ? log.getUserId() : null);
+            ps.setString(2, log.getActionType() != null ? log.getActionType().name() : null);
+            ps.setObject(3, log.getPerformedBy() != null ? Integer.parseInt(log.getPerformedBy()) : null);
+            ps.setTimestamp(4, log.getTimestamp() != null ? Timestamp.valueOf(log.getTimestamp()) : null);
             ps.setString(5, log.getDescription());
 
             ps.executeUpdate();
@@ -62,11 +69,11 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void updateOne(UserLog log) throws SQLException {
-        String query = "UPDATE user_log SET user_id = ?, action = ?, performed_by = ?, description = ? WHERE id_log = ?";
+        String query = "UPDATE user_log SET user_id = ?, action_type = ?, performed_by = ?, description = ? WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
-            ps.setInt(1, log.getUserId());
-            ps.setString(2, log.getActionType().name());
-            ps.setString(3, log.getPerformedBy());
+            ps.setObject(1, log.getUserId() > 0 ? log.getUserId() : null);
+            ps.setString(2, log.getActionType() != null ? log.getActionType().name() : null);
+            ps.setObject(3, log.getPerformedBy() != null ? Integer.parseInt(log.getPerformedBy()) : null);
             ps.setString(4, log.getDescription());
             ps.setLong(5, log.getId());
             ps.executeUpdate();
@@ -75,7 +82,7 @@ public class UserLogService implements CRUD<UserLog> {
 
     @Override
     public void deleteOne(UserLog log) throws SQLException {
-        String query = "DELETE FROM user_log WHERE id_log = ?";
+        String query = "DELETE FROM user_log WHERE id = ?";
         try (PreparedStatement ps = cnx.prepareStatement(query)) {
             ps.setLong(1, log.getId());
             ps.executeUpdate();
@@ -111,14 +118,49 @@ public class UserLogService implements CRUD<UserLog> {
         return logs;
     }
 
+    /**
+     * Maps a ResultSet to UserLog object using exact column names from Symfony schema.
+     */
     private UserLog mapResultSetToUserLog(ResultSet rs) throws SQLException {
         UserLog log = new UserLog();
-        log.setId(rs.getLong("id_log"));
-        log.setUserId(rs.getInt("user_id"));
-        log.setActionType(UserLogAction.valueOf(rs.getString("action")));
-        log.setPerformedBy(rs.getString("performed_by"));
-        log.setTimestamp(rs.getTimestamp("timestamp").toLocalDateTime());
+
+        // id (bigint) - from Symfony Entity
+        log.setId(rs.getLong("id"));
+
+        // user_id (bigint)
+        int userId = rs.getInt("user_id");
+        if (!rs.wasNull()) {
+            log.setUserId(userId);
+        }
+
+        // action_type (string) - NOT "action"!
+        String actionType = rs.getString("action_type");
+        if (actionType != null) {
+            try {
+                // Try to match the enum directly
+                log.setActionType(UserLogAction.valueOf(actionType.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                // Fallback to UNKNOWN if the action type is not in our enum
+                // This prevents the app from crashing if Symfony adds new action types
+                log.setActionType(UserLogAction.UNKNOWN);
+            }
+        }
+
+        // performed_by (bigint) - stored as user ID string in Java model
+        int performedBy = rs.getInt("performed_by");
+        if (!rs.wasNull()) {
+            log.setPerformedBy(String.valueOf(performedBy));
+        }
+
+        // timestamp (datetime)
+        Timestamp ts = rs.getTimestamp("timestamp");
+        if (ts != null) {
+            log.setTimestamp(ts.toLocalDateTime());
+        }
+
+        // description (text)
         log.setDescription(rs.getString("description"));
+
         return log;
     }
 }

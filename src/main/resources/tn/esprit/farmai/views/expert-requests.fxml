@@ -6,77 +6,106 @@
 <?import javafx.scene.text.Text?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.esprit.farmai.controllers.ExpertRequestController">
+            fx:controller="tn.esprit.farmai.controllers.ExpertRequestController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
 
-    <!-- Left Sidebar -->
+    <!-- Left Sidebar (Dark sidebar matching expert-dashboard.fxml) -->
     <left>
-        <VBox prefWidth="220" spacing="10" style="-fx-background-color: #2E7D32; -fx-padding: 20;">
-            <Text text="🌾 FarmAI" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-fill: white;"/>
-            <Label fx:id="userNameLabel" text="Expert" style="-fx-text-fill: white;"/>
-            <Label fx:id="userRoleLabel" text="Expert" style="-fx-text-fill: #A5D6A7;"/>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
 
-            <VBox spacing="5" style="-fx-padding: 20 0;">
-                <Button text="📊 Tableau de bord" onAction="#navigateToDashboard" style="-fx-background-color: #388E3C; -fx-text-fill: white;"/>
-                <Button text="📋 Demandes" style="-fx-background-color: #1B5E20; -fx-text-fill: white;"/>
-                <Button text="🔬 Analyses" onAction="#navigateToDashboard" style="-fx-background-color: #388E3C; -fx-text-fill: white;"/>
-                <Button text="💡 Conseils" onAction="#navigateToDashboard" style="-fx-background-color: #388E3C; -fx-text-fill: white;"/>
-                <Button text="🤖 Diagnostic IA" onAction="#handleRefresh" style="-fx-background-color: #9C27B0; -fx-text-fill: white;"/>
+            <!-- User Profile Card - Simple styled VBox -->
+            <VBox styleClass="sidebar-profile-card" spacing="10">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Text text="🔬" style="-fx-font-size: 24px;" fill="white"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Expert User" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Expert" styleClass="sidebar-profile-role"/>
+                </VBox>
             </VBox>
 
-            <Button text="🔄 Actualiser" onAction="#handleRefresh" style="-fx-background-color: #1976D2; -fx-text-fill: white;"/>
-            <Button text="🚪 Déconnexion" onAction="#handleLogout" style="-fx-background-color: #C62828; -fx-text-fill: white;"/>
+            <Region prefHeight="30"/>
+
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Tableau de bord" styleClass="nav-button" onAction="#navigateToDashboard" maxWidth="Infinity"/>
+                <Button text="📋  Demandes" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="🔬  Analyses" styleClass="nav-button" onAction="#navigateToDashboard" maxWidth="Infinity"/>
+                <Button text="💡  Conseils" styleClass="nav-button" onAction="#navigateToDashboard" maxWidth="Infinity"/>
+                <Button text="📊  Statistiques" styleClass="nav-button" onAction="#navigateToDashboard" maxWidth="Infinity"/>
+
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🔄  Actualiser" styleClass="nav-button" onAction="#handleRefresh" maxWidth="Infinity"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
         </VBox>
     </left>
 
-    <!-- Main Content -->
+    <!-- Main Content (matching dashboard style) -->
     <center>
-        <ScrollPane style="-fx-background-color: #F5F5F5;">
-            <VBox spacing="20" style="-fx-padding: 30;">
-                <Text text="📋 Gestion des Demandes" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
-                <Text text="Gérez les demandes des agriculteurs" style="-fx-font-size: 14px; -fx-fill: #666;"/>
+        <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox styleClass="main-content" spacing="20">
 
-                <!-- Pending Requests -->
-                <VBox spacing="10">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Text text="📥 Demandes en attente" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                        <Label fx:id="pendingCountLabel" text="0" style="-fx-background-color: #FF9800; -fx-text-fill: white; -fx-padding: 2 8; -fx-background-radius: 10;"/>
-                    </HBox>
-                    <TableView fx:id="pendingTableView" prefHeight="200">
-                        <columns>
-                            <TableColumn text="ID" fx:id="colId" prefWidth="50"/>
-                            <TableColumn text="Date" fx:id="colDate" prefWidth="120"/>
-                            <TableColumn text="Ferme" fx:id="colFerme" prefWidth="80"/>
-                            <TableColumn text="Description" fx:id="colDescription" prefWidth="250"/>
-                            <TableColumn text="Demandeur" fx:id="colDemandeur" prefWidth="100"/>
-                            <TableColumn text="Actions" fx:id="colActions" prefWidth="140"/>
-                        </columns>
-                    </TableView>
+                <!-- Top Header -->
+                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
+                    <Label text="Gestion des Demandes" style="-fx-font-size: 18px; -fx-text-fill: #2C3E50; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button text="🔄 Actualiser" onAction="#handleRefresh"
+                            style="-fx-background-color: #1e2a38; -fx-text-fill: white; -fx-font-size: 13px; -fx-cursor: hand; -fx-padding: 8 16;"/>
+                </HBox>
+
+                <!-- Page Title Section -->
+                <VBox styleClass="welcome-section" spacing="5">
+                    <Label text="Demandes des Agriculteurs" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1a1a2e;"/>
+                    <Label text="Gérez les demandes en attente et vos analyses en cours" style="-fx-font-size: 14px; -fx-text-fill: #555555;"/>
                 </VBox>
 
-                <!-- My Requests -->
-                <VBox spacing="10">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <Text text="📋 Mes demandes en cours" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-                    </HBox>
-                    <TableView fx:id="myRequestsTableView" prefHeight="200">
-                        <columns>
-                            <TableColumn text="ID" fx:id="colMyId" prefWidth="50"/>
-                            <TableColumn text="Date" fx:id="colMyDate" prefWidth="120"/>
-                            <TableColumn text="Ferme" fx:id="colMyFerme" prefWidth="80"/>
-                            <TableColumn text="Statut" fx:id="colMyStatut" prefWidth="100"/>
-                            <TableColumn text="Résultat" fx:id="colMyResultat" prefWidth="300"/>
-                            <TableColumn text="Actions" fx:id="colMyActions" prefWidth="150"/>
-                        </columns>
-                    </TableView>
+                <!-- Pending Requests Section -->
+                <VBox spacing="15">
+                    <Label text="📥 Demandes en attente" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
+                    <VBox styleClass="content-card" spacing="0">
+                        <TableView fx:id="pendingTableView" prefHeight="180">
+                            <columns>
+                                <TableColumn text="ID" fx:id="colId" prefWidth="60"/>
+                                <TableColumn text="Date" fx:id="colDate" prefWidth="130"/>
+                                <TableColumn text="Ferme" fx:id="colFerme" prefWidth="100"/>
+                                <TableColumn text="Description" fx:id="colDescription" prefWidth="280"/>
+                                <TableColumn text="Demandeur" fx:id="colDemandeur" prefWidth="120"/>
+                                <TableColumn text="Actions" fx:id="colActions" prefWidth="150"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
                 </VBox>
 
-                <!-- Instructions -->
-                <VBox spacing="5" style="-fx-background-color: #E3F2FD; -fx-padding: 15; -fx-background-radius: 10;">
-                    <Text text="💡 Comment ça marche" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-fill: #1976D2;"/>
-                    <Text text="1. Les demandes des agriculteurs apparaissent dans 'Demandes en attente'" style="-fx-fill: #333;"/>
-                    <Text text="2. Cliquez 'Prendre en charge' pour vous assigner une demande" style="-fx-fill: #333;"/>
-                    <Text text="3. Ajoutez un résultat technique et cliquez 'Terminer' pour finaliser" style="-fx-fill: #333;"/>
+                <!-- My Requests Section -->
+                <VBox spacing="15">
+                    <Label text="📋 Mes demandes en cours" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2C3E50;"/>
+                    <VBox styleClass="content-card" spacing="0">
+                        <TableView fx:id="myRequestsTableView" prefHeight="180">
+                            <columns>
+                                <TableColumn text="ID" fx:id="colMyId" prefWidth="60"/>
+                                <TableColumn text="Date" fx:id="colMyDate" prefWidth="130"/>
+                                <TableColumn text="Ferme" fx:id="colMyFerme" prefWidth="100"/>
+                                <TableColumn text="Statut" fx:id="colMyStatut" prefWidth="100"/>
+                                <TableColumn text="Résultat" fx:id="colMyResultat" prefWidth="280"/>
+                                <TableColumn text="Actions" fx:id="colMyActions" prefWidth="180"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
                 </VBox>
+
+                <!-- Instructions Card -->
+                <VBox styleClass="content-card" spacing="10">
+                    <Label text="💡 Comment ça marche" styleClass="card-title"/>
+                    <Label text="1. Les demandes des agriculteurs apparaissent dans 'Demandes en attente'" style="-fx-text-fill: #555; -fx-font-size: 14px;"/>
+                    <Label text="2. Cliquez 'Prendre en charge' pour vous assigner une demande" style="-fx-text-fill: #555; -fx-font-size: 14px;"/>
+                    <Label text="3. Utilisez 'IA' pour le diagnostic visuel ou 'Terminer' pour finaliser" style="-fx-text-fill: #555; -fx-font-size: 14px;"/>
+                </VBox>
+
             </VBox>
         </ScrollPane>
     </center>
