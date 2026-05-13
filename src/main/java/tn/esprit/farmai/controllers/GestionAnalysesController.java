@@ -912,18 +912,25 @@ public class GestionAnalysesController implements Initializable {
                         imageView.setFitHeight(30);
                         imageView.setPreserveRatio(true);
 
-                        File imageFile = new File(imageUrl);
+                        // Resolve Symfony relative path to local path
+                        String resolvedPath = resolveImagePath(imageUrl);
+                        File imageFile = new File(resolvedPath);
+
                         if (imageFile.exists()) {
                             Image image = new Image(imageFile.toURI().toString());
                             imageView.setImage(image);
                         } else {
-                            imageView.setImage(new Image("file:" + imageUrl, true));
+                            // Fallback: show placeholder
+                            Label label = new Label("[NOT FOUND]");
+                            label.setStyle("-fx-text-fill: #F44336; -fx-font-size: 10px;");
+                            setGraphic(label);
+                            return;
                         }
 
                         setGraphic(imageView);
                     } catch (Exception e) {
-                        Label label = new Label("[IMG]");
-                        label.setStyle("-fx-text-fill: #4CAF50; -fx-font-size: 11px; -fx-font-weight: bold;");
+                        Label label = new Label("[ERR]");
+                        label.setStyle("-fx-text-fill: #FF9800; -fx-font-size: 11px; -fx-font-weight: bold;");
                         setGraphic(label);
                     }
                 } else {
@@ -1572,5 +1579,30 @@ public class GestionAnalysesController implements Initializable {
             case CONFIRMATION -> AlertUtils.showConfirmation(title, null, message);
             default -> AlertUtils.showInfo(title, message);
         }
+    }
+
+    /**
+     * Resolve image path from database (Symfony format) to local file path.
+     */
+    private String resolveImagePath(String imageUrl) {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            return imageUrl;
+        }
+        // Already a URL or absolute path
+        if (imageUrl.startsWith("http") || (imageUrl.length() >= 3 && imageUrl.charAt(1) == ':')) {
+            return imageUrl;
+        }
+        // Symfony relative path like /uploads/analyses/image.jpg
+        if (imageUrl.startsWith("/")) {
+            String basePath = System.getProperty("user.dir");
+            int lastIndex = basePath.lastIndexOf(File.separator);
+            if (lastIndex > 0) {
+                String parentPath = basePath.substring(0, lastIndex);
+                String publicPath = parentPath + File.separator + "public";
+                return publicPath + imageUrl.replace("/", File.separator);
+            }
+            return System.getProperty("user.dir") + File.separator + "public" + imageUrl.replace("/", File.separator);
+        }
+        return imageUrl;
     }
 }

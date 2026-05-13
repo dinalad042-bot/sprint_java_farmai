@@ -279,10 +279,23 @@ public class ExpertRequestController implements Initializable {
             return;
         }
 
-        // Verify image file exists
-        File imageFile = new File(imageUrl);
+        // Resolve image path - handle Symfony relative paths
+        String resolvedPath = resolveImagePath(imageUrl);
+        System.out.println("DEBUG RESOLVED PATH (ExpertRequest): " + resolvedPath);
+
+        // Check if it's a URL (http/https) or a local file
+        if (resolvedPath.startsWith("http")) {
+            // For remote URLs, we need to download it first
+            // For now, show error that local files are required
+            tn.esprit.farmai.utils.NavigationUtil.showError("Erreur",
+                    "Les images distantes ne sont pas supportées. L'image doit être un fichier local.");
+            return;
+        }
+
+        // Verify local image file exists
+        File imageFile = new File(resolvedPath);
         if (!imageFile.exists()) {
-            tn.esprit.farmai.utils.NavigationUtil.showError("Erreur", "Fichier image introuvable: " + imageUrl);
+            tn.esprit.farmai.utils.NavigationUtil.showError("Erreur", "Fichier image introuvable: " + resolvedPath);
             return;
         }
 
@@ -306,7 +319,7 @@ public class ExpertRequestController implements Initializable {
         progressDialog.getDialogPane().setContent(content);
         progressDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
 
-        final String imagePath = imageUrl;
+        final String imagePath = resolvedPath;
         final int analyseId = analyse.getIdAnalyse();
 
         Thread analysisThread = new Thread(() -> {
@@ -475,5 +488,42 @@ public class ExpertRequestController implements Initializable {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to navigate to dashboard", e);
         }
+    }
+
+    /**
+     * Resolve image path from database (Symfony format) to local file path.
+     * Handles:
+     * - Absolute paths (C:\...)
+     * - Relative paths (/uploads/...)
+     * - URLs (http://...)
+     */
+    private String resolveImagePath(String imageUrl) {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            return imageUrl;
+        }
+
+        // Already a URL or absolute path
+        if (imageUrl.startsWith("http") || (imageUrl.length() >= 3 && imageUrl.charAt(1) == ':')) {
+            return imageUrl;
+        }
+
+        // Symfony relative path like /uploads/analyses/image.jpg
+        if (imageUrl.startsWith("/")) {
+            // The Symfony project public folder is at the parent of sprint_java_farmai
+            // Path: [INTEG]/public/uploads/...
+            String basePath = System.getProperty("user.dir");
+            int lastIndex = basePath.lastIndexOf(File.separator);
+            if (lastIndex > 0) {
+                String parentPath = basePath.substring(0, lastIndex);
+                // Add 'public' folder between parent path and image path
+                String publicPath = parentPath + File.separator + "public";
+                return publicPath + imageUrl.replace("/", File.separator);
+            }
+            // Fallback
+            return System.getProperty("user.dir") + File.separator + "public" + imageUrl.replace("/", File.separator);
+        }
+
+        // Plain filename - try current directory first
+        return imageUrl;
     }
 }
