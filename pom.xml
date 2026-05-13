@@ -220,6 +220,18 @@
             </exclusions>
         </dependency>
 
+        <!-- ZXing QR Code generation -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

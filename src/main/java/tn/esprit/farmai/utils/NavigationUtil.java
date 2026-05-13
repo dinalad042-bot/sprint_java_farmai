@@ -178,6 +178,28 @@ public class NavigationUtil {
         navigateTo(stage, "views/statistics.fxml", "Statistiques");
     }
 
+    // === ERP Navigation ===
+
+    public static void navigateToERPMatieres(Stage stage) {
+        navigateTo(stage, "views/erp-matieres.fxml", "Matières Premières");
+    }
+
+    public static void navigateToERPProduits(Stage stage) {
+        navigateTo(stage, "views/erp-produits.fxml", "Produits");
+    }
+
+    public static void navigateToERPServices(Stage stage) {
+        navigateTo(stage, "views/erp-services.fxml", "Services");
+    }
+
+    public static void navigateToERPAchats(Stage stage) {
+        navigateTo(stage, "views/erp-achats.fxml", "Achats");
+    }
+
+    public static void navigateToERPVentes(Stage stage) {
+        navigateTo(stage, "views/erp-ventes.fxml", "Ventes");
+    }
+
     public static void logout(Stage stage) {
         Optional<ButtonType> result = showConfirmation("Déconnexion", "Êtes-vous sûr de vouloir vous déconnecter?");
         if (result.isPresent() && result.get() == ButtonType.OK) {

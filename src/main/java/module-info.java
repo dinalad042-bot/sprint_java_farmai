@@ -40,6 +40,10 @@ module tn.esprit.farmai {
     // JSON
     requires org.json;
 
+    // ZXing QR Code
+    requires com.google.zxing;
+    requires com.google.zxing.javase;
+
     // JavaScript (for WebView)
     requires jdk.jsobject;
 
@@ -53,6 +57,10 @@ module tn.esprit.farmai {
     // Controllers package
     opens tn.esprit.farmai.controllers to javafx.fxml;
     exports tn.esprit.farmai.controllers;
+
+    // ERP Controllers package
+    opens tn.esprit.farmai.controllers.erp to javafx.fxml;
+    exports tn.esprit.farmai.controllers.erp;
 
     // Models package
     opens tn.esprit.farmai.models to javafx.fxml, javafx.base;

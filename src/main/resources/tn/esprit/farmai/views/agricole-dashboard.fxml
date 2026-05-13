@@ -43,6 +43,7 @@
                 <Button text="🌱  Mes Cultures" styleClass="nav-button" onAction="#handleMyCrops" maxWidth="Infinity"/>
                 <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
                 <Button text="📋  Mes Demandes" styleClass="nav-button" onAction="#handleMyRequests" maxWidth="Infinity"/>
+                <Button text="🏭  Production ERP" styleClass="nav-button" onAction="#handleProductionERP" maxWidth="Infinity"/>
                 <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
@@ -96,7 +97,7 @@
                 <!-- Stats Cards Row -->
                 <HBox spacing="20" alignment="CENTER_LEFT">
                     
-                    <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
+                    <VBox styleClass="stat-card-tall card-green" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
                         <Label text="Exploitations" styleClass="stat-label"/>
                         <Label text="Actives" styleClass="stat-desc"/>
@@ -104,7 +105,7 @@
                         <ProgressBar progress="1.0" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
-                    <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
+                    <VBox styleClass="stat-card-tall card-white" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
                         <Label text="Analyses" styleClass="stat-label"/>
                         <Label text="Effectuées" styleClass="stat-desc"/>
@@ -112,7 +113,7 @@
                         <ProgressBar progress="0.6" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
-                     <VBox styleClass="stat-card-tall, card-grey" HBox.hgrow="ALWAYS" spacing="10">
+                     <VBox styleClass="stat-card-tall card-grey" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
                         <Label text="Conseils" styleClass="stat-label"/>
                         <Label text="Reçus" styleClass="stat-desc"/>
@@ -158,6 +159,41 @@
                             </HBox>
                         </VBox>
                      </VBox>
+                </HBox>
+
+                <!-- ERP Production Quick Access -->
+                <HBox spacing="20">
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Text text="🏭" style="-fx-font-size: 22px;"/>
+                            <Label text="Espace Production ERP" styleClass="card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Ouvrir →" styleClass="primary-btn" onAction="#handleProductionERP"/>
+                        </HBox>
+                        <HBox spacing="15">
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="🛒" styleClass="list-item-icon"/>
+                                    <Label text="Catalogue Matières" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Parcourir et commander" styleClass="stat-desc"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="📦" styleClass="list-item-icon"/>
+                                    <Label text="Produits Finis" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Fabriquer et vendre" styleClass="stat-desc"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="🛍️" styleClass="list-item-icon"/>
+                                    <Label text="Mes Achats" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Payer pour recevoir les matières" styleClass="stat-desc"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
                 </HBox>
                 
             </VBox>

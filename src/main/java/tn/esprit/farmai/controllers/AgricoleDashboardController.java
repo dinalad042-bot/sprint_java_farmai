@@ -501,6 +501,16 @@ public class AgricoleDashboardController implements Initializable {
     }
 
     /**
+     * Handle Production ERP — Navigate to the agricole ERP production hub.
+     * Mirrors Symfony erp/dashboard/agricole.html.twig
+     */
+    @FXML
+    private void handleProductionERP() {
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/erp-agricole-dashboard.fxml", "Production ERP");
+    }
+
+    /**
      * Handle my requests - Navigate to farmer request view (view all requests)
      */
     @FXML

@@ -7,9 +7,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import tn.esprit.farmai.models.User;
-import tn.esprit.farmai.services.AnalyseService;
-import tn.esprit.farmai.services.ConseilService;
-import tn.esprit.farmai.services.FermeService;
+import tn.esprit.farmai.services.MatiereService;
+import tn.esprit.farmai.services.ProduitService;
+import tn.esprit.farmai.services.VenteService;
 import tn.esprit.farmai.utils.NavigationUtil;
 import tn.esprit.farmai.utils.ProfileManager;
 import tn.esprit.farmai.utils.SessionManager;
@@ -58,14 +58,14 @@ public class FournisseurDashboardController implements Initializable {
     @FXML
     private Label totalConseilsLabel;
 
-    private final AnalyseService analyseService;
-    private final ConseilService conseilService;
-    private final FermeService fermeService;
+    private final MatiereService matiereService;
+    private final ProduitService produitService;
+    private final VenteService venteService;
 
     public FournisseurDashboardController() {
-        this.analyseService = new AnalyseService();
-        this.conseilService = new ConseilService();
-        this.fermeService = new FermeService();
+        this.matiereService = new MatiereService();
+        this.produitService = new ProduitService();
+        this.venteService = new VenteService();
     }
 
     @Override
@@ -96,41 +96,35 @@ public class FournisseurDashboardController implements Initializable {
     }
 
     /**
-     * Load real statistics from database
+     * Load real ERP statistics from database using COUNT queries on a background thread.
      */
     private void loadStatistics() {
-        try {
-            // Total analyses
-            int totalAnalyses = analyseService.selectALL().size();
-            if (totalAnalysesLabel != null) {
-                totalAnalysesLabel.setText(String.valueOf(totalAnalyses));
+        // Run DB calls off the JavaFX Application Thread to avoid UI freeze
+        Thread bgThread = new Thread(() -> {
+            try {
+                int totalMatieres = matiereService.countAll();
+                int totalProduits = produitService.countAll();
+                int totalVentes   = venteService.selectAll().size();
+
+                LOGGER.log(Level.INFO, "Fournisseur ERP Statistics loaded: {0} matières, {1} produits, {2} ventes",
+                        new Object[] { totalMatieres, totalProduits, totalVentes });
+
+                javafx.application.Platform.runLater(() -> {
+                    if (totalAnalysesLabel != null) totalAnalysesLabel.setText(String.valueOf(totalMatieres));
+                    if (totalFermesLabel != null)   totalFermesLabel.setText(String.valueOf(totalProduits));
+                    if (totalConseilsLabel != null)  totalConseilsLabel.setText(String.valueOf(totalVentes));
+                });
+            } catch (SQLException e) {
+                LOGGER.log(Level.SEVERE, "Error loading fournisseur ERP statistics", e);
+                javafx.application.Platform.runLater(() -> {
+                    if (totalAnalysesLabel != null) totalAnalysesLabel.setText("-");
+                    if (totalFermesLabel != null)   totalFermesLabel.setText("-");
+                    if (totalConseilsLabel != null)  totalConseilsLabel.setText("-");
+                });
             }
-
-            // Total fermes
-            int totalFermes = fermeService.selectALL().size();
-            if (totalFermesLabel != null) {
-                totalFermesLabel.setText(String.valueOf(totalFermes));
-            }
-
-            // Total conseils
-            int totalConseils = conseilService.selectALL().size();
-            if (totalConseilsLabel != null) {
-                totalConseilsLabel.setText(String.valueOf(totalConseils));
-            }
-
-            LOGGER.log(Level.INFO, "Fournisseur Statistics loaded: {0} analyses, {1} fermes, {2} conseils",
-                    new Object[] { totalAnalyses, totalFermes, totalConseils });
-
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error loading fournisseur statistics", e);
-            // Set default values on error
-            if (totalAnalysesLabel != null)
-                totalAnalysesLabel.setText("-");
-            if (totalFermesLabel != null)
-                totalFermesLabel.setText("-");
-            if (totalConseilsLabel != null)
-                totalConseilsLabel.setText("-");
-        }
+        });
+        bgThread.setDaemon(true);
+        bgThread.start();
     }
 
     /**
@@ -159,42 +153,20 @@ public class FournisseurDashboardController implements Initializable {
     }
 
     /**
-     * Handle my products
+     * Handle my products → navigate to ERP Matières (fournisseur catalogue)
      */
     @FXML
     private void handleMyProducts() {
-        NavigationUtil.showSuccess("Mes Produits", "Module des produits à venir.");
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/erp-matieres.fxml", "Mon Catalogue");
     }
 
     /**
-     * Handle orders
-     */
-    @FXML
-    private void handleOrders() {
-        NavigationUtil.showSuccess("Commandes", "Module des commandes à venir.");
-    }
-
-    /**
-     * Handle deliveries
+     * Handle deliveries → navigate to ERP Ventes (fournisseur sells produits finis)
      */
     @FXML
     private void handleDeliveries() {
-        NavigationUtil.showSuccess("Livraisons", "Module des livraisons à venir.");
-    }
-
-    /**
-     * Handle inventory
-     */
-    @FXML
-    private void handleInventory() {
-        NavigationUtil.showSuccess("Stock", "Module de stock à venir.");
-    }
-
-    /**
-     * Handle statistics
-     */
-    @FXML
-    private void handleStatistics() {
-        NavigationUtil.showSuccess("Statistiques", "Module des statistiques à venir.");
+        Stage stage = (Stage) welcomeLabel.getScene().getWindow();
+        NavigationUtil.navigateTo(stage, "views/erp-ventes.fxml", "Mes Ventes");
     }
 }

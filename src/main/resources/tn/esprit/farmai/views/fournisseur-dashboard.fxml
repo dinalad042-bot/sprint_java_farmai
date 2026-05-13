@@ -39,10 +39,8 @@
             
             <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
                 <Button text="📊  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
-                <Button text="📦  Mes Produits" styleClass="nav-button" onAction="#handleMyProducts" maxWidth="Infinity"/>
-                <Button text="🛒  Commandes" styleClass="nav-button" onAction="#handleOrders" maxWidth="Infinity"/>
-                <Button text="🚚  Livraisons" styleClass="nav-button" onAction="#handleDeliveries" maxWidth="Infinity"/>
-                <Button text="📈  Ventes" styleClass="nav-button" maxWidth="Infinity"/>
+                <Button text="🧪  Mon Catalogue" styleClass="nav-button" onAction="#handleMyProducts" maxWidth="Infinity"/>
+                <Button text="💰  Mes Ventes" styleClass="nav-button" onAction="#handleDeliveries" maxWidth="Infinity"/>
                 
                 <Region VBox.vgrow="ALWAYS"/>
                 <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
@@ -85,58 +83,56 @@
                 <!-- Stats Cards Row -->
                 <HBox spacing="20" alignment="CENTER_LEFT">
                     
-                    <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
+                    <VBox styleClass="stat-card-tall card-green" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
-                        <Label text="Analyses" styleClass="stat-label"/>
-                        <Label text="Partenaires" styleClass="stat-desc"/>
+                        <Label text="Matières" styleClass="stat-label"/>
+                        <Label text="Premières" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.7" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
-                    <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
+                    <VBox styleClass="stat-card-tall card-white" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
-                        <Label text="Fermes" styleClass="stat-label"/>
-                        <Label text="Clientes" styleClass="stat-desc"/>
+                        <Label text="Produits" styleClass="stat-label"/>
+                        <Label text="Finis" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.9" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
-                    <VBox styleClass="stat-card-tall, card-dark" HBox.hgrow="ALWAYS" spacing="10">
+                    <VBox styleClass="stat-card-tall card-dark" HBox.hgrow="ALWAYS" spacing="10">
                         <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
-                        <Label text="Conseils" styleClass="stat-label"/>
-                        <Label text="Experts" styleClass="stat-desc"/>
+                        <Label text="Ventes" styleClass="stat-label"/>
+                        <Label text="Effectuées" styleClass="stat-desc"/>
                         <Region VBox.vgrow="ALWAYS"/>
                         <ProgressBar progress="0.5" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
                     </VBox>
                     
                 </HBox>
                 
-                <!-- Recent Orders -->
+                <!-- Quick Access ERP — Fournisseur: Matières + Ventes only -->
                  <HBox spacing="20">
                      <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15">
                         <HBox alignment="CENTER_LEFT" spacing="10">
-                            <Text text="🛒" style="-fx-font-size: 20px;"/>
-                            <Label text="Dernières Commandes" styleClass="card-title"/>
-                            <Region HBox.hgrow="ALWAYS"/>
-                             <Button text="Voir Tout" styleClass="small-button"/>
+                            <Text text="🏪" style="-fx-font-size: 20px;"/>
+                            <Label text="Espace Fournisseur" styleClass="card-title"/>
                         </HBox>
                         
                         <VBox spacing="10">
                             <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
-                                <Label text="#CMD-802" style="-fx-font-weight: bold; -fx-text-fill: #455A64;"/>
+                                <Text text="🧪" styleClass="list-item-icon"/>
                                 <VBox HBox.hgrow="ALWAYS">
-                                    <Label text="Engrais Bio x50kg" styleClass="list-item-text"/>
-                                    <Label text="Client: Agriculteur A" styleClass="stat-desc"/>
+                                    <Label text="Mon Catalogue — Matières Premières" styleClass="list-item-text"/>
+                                    <Label text="Créer, modifier et gérer vos matières" styleClass="stat-desc"/>
                                 </VBox>
-                                <Label text="En Attente" styleClass="order-status pending"/>
+                                <Button text="Ouvrir" styleClass="primary-btn" onAction="#handleMyProducts"/>
                             </HBox>
-                             <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
-                                <Label text="#CMD-801" style="-fx-font-weight: bold; -fx-text-fill: #455A64;"/>
+                            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
+                                <Text text="💰" styleClass="list-item-icon"/>
                                 <VBox HBox.hgrow="ALWAYS">
-                                    <Label text="Semences Blé" styleClass="list-item-text"/>
-                                    <Label text="Client: Coopérative Sud" styleClass="stat-desc"/>
+                                    <Label text="Mes Ventes" styleClass="list-item-text"/>
+                                    <Label text="Vendre les produits finis des agriculteurs" styleClass="stat-desc"/>
                                 </VBox>
-                                <Label text="Expédié" styleClass="order-status shipping"/>
+                                <Button text="Ouvrir" styleClass="action-btn" onAction="#handleDeliveries"/>
                             </HBox>
                         </VBox>
                      </VBox>
