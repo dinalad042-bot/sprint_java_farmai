@@ -90,16 +90,29 @@ public class ExpertVisionService {
             );
         }
         
-        // Check format
+        // Check format - allow more formats since extension might be wrong
         String fileName = file.getName().toLowerCase();
-        if (!fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg") && !fileName.endsWith(".png")) {
-            throw new VisionException("Unsupported image format. Use JPG or PNG.");
-        }
-        
-        // Read and check dimensions
-        BufferedImage image = ImageIO.read(file);
+
+        // Try to read the image - attempt multiple formats
+        BufferedImage image = tryReadImage(file);
+
         if (image == null) {
-            throw new VisionException("Cannot read image file.");
+            // Provide diagnostic info for debugging - detect actual format
+            long fileSize = file.length();
+            String actualFormat = detectActualFormat(file);
+            String extension = getFileExtension(file.getName());
+
+            String diagnosticMsg = String.format(
+                "Cannot read image file.\n" +
+                "  File: %s\n" +
+                "  Size: %d bytes\n" +
+                "  Extension: %s\n" +
+                "  Actual Format: %s\n\n" +
+                "The file extension (.%s) doesn't match the actual format (%s).\n" +
+                "Please convert the image to a standard JPEG or PNG format.",
+                file.getName(), fileSize, extension, actualFormat, extension, actualFormat
+            );
+            throw new VisionException(diagnosticMsg);
         }
         
         // Resize if too large
@@ -109,7 +122,109 @@ public class ExpertVisionService {
         
         return file;
     }
-    
+
+    /**
+     * Extract file extension from filename.
+     */
+    private String getFileExtension(String fileName) {
+        if (fileName == null || fileName.isEmpty()) {
+            return "none";
+        }
+        int lastDot = fileName.lastIndexOf('.');
+        if (lastDot > 0 && lastDot < fileName.length() - 1) {
+            return fileName.substring(lastDot + 1).toLowerCase();
+        }
+        return "none";
+    }
+
+    /**
+     * Try to read image using multiple format readers.
+     * This helps when the file extension doesn't match the actual format.
+     */
+    private BufferedImage tryReadImage(File file) throws IOException {
+        // First try standard ImageIO read
+        BufferedImage image = ImageIO.read(file);
+        if (image != null) {
+            return image;
+        }
+
+        // Try common formats that might have wrong extension
+        String[] formatsToTry = {"png", "jpeg", "gif", "bmp", "webp", "wbmp"};
+        for (String format : formatsToTry) {
+            try {
+                java.util.Iterator<javax.imageio.ImageReader> readers = ImageIO.getImageReadersByFormatName(format);
+                while (readers.hasNext()) {
+                    javax.imageio.ImageReader reader = readers.next();
+                    try {
+                        reader.setInput(ImageIO.createImageInputStream(file), true);
+                        image = reader.read(0);
+                        reader.dispose();
+                        if (image != null) {
+                            System.out.println("Successfully read image as " + format.toUpperCase());
+                            return image;
+                        }
+                    } catch (Exception e) {
+                        // Try next reader
+                    }
+                }
+            } catch (Exception e) {
+                // Format not available, skip
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Detect actual image format by reading file magic bytes.
+     * Common formats:
+     * - JPEG: FF D8 FF
+     * - PNG: 89 50 4E 47
+     * - GIF: 47 49 46 38
+     * - BMP: 42 4D
+     * - WebP: 52 49 46 46 ... 57 45 42 50
+     */
+    private String detectActualFormat(File file) {
+        try {
+            byte[] header = new byte[12];
+            try (java.io.FileInputStream fis = new java.io.FileInputStream(file)) {
+                int bytesRead = fis.read(header);
+                if (bytesRead < 4) {
+                    return "unknown (file too small)";
+                }
+            }
+
+            // Check magic bytes
+            if (header[0] == (byte) 0xFF && header[1] == (byte) 0xD8 && header[2] == (byte) 0xFF) {
+                return "JPEG";
+            }
+            if (header[0] == (byte) 0x89 && header[1] == 0x50 && header[2] == 0x4E && header[3] == 0x47) {
+                return "PNG";
+            }
+            if (header[0] == 0x47 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x38) {
+                return "GIF";
+            }
+            if (header[0] == 0x42 && header[1] == 0x4D) {
+                return "BMP";
+            }
+            // WebP: RIFF....WEBP
+            if (header[0] == 0x52 && header[1] == 0x49 && header[2] == 0x46 && header[3] == 0x46 &&
+                header[8] == 0x57 && header[9] == 0x45 && header[10] == 0x42 && header[11] == 0x50) {
+                return "WebP";
+            }
+
+            // Print hex for debugging
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < Math.min(8, header.length); i++) {
+                hex.append(String.format("%02X ", header[i]));
+            }
+            return "unknown (header: " + hex.toString().trim() + ")";
+
+        } catch (Exception e) {
+            return "error reading: " + e.getMessage();
+        }
+    }
+
     /**
      * Resize image to fit within max dimensions while maintaining aspect ratio.
      */

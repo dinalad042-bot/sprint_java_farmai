@@ -19,6 +19,13 @@
     </properties>
 
     <dependencies>
+        <!-- WebP ImageIO plugin from Maven Central -->
+        <dependency>
+            <groupId>org.sejda.imageio</groupId>
+            <artifactId>webp-imageio</artifactId>
+            <version>0.1.6</version>
+        </dependency>
+
         <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>
@@ -41,6 +48,7 @@
             <version>${javafx.version}</version>
         </dependency>
 
+        
         <!-- Database -->
         <dependency>
             <groupId>com.mysql</groupId>

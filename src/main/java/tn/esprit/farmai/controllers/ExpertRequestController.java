@@ -496,34 +496,72 @@ public class ExpertRequestController implements Initializable {
      * - Absolute paths (C:\...)
      * - Relative paths (/uploads/...)
      * - URLs (http://...)
+     *
+     * Enhanced to check multiple possible locations:
+     * 1. Direct path as stored
+     * 2. Symfony public folder (parent/public/uploads)
+     * 3. temp_symfony/public/uploads (for shared database)
      */
     private String resolveImagePath(String imageUrl) {
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
             return imageUrl;
         }
 
-        // Already a URL or absolute path
-        if (imageUrl.startsWith("http") || (imageUrl.length() >= 3 && imageUrl.charAt(1) == ':')) {
+        // Already a URL - can't process locally
+        if (imageUrl.startsWith("http")) {
+            System.out.println("DEBUG: Image URL is remote HTTP, cannot process locally: " + imageUrl);
             return imageUrl;
         }
 
-        // Symfony relative path like /uploads/analyses/image.jpg
-        if (imageUrl.startsWith("/")) {
-            // The Symfony project public folder is at the parent of sprint_java_farmai
-            // Path: [INTEG]/public/uploads/...
-            String basePath = System.getProperty("user.dir");
-            int lastIndex = basePath.lastIndexOf(File.separator);
-            if (lastIndex > 0) {
-                String parentPath = basePath.substring(0, lastIndex);
-                // Add 'public' folder between parent path and image path
-                String publicPath = parentPath + File.separator + "public";
-                return publicPath + imageUrl.replace("/", File.separator);
-            }
-            // Fallback
-            return System.getProperty("user.dir") + File.separator + "public" + imageUrl.replace("/", File.separator);
+        // Windows absolute path (C:\...)
+        if (imageUrl.length() >= 3 && imageUrl.charAt(1) == ':' && (imageUrl.charAt(0) >= 'A' && imageUrl.charAt(0) <= 'Z')) {
+            System.out.println("DEBUG: Using absolute Windows path: " + imageUrl);
+            return imageUrl;
         }
 
-        // Plain filename - try current directory first
+        // Relative path starting with / (Symfony format: /uploads/...)
+        if (imageUrl.startsWith("/")) {
+            // Try multiple potential locations
+            String[] potentialPaths = {
+                // 1. Parent/public/uploads (if Java and Symfony are siblings)
+                getParentPath() + File.separator + "public" + imageUrl.replace("/", File.separator),
+                // 2. temp_symfony/public/uploads (explicit check)
+                getParentPath() + File.separator + "temp_symfony" + File.separator + "public" + imageUrl.replace("/", File.separator),
+                // 3. Current working dir public/uploads
+                System.getProperty("user.dir") + File.separator + "public" + imageUrl.replace("/", File.separator),
+                // 4. uploads folder in current directory
+                System.getProperty("user.dir") + File.separator + "uploads" + imageUrl.replace("/", File.separator),
+            };
+
+            for (String path : potentialPaths) {
+                // Normalize path separators
+                path = path.replace("/", File.separator);
+                File testFile = new File(path);
+                if (testFile.exists()) {
+                    System.out.println("DEBUG: Found image at: " + path);
+                    return path;
+                }
+            }
+
+            // Fallback: use the most likely Symfony path
+            String fallback = potentialPaths[0];
+            System.out.println("DEBUG: Image not found in any location. Using fallback: " + fallback);
+            return fallback;
+        }
+
+        // Plain filename - try as-is first
         return imageUrl;
+    }
+
+    /**
+     * Get parent directory path of current working directory.
+     */
+    private String getParentPath() {
+        String basePath = System.getProperty("user.dir");
+        int lastIndex = basePath.lastIndexOf(File.separator);
+        if (lastIndex > 0) {
+            return basePath.substring(0, lastIndex);
+        }
+        return basePath;
     }
 }
