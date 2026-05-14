@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<!--
+  Catalogue Matières — read-only view for AGRICOLE role.
+  Mirrors Symfony erp/matiere/catalogue.html.twig
+  Agriculteur can browse stock levels and place purchase orders.
+-->
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.erp.CatalogueMatieresController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="270">
+            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="sidebarAvatarText" text="👨‍🌾" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Agriculteur" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Production ERP" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            <Region prefHeight="20"/>
+            <VBox spacing="6" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="🏠  Mon Tableau de bord" styleClass="nav-button" onAction="#handleBackToDashboard" maxWidth="Infinity"/>
+                <Button text="🏭  Production ERP" styleClass="nav-button" onAction="#handleERPDashboard" maxWidth="Infinity"/>
+                <Button text="🛒  Catalogue Matières" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📦  Mes Produits Finis" styleClass="nav-button" onAction="#handleProduits" maxWidth="Infinity"/>
+                <Button text="🛍️  Mes Achats" styleClass="nav-button" onAction="#handleAchats" maxWidth="Infinity"/>
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
+                <Label text="ERP / Catalogue Matières" style="-fx-font-size: 18px; -fx-text-fill: #90A4AE; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                    <Text text="🔍" fill="#9E9E9E"/>
+                    <TextField fx:id="searchField" promptText="Rechercher une matière..." styleClass="header-search-field" onKeyReleased="#handleSearch"/>
+                </HBox>
+                <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
+                    <ImageView fx:id="headerProfileImage" fitWidth="36" fitHeight="36" pickOnBounds="true" preserveRatio="true"/>
+                </StackPane>
+            </HBox>
+
+            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-padding: 0 40 0 40;">
+                <Label text="🛒  Catalogue des Matières Premières" styleClass="welcome-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="🛒  Passer une Commande" styleClass="primary-btn" onAction="#handleNewAchat"/>
+            </HBox>
+
+            <Label text="Consultez les matières disponibles. Cliquez sur 'Commander' sur une ligne pour pré-sélectionner cette matière, ou 'Passer une Commande' pour une commande libre."
+                   wrapText="true" style="-fx-padding: 0 40 0 40; -fx-text-fill: #78909C; -fx-font-size: 13px;"/>
+
+            <VBox styleClass="content-card" VBox.vgrow="ALWAYS">
+                <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+                <TableView fx:id="matieresTable" VBox.vgrow="ALWAYS" style="-fx-pref-height: 500;">
+                    <columns>
+                        <TableColumn fx:id="colNom" text="Matière" prefWidth="180"/>
+                        <TableColumn fx:id="colUnite" text="Unité" prefWidth="70"/>
+                        <TableColumn fx:id="colStock" text="Stock Disponible" prefWidth="130"/>
+                        <TableColumn fx:id="colPrix" text="Prix Unitaire" prefWidth="120"/>
+                        <TableColumn fx:id="colSeuil" text="Seuil Critique" prefWidth="110"/>
+                        <TableColumn fx:id="colStatut" text="Disponibilité" prefWidth="120"/>
+                        <TableColumn fx:id="colCommander" text="Action" prefWidth="120"/>
+                    </columns>
+                    <placeholder>
+                        <Label text="Aucune matière dans le catalogue." style="-fx-text-fill: #90A4AE;"/>
+                    </placeholder>
+                </TableView>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.farmai.controllers.FaceRecognitionController"
+      alignment="CENTER" spacing="12"
+      style="-fx-background-color: #1a1a2e; -fx-padding: 20;">
+
+    <Label text="🎯 Face Recognition"
+           style="-fx-text-fill: #e94560; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+
+    <!-- Camera feed display -->
+    <ImageView fx:id="cameraFeed"
+               fitWidth="640" fitHeight="480"
+               preserveRatio="true"
+               style="-fx-effect: dropshadow(gaussian, #e94560, 12, 0.4, 0, 0);"/>
+
+    <!-- Status label -->
+    <Label fx:id="statusLabel" text="Camera stopped"
+           style="-fx-text-fill: #a8a8b3; -fx-font-size: 13px;"/>
+
+    <!-- Enroll button (only works when logged in) -->
+    <Button fx:id="btnEnroll" text="💾  Enregistrer mon visage"
+            onAction="#enrollFace"
+            style="-fx-background-color: #0f3460; -fx-text-fill: #4ecca3;
+                   -fx-border-color: #4ecca3; -fx-border-radius: 8;
+                   -fx-background-radius: 8; -fx-padding: 8 20;
+                   -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+    <!-- Controls -->
+    <HBox alignment="CENTER" spacing="16">
+        <Button fx:id="btnStart" text="▶  Start Camera"
+                onAction="#startCamera"
+                style="-fx-background-color: #e94560; -fx-text-fill: white;
+                       -fx-font-weight: bold; -fx-padding: 10 24; -fx-background-radius: 8;"/>
+        <Button fx:id="btnStop" text="⏹  Stop Camera"
+                onAction="#stopCamera" disable="true"
+                style="-fx-background-color: #16213e; -fx-text-fill: #a8a8b3;
+                       -fx-border-color: #e94560; -fx-border-radius: 8;
+                       -fx-background-radius: 8; -fx-padding: 10 24;"/>
+    </HBox>
+</VBox>

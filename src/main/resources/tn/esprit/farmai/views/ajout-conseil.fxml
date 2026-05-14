@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.AjoutConseilController"
+            fitToWidth="true"
+            style="-fx-background-color: #f5f5f5;"
+            prefWidth="600"
+            prefHeight="750">
+    <VBox spacing="20"
+          style="-fx-background-color: #f5f5f5; -fx-padding: 30px;"
+          minHeight="700">
+
+        <!-- Header -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label text="💡 Nouveau Conseil" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #263238;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- Main Form Card -->
+        <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 12px; -fx-padding: 25px; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 4);">
+
+            <!-- Section: Sélection de l'Analyse (Relation 1:N) -->
+            <VBox spacing="8">
+                <Label text="Analyse associée *" style="-fx-font-weight: bold; -fx-text-fill: #37474F;"/>
+                <ComboBox fx:id="analyseComboBox"
+                          promptText="Sélectionner une analyse..."
+                          style="-fx-pref-width: 100%;"
+                          maxWidth="Infinity"/>
+                <Label fx:id="analyseErrorLabel"
+                       text="Veuillez sélectionner une analyse"
+                       style="-fx-text-fill: #D32F2F; -fx-font-size: 11px;"
+                       visible="false"/>
+
+                <!-- Image Preview de l'analyse sélectionnée -->
+                <VBox fx:id="imagePreviewContainer" spacing="5" visible="false">
+                    <Label text="Image associée :" style="-fx-text-fill: #78909C; -fx-font-size: 12px;"/>
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <ImageView fx:id="imagePreview" fitWidth="200" fitHeight="150" preserveRatio="true"/>
+                        <Label fx:id="imageUrlLabel" style="-fx-text-fill: #546E7A; -fx-font-size: 11px;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <Separator/>
+
+            <!-- Section: Priorité -->
+            <VBox spacing="8">
+                <Label text="Niveau de priorité *" style="-fx-font-weight: bold; -fx-text-fill: #37474F;"/>
+                <ComboBox fx:id="prioriteComboBox"
+                          promptText="Choisir la priorité..."
+                          style="-fx-pref-width: 100%;"
+                          maxWidth="Infinity"/>
+                <Label fx:id="prioriteErrorLabel"
+                       text="Veuillez sélectionner une priorité"
+                       style="-fx-text-fill: #D32F2F; -fx-font-size: 11px;"
+                       visible="false"/>
+            </VBox>
+
+            <Separator/>
+
+            <!-- Section: Description du Conseil -->
+            <VBox spacing="8" VBox.vgrow="ALWAYS">
+                <Label text="Description du conseil *" style="-fx-font-weight: bold; -fx-text-fill: #37474F;"/>
+                <TextArea fx:id="descriptionConseilField"
+                          promptText="Décrivez le conseil technique en détail (minimum 10 caractères)..."
+                          wrapText="true"
+                          style="-fx-pref-height: 150px;"
+                          VBox.vgrow="ALWAYS"/>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label fx:id="descriptionErrorLabel"
+                           text="La description doit contenir au moins 10 caractères"
+                           style="-fx-text-fill: #D32F2F; -fx-font-size: 11px;"
+                           visible="false"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="charCountLabel"
+                           text="0 caractères"
+                           style="-fx-text-fill: #90A4AE; -fx-font-size: 11px;"/>
+                </HBox>
+            </VBox>
+
+        </VBox>
+
+        <!-- Info Card -->
+        <HBox spacing="10" alignment="CENTER_LEFT" style="-fx-background-color: #E3F2FD; -fx-background-radius: 8px; -fx-padding: 12px;">
+            <Label text="ℹ️" style="-fx-font-size: 18px;"/>
+            <Label text="US5 et US7: Le conseil sera lié à l'analyse sélectionnée. L'image est gérée via URL (pas de BLOB)."
+                   style="-fx-text-fill: #1565C0; -fx-font-size: 12px;"
+                   wrapText="true"/>
+        </HBox>
+
+        <!-- Buttons -->
+        <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 20px 0;">
+            <Button fx:id="annulerButton"
+                    text="Annuler"
+                    onAction="#handleAnnuler"
+                    style="-fx-background-color: #ECEFF1; -fx-text-fill: #37474F; -fx-padding: 10px 25px; -fx-background-radius: 8px; -fx-cursor: hand;"/>
+            <Button fx:id="enregistrerButton"
+                    text="Enregistrer le Conseil"
+                    onAction="#handleEnregistrer"
+                    style="-fx-background-color: #1976D2; -fx-text-fill: white; -fx-padding: 10px 25px; -fx-background-radius: 8px; -fx-font-weight: bold; -fx-cursor: hand;"/>
+        </HBox>
+
+    </VBox>
+</ScrollPane>

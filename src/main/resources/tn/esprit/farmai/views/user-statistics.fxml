@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="25" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="tn.esprit.farmai.controllers.UserStatisticsController"
+      style="-fx-background-color: #f8f9fa;">
+    
+    <padding>
+        <Insets top="40" right="40" bottom="40" left="40"/>
+    </padding>
+
+    <Label text="Distribution des Utilisateurs par Rôle" 
+           style="-fx-font-size: 26px; -fx-font-weight: bold; -fx-text-fill: #263238;"/>
+    
+    <VBox alignment="CENTER" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 20;" VBox.vgrow="ALWAYS">
+        <PieChart fx:id="rolePieChart" prefWidth="650" prefHeight="450" legendSide="BOTTOM" labelsVisible="true" />
+    </VBox>
+
+    <Button text="🔄 Actualiser les données" onAction="#loadData" 
+            style="-fx-background-color: #4ecca3; -fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold; 
+                   -fx-padding: 12 30; -fx-background-radius: 8; -fx-cursor: hand;"/>
+</VBox>

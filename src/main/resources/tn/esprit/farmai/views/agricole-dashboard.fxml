@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="tn.esprit.farmai.controllers.AgricoleDashboardController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+    
+    <!-- Sidebar -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+            
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" onMouseClicked="#handleProfile" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="sidebarAvatar" radius="18" fill="rgba(255,255,255,0.2)" stroke="white"/>
+                        <Text fx:id="sidebarAvatarText" text="👨‍🌾" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="•••" styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="userNameLabel" text="Agriculteur" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Agricole" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+            
+            <Region prefHeight="30"/>
+            
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="📊  Tableau de bord" styleClass="nav-button active" maxWidth="Infinity"/>
+                <Button text="📝  Nouvelle Demande" styleClass="nav-button" onAction="#handleNewRequest" maxWidth="Infinity"/>
+                <Button text="🌱  Mes Cultures" styleClass="nav-button" onAction="#handleMyCrops" maxWidth="Infinity"/>
+                <Button text="🤖  Analyse IA" styleClass="nav-button" onAction="#handleAIAnalysis" maxWidth="Infinity"/>
+                <Button text="📋  Mes Demandes" styleClass="nav-button" onAction="#handleMyRequests" maxWidth="Infinity"/>
+                <Button text="🏭  Production ERP" styleClass="nav-button" onAction="#handleProductionERP" maxWidth="Infinity"/>
+                <Button text="📷  Ajouter Visage" styleClass="nav-button" onAction="#handleAddFace" maxWidth="Infinity"/>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+    
+    <!-- Main Content -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: transparent; -fx-background-color: transparent;">
+            <VBox styleClass="main-content" spacing="20">
+                
+                <!-- Top Header -->
+                <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20">
+                    <Label text="Espace Agricole" style="-fx-font-size: 18px; -fx-text-fill: #90A4AE; -fx-font-weight: bold;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    
+                    <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                        <Text text="🔍" fill="#9E9E9E"/>
+                        <TextField promptText="Recherche cultures, commandes..." styleClass="header-search-field"/>
+                    </HBox>
+                    
+                    <StackPane styleClass="icon-button">
+                         <Text text="🌤️" style="-fx-font-size: 18px;" fill="#FBC02D"/>
+                    </StackPane>
+                    
+                    <!-- Notification Bell with Badge -->
+                    <StackPane styleClass="icon-button" onMouseClicked="#handleNotifications" style="-fx-cursor: hand;">
+                        <Text text="🔔" style="-fx-font-size: 20px;"/>
+                        <StackPane StackPane.alignment="TOP_RIGHT" translateX="8" translateY="-8">
+                            <Circle fx:id="notificationBadge" radius="8" fill="#F44336" visible="false"/>
+                            <Label fx:id="notificationCountLabel" text="0" visible="false" 
+                                   style="-fx-text-fill: white; -fx-font-size: 10px; -fx-font-weight: bold;"/>
+                        </StackPane>
+                    </StackPane>
+                    
+                    <StackPane styleClass="icon-button" onMouseClicked="#handleProfile">
+                        <ImageView fx:id="headerProfileImage" fitWidth="36" fitHeight="36" pickOnBounds="true" preserveRatio="true"/>
+                    </StackPane>
+                </HBox>
+                
+                <!-- Welcome Section -->
+                <VBox styleClass="welcome-section" spacing="5">
+                    <Label fx:id="welcomeLabel" text="Bienvenue, Agriculteur !" styleClass="welcome-title"/>
+                    <Label text="Gérez vos cultures avec l'intelligence artificielle." styleClass="welcome-subtitle"/>
+                </VBox>
+                
+                <Label text="Aujourd'hui" styleClass="section-title"/>
+                
+                <!-- Stats Cards Row -->
+                <HBox spacing="20" alignment="CENTER_LEFT">
+                    
+                    <VBox styleClass="stat-card-tall, card-green" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalFermesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Exploitations" styleClass="stat-label"/>
+                        <Label text="Actives" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="1.0" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                    
+                    <VBox styleClass="stat-card-tall, card-white" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Analyses" styleClass="stat-label"/>
+                        <Label text="Effectuées" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="0.6" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                    
+                     <VBox styleClass="stat-card-tall, card-grey" HBox.hgrow="ALWAYS" spacing="10">
+                        <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-value"/>
+                        <Label text="Conseils" styleClass="stat-label"/>
+                        <Label text="Reçus" styleClass="stat-desc"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                        <ProgressBar progress="0.3" styleClass="progress-bar-modern" maxWidth="Infinity" prefHeight="8"/>
+                    </VBox>
+                
+                </HBox>
+                
+                <!-- Lower Section -->
+                 <HBox spacing="20">
+                     <!-- Weather Card (Redesigned inside content-card) -->
+                     <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="10" style="-fx-background-color: #E3F2FD;">
+                         <HBox alignment="CENTER_LEFT" spacing="10">
+                           <Text text="☀️" style="-fx-font-size: 32px;"/>
+                           <VBox>
+                               <Label text="Météo: Ensoleillé" styleClass="card-title" style="-fx-font-size: 16px;"/>
+                               <Label text="28°C - Humidité 45%" styleClass="stat-desc" style="-fx-text-fill: #1976D2;"/>
+                           </VBox>
+                         </HBox>
+                         <Label text="Parfait pour l'irrigation des tomates." wrapText="true" styleClass="stat-desc"/>
+                     </VBox>
+                     
+                     <!-- Recommendations -->
+                     <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15">
+                        <Label text="Recommandations IA" styleClass="card-title"/>
+                        <VBox spacing="10">
+                            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
+                                <Text text="💧" styleClass="list-item-icon"/>
+                                <VBox>
+                                    <Label text="Irrigation requise" styleClass="list-item-text"/>
+                                    <Label text="Parcelle A - 18:00" styleClass="stat-desc"/>
+                                </VBox>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Voir" styleClass="small-button"/>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="15" styleClass="list-item">
+                                <Text text="🌿" styleClass="list-item-icon"/>
+                                <VBox>
+                                    <Label text="Ajout nutriments" styleClass="list-item-text"/>
+                                    <Label text="Parcelle B - Demain" styleClass="stat-desc"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                     </VBox>
+                </HBox>
+
+                <!-- ERP Production Quick Access -->
+                <HBox spacing="20">
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS" spacing="15">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Text text="🏭" style="-fx-font-size: 22px;"/>
+                            <Label text="Espace Production ERP" styleClass="card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Button text="Ouvrir →" styleClass="primary-btn" onAction="#handleProductionERP"/>
+                        </HBox>
+                        <HBox spacing="15">
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="🛒" styleClass="list-item-icon"/>
+                                    <Label text="Catalogue Matières" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Parcourir et commander" styleClass="stat-desc"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="📦" styleClass="list-item-icon"/>
+                                    <Label text="Produits Finis" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Fabriquer et gérer" styleClass="stat-desc"/>
+                            </VBox>
+                            <VBox HBox.hgrow="ALWAYS" spacing="6" styleClass="list-item">
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Text text="🛍️" styleClass="list-item-icon"/>
+                                    <Label text="Mes Achats" styleClass="list-item-text"/>
+                                </HBox>
+                                <Label text="Payer et recevoir" styleClass="stat-desc"/>
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </HBox>
+                
+            </VBox>
+        </ScrollPane>
+    </center>
+</BorderPane>

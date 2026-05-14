@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.AgricoleStatisticsController"
+            styleClass="dashboard-root"
+            stylesheets="@../styles/dashboard.css">
+
+    <!-- Sidebar - Simplified for Agricole -->
+    <left>
+        <VBox styleClass="sidebar" prefWidth="280">
+            <padding>
+                <Insets top="25" right="20" bottom="25" left="20"/>
+            </padding>
+
+            <!-- User Profile Card -->
+            <VBox styleClass="sidebar-profile-card" spacing="10" style="-fx-cursor: hand;">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <StackPane>
+                        <Circle fx:id="userAvatarCircle" radius="20" fill="transparent" stroke="white" strokeWidth="2"/>
+                        <Text fx:id="defaultAvatarText" text="👨‍🌾" fill="white"/>
+                    </StackPane>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Text text="..." styleClass="menu-dots"/>
+                </HBox>
+                <VBox spacing="2">
+                    <Label fx:id="welcomeLabel" text="Statistiques" styleClass="sidebar-profile-name"/>
+                    <Label fx:id="userRoleLabel" text="Vue Agricole" styleClass="sidebar-profile-role"/>
+                </VBox>
+            </VBox>
+
+            <Region prefHeight="30"/>
+
+            <!-- Navigation Menu - Simplified -->
+            <VBox spacing="8" styleClass="nav-menu" VBox.vgrow="ALWAYS">
+                <Button text="←  Retour au Tableau de bord" styleClass="nav-button" onAction="#handleBack" maxWidth="Infinity"/>
+                
+                <Region VBox.vgrow="ALWAYS"/>
+                <Button text="🚪  Déconnexion" styleClass="nav-button" onAction="#handleLogout" maxWidth="Infinity"/>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- Main Content -->
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding>
+                <Insets top="0" right="40" bottom="40" left="40"/>
+            </padding>
+
+            <!-- Top Header -->
+            <HBox styleClass="top-header" alignment="CENTER_LEFT" spacing="20" style="-fx-padding: 20px 0 10px 0;">
+                <Label text="Statistiques - Vue Agricole" style="-fx-font-size: 24px; -fx-text-fill: #263238; -fx-font-weight: bold;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <HBox styleClass="search-container" alignment="CENTER_LEFT">
+                    <Text text="🔍" fill="#9E9E9E"/>
+                    <TextField promptText="Rechercher..." styleClass="header-search-field"/>
+                </HBox>
+
+                <!-- Header User Avatar -->
+                <Circle fx:id="headerAvatarCircle" radius="20" fill="#E0E0E0" stroke="#B0BEC5"/>
+            </HBox>
+
+            <!-- Statistics Overview -->
+            <HBox spacing="20">
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10">
+                    <Text text="📋" style="-fx-font-size: 32px;"/>
+                    <Label fx:id="totalAnalysesLabel" text="0" styleClass="stat-number"/>
+                    <Label text="Total Analyses" styleClass="stat-label"/>
+                </VBox>
+                
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10">
+                    <Text text="💡" style="-fx-font-size: 32px;"/>
+                    <Label fx:id="totalConseilsLabel" text="0" styleClass="stat-number"/>
+                    <Label text="Total Recommandations" styleClass="stat-label"/>
+                </VBox>
+                
+                <VBox styleClass="stat-card" HBox.hgrow="ALWAYS" spacing="10">
+                    <Text text="🚜" style="-fx-font-size: 32px;"/>
+                    <Label fx:id="totalFarmsLabel" text="0" styleClass="stat-number"/>
+                    <Label text="Exploitations Actives" styleClass="stat-label"/>
+                </VBox>
+            </HBox>
+
+            <!-- Charts Section -->
+            <HBox spacing="20" VBox.vgrow="ALWAYS">
+                <!-- Priority Distribution Pie Chart -->
+                <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="15">
+                    <Label text="Distribution des Priorités" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <PieChart fx:id="priorityPieChart" VBox.vgrow="ALWAYS"/>
+                    <Label fx:id="priorityLegendLabel" text="" style="-fx-font-size: 12px; -fx-text-fill: #78909C;"/>
+                </VBox>
+
+                <!-- Analysis per Farm Bar Chart -->
+                <VBox styleClass="chart-card" HBox.hgrow="ALWAYS" spacing="15">
+                    <Label text="Fréquence d'Analyses par Ferme" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                    <BarChart fx:id="farmBarChart" VBox.vgrow="ALWAYS" categoryGap="20.0">
+                        <xAxis>
+                            <CategoryAxis label="Ferme ID" fx:id="xAxis"/>
+                        </xAxis>
+                        <yAxis>
+                            <NumberAxis label="Nombre d'Analyses" fx:id="yAxis"/>
+                        </yAxis>
+                    </BarChart>
+                    <Button fx:id="refreshChartsButton" text="🔄 Rafraîchir" styleClass="secondary-btn" onAction="#handleRefreshData"/>
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>
