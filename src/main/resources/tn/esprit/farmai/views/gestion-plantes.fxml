@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.PlantesController"
+            styleClass="dashboard-root" stylesheets="@../styles/dashboard.css">
+
+    <left>
+        <VBox styleClass="sidebar" prefWidth="250">
+            <padding><Insets top="25" right="20" bottom="25" left="20"/></padding>
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Text text="🌿" style="-fx-font-size: 24px;"/>
+                <Text text="FarmAI" style="-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </HBox>
+            <Region prefHeight="40"/>
+            <Button text="⬅ Retour Menu" styleClass="nav-button" onAction="#handleReturnToSelection" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox styleClass="main-content" spacing="20">
+            <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
+
+            <VBox spacing="5">
+                <Label text="Gestion Intelligence des Plantes" styleClass="welcome-title"/>
+                <Label text="Suivez vos cultures et recevez des conseils d'arrosage IA en temps réel." styleClass="welcome-subtitle"/>
+            </VBox>
+
+            <HBox spacing="20" VBox.vgrow="ALWAYS">
+
+                <VBox spacing="15" prefWidth="300" styleClass="content-card">
+                    <Label text="Détails de la Plante" styleClass="card-title" style="-fx-font-size: 16px;"/>
+
+                    <VBox spacing="5">
+                        <Label text="Nom de l'espèce" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfNomEspece" promptText="Ex: Tomate, Maïs" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Cycle de vie" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfCycleVie" promptText="Ex: Floraison, Semis" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Quantité disponible (Kg)" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <TextField fx:id="tfQuantite" promptText="Ex: 500" styleClass="search-field"/>
+                    </VBox>
+
+                    <VBox spacing="5">
+                        <Label text="Ferme d'affectation" style="-fx-font-weight: bold; -fx-text-fill: #546E7A;"/>
+                        <ComboBox fx:id="cbFerme" maxWidth="Infinity" styleClass="filter-combo" promptText="Choisir une ferme"/>
+                    </VBox>
+
+                    <Region prefHeight="10"/>
+
+                    <VBox spacing="10">
+                        <Button text="Enregistrer" onAction="#ajouter" maxWidth="Infinity" styleClass="primary-btn" style="-fx-background-color: #2E7D32;"/>
+                        <HBox spacing="10">
+                            <Button text="Modifier" onAction="#modifier" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="secondary-btn"/>
+                            <Button text="Supprimer" onAction="#supprimer" HBox.hgrow="ALWAYS" maxWidth="Infinity" styleClass="danger-btn"/>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+                <VBox spacing="10" HBox.hgrow="ALWAYS">
+                    <HBox spacing="15" alignment="CENTER_LEFT">
+                        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="content-card" style="-fx-padding: 10;" HBox.hgrow="ALWAYS">
+                            <Text text="🔍" style="-fx-font-size: 16px;"/>
+                            <TextField fx:id="tfRecherche" promptText="Rechercher une plante..." onKeyReleased="#handleRecherche" HBox.hgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-color: transparent;"/>
+                        </HBox>
+                        <Button text="📄 PDF" onAction="#imprimerPdf" prefHeight="45" prefWidth="90" style="-fx-background-color: #D32F2F; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;"/>
+                    </HBox>
+
+                    <TableView fx:id="tvPlantes" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                        <columns>
+                            <TableColumn fx:id="colNom" text="Espèce" prefWidth="120"/>
+                            <TableColumn fx:id="colCycle" text="Cycle" prefWidth="120"/>
+                            <TableColumn fx:id="colQuantite" text="Qté (Kg)" prefWidth="80"/>
+                            <TableColumn fx:id="colFerme" text="ID Ferme" prefWidth="80"/>
+                        </columns>
+                        <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    </TableView>
+                </VBox>
+
+                <VBox spacing="15" prefWidth="290">
+
+                    <VBox spacing="15" styleClass="content-card" style="-fx-background-color: #F1F8E9; -fx-border-color: #C8E6C9; -fx-border-radius: 12; -fx-background-radius: 12;">
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Text text="🤖" style="-fx-font-size: 20px;"/>
+                            <Label text="IA Irrigation" styleClass="card-title" style="-fx-text-fill: #1B5E20;"/>
+                        </HBox>
+                        <Separator/>
+                        <VBox spacing="8">
+                            <Label text="Ville pour l'analyse :" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #388E3C;"/>
+                            <TextField fx:id="tfVilleIA" promptText="Ex: Kasserine" styleClass="search-field" style="-fx-background-radius: 10;"/>
+                            <Button text="Analyser le Climat" onAction="#analyserIrrigationIA" maxWidth="Infinity"
+                                    style="-fx-background-color: #1B5E20; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 10; -fx-background-radius: 10;"/>
+                        </VBox>
+                        <VBox fx:id="paneResultatIA" spacing="12" visible="false">
+                            <HBox spacing="15" alignment="CENTER">
+                                <Label fx:id="lblTemp" text="--°C" style="-fx-font-weight: bold;"/>
+                                <Label fx:id="lblHum" text="--%" style="-fx-font-weight: bold;"/>
+                            </HBox>
+                            <Label fx:id="lblConseilIA" text="..." wrapText="true" style="-fx-background-color: white; -fx-padding: 10; -fx-background-radius: 8; -fx-font-size: 12px;"/>
+                        </VBox>
+                    </VBox>
+
+                    <VBox spacing="10" styleClass="content-card" style="-fx-background-color: #E8F5E9; -fx-border-color: #A5D6A7; -fx-border-radius: 12; -fx-background-radius: 12;">
+                        <Label text="💰 Revenu Export Global" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32;"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="tfPrixLocal" promptText="Prix/Kg (TND)" prefWidth="120" styleClass="search-field"/>
+                            <Button text="Calculer" onAction="#calculerExport" style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;"/>
+                        </HBox>
+
+                        <Separator/>
+
+                        <Label fx:id="lblPrixExport" text="Prix : -- $ / Kg"
+                               style="-fx-font-size: 12px; -fx-text-fill: #546E7A;"/>
+
+                        <Label fx:id="lblPrixTotalExport" text="Revenu Total : -- $"
+                               wrapText="true" style="-fx-font-weight: bold; -fx-font-size: 15px; -fx-text-fill: #1B5E20;"/>
+                    </VBox>
+
+                </VBox>
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>

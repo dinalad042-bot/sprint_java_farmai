@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.shape.Circle?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.farmai.controllers.AdminController"
+            style="-fx-background-color: #f4f7f6; -fx-font-family: 'Segoe UI', sans-serif;">
+
+    <left>
+        <VBox prefWidth="260" spacing="10"
+              style="-fx-background-color: #1b5e20; -fx-padding: 25 20 25 20; -fx-background-radius: 0 30 30 0;">
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Text text="🚜" style="-fx-font-size: 28px;"/>
+                <Text text="FarmAI Admin" style="-fx-fill: white; -fx-font-size: 20px; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <Separator opacity="0.3" style="-fx-padding: 15 0 15 0;"/>
+
+            <Button text="📊  Dashboard" maxWidth="Infinity" onAction="#handleRefresh"
+                    style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-alignment: CENTER_LEFT; -fx-background-radius: 10; -fx-padding: 12; -fx-cursor: hand; -fx-font-weight: bold;"/>
+
+            <Button text="👥  Utilisateurs" maxWidth="Infinity" onAction="#handleUsersClick"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a5d6a7; -fx-alignment: CENTER_LEFT; -fx-padding: 12; -fx-cursor: hand;"/>
+
+            <Button text="🗺️  Cultures (Carte)" maxWidth="Infinity" onAction="#handleCulturesClick"
+                    style="-fx-background-color: transparent; -fx-text-fill: #a5d6a7; -fx-alignment: CENTER_LEFT; -fx-padding: 12; -fx-cursor: hand;"/>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <Button text="🚪  Déconnexion" onAction="#handleDeconnexion" maxWidth="Infinity"
+                    style="-fx-background-color: #c62828; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 10; -fx-cursor: hand; -fx-font-weight: bold;"/>
+        </VBox>
+    </left>
+
+    <center>
+        <VBox spacing="30" style="-fx-padding: 30 40 30 40;">
+
+            <HBox alignment="CENTER_LEFT">
+                <VBox spacing="5">
+                    <Label fx:id="lblAdminName" text="Tableau de Bord Administrateur"
+                           style="-fx-text-fill: #2c3e50; -fx-font-size: 26px; -fx-font-weight: bold;"/>
+                    <Label text="Aperçu global de l'activité de la plateforme"
+                           style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="10">
+                    <Label text="Admin" style="-fx-font-weight: bold; -fx-text-fill: #2E7D32;"/>
+                    <Circle radius="22" fill="#2E7D32" stroke="WHITE" strokeWidth="2" />
+                </HBox>
+            </HBox>
+
+            <HBox spacing="25">
+                <VBox HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
+                    <Label text="Utilisateurs" style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"/>
+                    <Label fx:id="lblTotalUsers" text="--" style="-fx-text-fill: #2E7D32; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    <Label text="Total inscrits" style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
+                    <Label text="Exploitations" style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"/>
+                    <Label fx:id="lblTotalFermes" text="--" style="-fx-text-fill: #2E7D32; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    <Label text="Fermes actives" style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;"/>
+                </VBox>
+
+                <VBox HBox.hgrow="ALWAYS"
+                      style="-fx-background-color: white; -fx-padding: 20; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);">
+                    <Label text="Bétail Total" style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"/>
+                    <Label fx:id="lblTotalAnimaux" text="--" style="-fx-text-fill: #2E7D32; -fx-font-size: 32px; -fx-font-weight: bold;"/>
+                    <Label text="Animaux suivis" style="-fx-text-fill: #95a5a6; -fx-font-size: 11px;"/>
+                </VBox>
+            </HBox>
+
+            <VBox VBox.vgrow="ALWAYS" alignment="CENTER" spacing="20"
+                  style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 15, 0, 0, 10);">
+
+                <VBox alignment="CENTER" spacing="10" style="-fx-background-color: #f1f8e9; -fx-padding: 30; -fx-background-radius: 20;">
+                    <Text text="🌍" style="-fx-font-size: 50px;"/>
+                    <Label text="Analyse Géographique" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #1b5e20;"/>
+                    <Label text="Visualisez toutes les fermes de Tunisie sur une carte interactive pour auditer les animaux et les cultures."
+                           wrapText="true" textAlignment="CENTER" style="-fx-text-fill: #555555; -fx-max-width: 400;"/>
+                    <Button text="Ouvrir la Carte Interactive" onAction="#handleCulturesClick"
+                            style="-fx-background-color: #2E7D32; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 12 30 12 30; -fx-background-radius: 10; -fx-cursor: hand; -fx-font-size: 14px;"/>
+                </VBox>
+            </VBox>
+
+        </VBox>
+    </center>
+</BorderPane>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.farmai.controllers.FaceLoginController"
+      alignment="CENTER" spacing="14"
+      styleClass="face-recognition-root">
+
+    <Label text="🔐 Connexion par visage"
+           styleClass="face-recognition-title"/>
+    <Label text="Regardez la caméra pour vous connecter"
+           styleClass="face-recognition-subtitle"/>
+
+    <!-- Camera feed -->
+    <ImageView fx:id="cameraFeed"
+               fitWidth="480" fitHeight="360"
+               preserveRatio="true"
+               styleClass="face-recognition-camera"/>
+
+    <!-- Status / countdown -->
+    <Label fx:id="statusLabel" text="Initialisation…"
+           styleClass="status-neutral" wrapText="true"
+           maxWidth="480" alignment="CENTER"/>
+
+    <!-- Progress bar showing time remaining -->
+    <ProgressBar fx:id="timeoutBar" progress="1.0" maxWidth="480" prefHeight="6"
+                 style="-fx-accent: #4CAF50; -fx-background-color: #37474F;"/>
+
+    <!-- Cancel -->
+    <Button text="Annuler"
+            onAction="#handleCancel"
+            styleClass="face-recognition-cancel"/>
+</VBox>

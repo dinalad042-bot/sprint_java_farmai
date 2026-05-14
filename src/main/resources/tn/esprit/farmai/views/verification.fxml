@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml" 
+      fx:controller="tn.esprit.farmai.controllers.VerificationController"
+      styleClass="login-root"
+      stylesheets="@../styles/auth.css">
+    
+    <!-- Left Panel - Branding -->
+    <VBox styleClass="login-left-panel" HBox.hgrow="ALWAYS" alignment="CENTER" spacing="25">
+        <VBox alignment="CENTER" spacing="15">
+            <Label text="📧" style="-fx-font-size: 64px;"/>
+            <Label text="Vérification" styleClass="app-title-label"/>
+            <Label text="Vérifiez votre boîte mail" styleClass="app-subtitle-label"/>
+        </VBox>
+    </VBox>
+    
+    <!-- Right Panel - Verification Form -->
+    <VBox fx:id="verificationContainer" styleClass="login-right-panel" 
+          HBox.hgrow="ALWAYS" alignment="CENTER" spacing="20">
+        
+        <VBox styleClass="login-form-container" spacing="25" alignment="CENTER" maxWidth="400">
+            
+            <VBox alignment="CENTER" spacing="8">
+                <Label text="Code de Vérification" styleClass="form-title-label"/>
+                <Label text="Un code a été envoyé à :" styleClass="form-subtitle-label"/>
+                <Label fx:id="emailLabel" text="votre@email.com" style="-fx-text-fill: #4ecca3; -fx-font-weight: bold;"/>
+            </VBox>
+            
+            <!-- Error Label -->
+            <Label fx:id="errorLabel" styleClass="error-label" visible="false" wrapText="true"/>
+            
+            <!-- OTP Field -->
+            <VBox spacing="8" styleClass="input-group">
+                <Label text="Code OTP (6 chiffres)" styleClass="input-label"/>
+                <TextField fx:id="otpField" 
+                           promptText="123456"
+                           alignment="CENTER"
+                           styleClass="auth-input"
+                           style="-fx-font-size: 24px; -fx-letter-spacing: 5px;"/>
+            </VBox>
+            
+            <!-- Verify Button -->
+            <Button fx:id="verifyButton" 
+                    text="Vérifier" 
+                    styleClass="primary-button"
+                    onAction="#handleVerify"
+                    prefWidth="320"/>
+            
+            <!-- Resend Link -->
+            <HBox alignment="CENTER" spacing="8">
+                <Label text="Vous n'avez pas reçu le code?" styleClass="form-subtitle-label"/>
+                <Hyperlink text="Renvoyer"
+                           styleClass="signup-link"
+                           onAction="#handleResend"/>
+            </HBox>
+            
+            <padding>
+                <Insets bottom="20" left="20" right="20" top="20"/>
+            </padding>
+            
+        </VBox>
+    </VBox>
+</HBox>

@@ -1,0 +1,21 @@
+# FarmAI Configuration File
+# Copy this file to config.properties and add your API keys
+
+# ==========================================
+# Groq API Configuration (REQUIRED for AI features)
+# Get your free API key from: https://console.groq.com/keys
+# ==========================================
+GROQ_API_KEY=gsk_your_api_key_here
+
+# ==========================================
+# Email/SMTP Configuration (Optional - for email notifications)
+# ==========================================
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_USER=your-email@gmail.com
+# SMTP_PASSWORD=your-app-password
+
+# ==========================================
+# Trefle API Configuration (Optional - for plant database)
+# ==========================================
+# TREFLE_API_KEY=your_trefle_api_key
